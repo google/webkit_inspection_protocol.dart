@@ -1,5 +1,7 @@
 # webkit_inspection_protocol.dart
 
+[![Build Status](https://travis-ci.org/google/webkit_inspection_protocol.dart.svg)](https://travis-ci.org/google/webkit_inspection_protocol.dart)
+
 ## What is it?
 
 The `webkit_inspection_protocol` package is a client of the Webkit Inspection
