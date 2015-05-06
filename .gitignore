@@ -1,0 +1,14 @@
+*.js.deps
+*.js.map
+*.swo
+*.swp
+.buildlog
+.DS_Store
+.svn
+packages
+pubspec.lock
+.idea
+.pub/
+docs/
+build/
+.settings/
