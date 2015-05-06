@@ -8,4 +8,4 @@
 set -e
 
 # Verify that the libraries are error free.
-dartanalyzer --fatal-warnings lib/webkit_inspection_protocol.dart.dart
+dartanalyzer --fatal-warnings lib/webkit_inspection_protocol.dart
