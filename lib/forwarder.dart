@@ -3,35 +3,45 @@
 
 library crmux.forwarder;
 
-import 'dart:async';
-import 'dart:convert';
+import 'dart:async'
+    show
+        Completer,
+        Future,
+        Stream,
+        StreamController,
+        StreamSink,
+        StreamSubscription;
+import 'dart:convert' show JSON;
 
-import 'package:logging/logging.dart';
+import 'package:logging/logging.dart' show Logger;
 
-import 'webkit_inspection_protocol.dart';
+import 'dom_model.dart' show flattenAttributesMap;
+import 'webkit_inspection_protocol.dart'
+    show WipConnection, WipDom, WipError, WipEvent, WipResponse;
 
 /// Forwards a [Stream] to a [WipConnection] and events
 /// from a [WipConnection] to a [StreamSink].
-class ChromeForwarder {
+class WipForwarder {
   static final _log = new Logger('ChromeForwarder');
 
   final Stream _in;
   final StreamSink _out;
   final WipConnection _debugger;
+  final WipDom domModel;
 
   final _subscriptions = <StreamSubscription>[];
 
   final _closedController = new StreamController.broadcast();
 
-  factory ChromeForwarder(WipConnection debugger, Stream stream,
-      [StreamSink sink]) {
+  factory WipForwarder(WipConnection debugger, Stream stream,
+      {StreamSink sink, WipDom domModel}) {
     if (sink == null) {
       sink = stream as StreamSink;
     }
-    return new ChromeForwarder._(debugger, stream, sink);
+    return new WipForwarder._(debugger, stream, sink, domModel);
   }
 
-  ChromeForwarder._(this._debugger, this._in, this._out) {
+  WipForwarder._(this._debugger, this._in, this._out, this.domModel) {
     _subscriptions.add(_in.listen(_onClientDataHandler,
         onError: _onClientErrorHandler, onDone: _onClientDoneHandler));
     _subscriptions.add(_debugger.onNotification.listen(_onDebuggerDataHandler,
@@ -43,13 +53,37 @@ class ChromeForwarder {
     var response = {'id': json['id']};
     _log.info('Forwarding to debugger: $data');
     try {
-      var resp = await _debugger.sendCommand(json['method'], json['params']);
-      if (resp.result != null) {
-        response['result'] = resp.result;
+      String method = json['method'];
+      Map<String, dynamic> params = json['params'];
+      bool processed = false;
+
+      if (domModel != null) {
+        switch (method) {
+          case 'DOM.getDocument':
+            response['result'] = {'root': (await domModel.getDocument())};
+            processed = true;
+            break;
+          case 'DOM.getAttributes':
+            var attributes = flattenAttributesMap(
+                await domModel.getAttributes(params['nodeId']));
+            response['result'] = {'attributes': attributes};
+            processed = true;
+            break;
+        }
+      }
+      if (!processed) {
+        WipResponse resp = await _debugger.sendCommand(method, params);
+        if (resp.result != null) {
+          response['result'] = resp.result;
+        }
       }
     } on WipError catch (e) {
       response['error'] = e.error;
+    } catch (e, s) {
+      _log.severe(json['id'], e.toString(), s);
+      response['error'] = e.toString();
     }
+    _log.info('forwarding response: $response');
     _out.add(JSON.encode(response));
   }
 

@@ -11,12 +11,7 @@ class WipDom extends WipDomain {
   Future<Map<String, String>> getAttributes(int nodeId) async {
     WipResponse resp =
         await _sendCommand('DOM.getAttributes', {'nodeId': nodeId});
-    var attributes = {};
-    for (int i = 0; i < resp.result['attributes'].length; i += 2) {
-      attributes[resp.result['attributes'][i]] =
-          attributes[resp.result['attributes'][i + 1]];
-    }
-    return new UnmodifiableMapView<String, String>(attributes);
+    return _attributeListToMap(resp.result['attributes']);
   }
 
   Future<Node> getDocument() async =>
@@ -232,6 +227,8 @@ class SetChildNodesEvent extends _WrappedWipEvent {
       yield new Node(node);
     }
   }
+
+  String toString() => 'SetChildNodes $nodeId: $nodes';
 }
 
 /// The backend keeps track of which DOM nodes have been sent,
@@ -245,24 +242,20 @@ class Node {
   var _attributes;
   Map<String, String> get attributes {
     if (_attributes == null && _map.containsKey('attributes')) {
-      var attributes = {};
-      for (int i = 0; i < _map['attributes'].length; i += 2) {
-        attributes[_map['attributes'][i]] =
-            attributes[_map['attributes'][i + 1]];
-      }
-      _attributes = new UnmodifiableMapView<String, String>(attributes);
+      _attributes = _attributeListToMap(_map['attributes']);
     }
     return _attributes;
   }
 
   int get childNodeCount => _map['childNodeCount'];
 
-  Iterable<Node> get children sync* {
-    if (_map.containsKey('children')) {
-      for (var child in _map['children']) {
-        yield new Node(child);
-      }
+  var _children;
+  List<Node> get children {
+    if (_children == null && _map.containsKey('children')) {
+      _children =
+          new UnmodifiableListView(_map['children'].map((c) => new Node(c)));
     }
+    return _children;
   }
 
   Node get contentDocument {
@@ -295,6 +288,8 @@ class Node {
   String get value => _map['value'];
 
   String get xmlVersion => _map['xmlVersion'];
+
+  String toString() => '$nodeName: $nodeId $attributes';
 }
 
 class Rgba {
@@ -312,4 +307,12 @@ class Rgba {
     }
     return json;
   }
+}
+
+Map<String, String> _attributeListToMap(List<String> attrList) {
+  var attributes = {};
+  for (int i = 0; i < attrList.length; i += 2) {
+    attributes[attrList[i]] = attrList[i + 1];
+  }
+  return new UnmodifiableMapView(attributes);
 }
