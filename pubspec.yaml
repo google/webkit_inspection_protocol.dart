@@ -6,4 +6,4 @@ homepage: https://github.com/google/webkit_inspection_protocol.dart
 author: Devon Carew <devoncarew@google.com>
 
 environment:
-  sdk: '>=1.0.0 <2.0.0'
+  sdk: '>=1.9.0 <2.0.0'

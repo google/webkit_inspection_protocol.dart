@@ -152,56 +152,56 @@ class WipDom extends WipDomain {
   Future setOuterHtml(int nodeId, String outerHtml) => _sendCommand(new _Event(
       'DOM.setOuterHTML', {'nodeId': nodeId, 'outerHtml': outerHtml}));
 
-  StreamController<AttributeModifiedEvent> _attributeModifiedController =
+  final _attributeModifiedController =
       new StreamController<AttributeModifiedEvent>.broadcast();
   Stream<AttributeModifiedEvent> get onAttributeModified =>
       _attributeModifiedController.stream;
   void _attributeModified(_Event event) =>
       _attributeModifiedController.add(new AttributeModifiedEvent(event));
 
-  StreamController<AttributeRemovedEvent> _attributeRemovedController =
+  final _attributeRemovedController =
       new StreamController<AttributeRemovedEvent>.broadcast();
   Stream<AttributeRemovedEvent> get onAttributeRemoved =>
       _attributeRemovedController.stream;
   void _attributeRemoved(_Event event) =>
       _attributeRemovedController.add(new AttributeRemovedEvent(event));
 
-  StreamController<CharacterDataModifiedEvent> _characterDataModifiedController =
+  final _characterDataModifiedController =
       new StreamController<CharacterDataModifiedEvent>.broadcast();
   Stream<CharacterDataModifiedEvent> get onCharacterDataModified =>
       _characterDataModifiedController.stream;
   void _characterDataModified(_Event event) => _characterDataModifiedController
       .add(new CharacterDataModifiedEvent(event));
 
-  StreamController<ChildNodeCountUpdatedEvent> _childNodeCountUpdatedController =
+  final _childNodeCountUpdatedController =
       new StreamController<ChildNodeCountUpdatedEvent>.broadcast();
   Stream<ChildNodeCountUpdatedEvent> get onChildNodeCountUpdated =>
       _childNodeCountUpdatedController.stream;
   void _childNodeCountUpdated(_Event event) => _childNodeCountUpdatedController
       .add(new ChildNodeCountUpdatedEvent(event));
 
-  StreamController<ChildNodeInsertedEvent> _childNodeInsertedController =
+  final _childNodeInsertedController =
       new StreamController<ChildNodeInsertedEvent>.broadcast();
   Stream<ChildNodeInsertedEvent> get onChildNodeInserted =>
       _childNodeInsertedController.stream;
   void _childNodeInserted(_Event event) =>
       _childNodeInsertedController.add(new ChildNodeInsertedEvent(event));
 
-  StreamController<ChildNodeRemovedEvent> _childNodeRemovedController =
+  final _childNodeRemovedController =
       new StreamController<ChildNodeRemovedEvent>.broadcast();
   Stream<ChildNodeRemovedEvent> get onChildNodeRemoved =>
       _childNodeRemovedController.stream;
   void _childNodeRemoved(_Event event) =>
       _childNodeRemovedController.add(new ChildNodeRemovedEvent(event));
 
-  StreamController<DocumentUpdatedEvent> _documentUpdatedController =
+  final _documentUpdatedController =
       new StreamController<DocumentUpdatedEvent>.broadcast();
   Stream<DocumentUpdatedEvent> get onDocumentUpdated =>
       _documentUpdatedController.stream;
   void _documentUpdated(_Event event) =>
       _documentUpdatedController.add(new DocumentUpdatedEvent(event));
 
-  StreamController<SetChildNodesEvent> _setChildNodesController =
+  final _setChildNodesController =
       new StreamController<SetChildNodesEvent>.broadcast();
   Stream<SetChildNodesEvent> get onSetChildNodes =>
       _setChildNodesController.stream;
