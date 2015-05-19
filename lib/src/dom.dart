@@ -19,10 +19,6 @@ class WipDom extends WipDomain {
     _register('DOM.setChildNodes', _setChildNodes);
   }
 
-  Future enable() => _sendSimpleCommand('Console.enable');
-  Future disable() => _sendSimpleCommand('Console.disable');
-  Future clearMessages() => _sendSimpleCommand('Console.clearMessages');
-
   Future<Map<String, String>> getAttributes(int nodeId) async {
     _Event resp =
         await _sendCommand(new _Event('DOM.getAttributes', {'nodeId': nodeId}));
