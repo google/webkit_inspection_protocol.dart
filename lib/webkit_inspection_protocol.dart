@@ -7,8 +7,11 @@
 library wip;
 
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert' show JSON, UTF8;
 import 'dart:io';
+
+part 'src/dom.dart';
 
 /**
  * A class to connect to a Chrome instance and reflect on its available tabs.
@@ -111,6 +114,7 @@ class WipConnection {
   WipDebugger debugger;
   WipPage page;
   WipRuntime runtime;
+  WipDom dom;
 
   Map _domains = {};
 
@@ -129,6 +133,7 @@ class WipConnection {
     debugger = new WipDebugger(this);
     page = new WipPage(this);
     runtime = new WipRuntime(this);
+    dom = new WipDom(this);
 
     _ws.listen((data) {
       _Event event = new _Event._fromMap(JSON.decode(data));
