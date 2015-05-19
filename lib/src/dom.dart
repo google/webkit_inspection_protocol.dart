@@ -303,7 +303,7 @@ class Node extends WipObject {
   }
 
   Node get contentDocument {
-    if (map.containsKey(contentDocument)) {
+    if (map.containsKey('contentDocument')) {
       return new Node(map['contentDocument']);
     }
     return null;
