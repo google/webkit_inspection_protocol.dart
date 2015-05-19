@@ -317,11 +317,11 @@ class Node extends WipObject {
 
   String get name => map['name'];
 
-  String get nodeId => map['nodeId'];
+  int get nodeId => map['nodeId'];
 
   String get nodeName => map['nodeName'];
 
-  String get nodeType => map['nodeType'];
+  int get nodeType => map['nodeType'];
 
   String get nodeValue => map['nodeValue'];
 
