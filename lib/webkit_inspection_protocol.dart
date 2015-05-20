@@ -6,10 +6,16 @@
  */
 library wip;
 
-import 'dart:async';
-import 'dart:collection';
+import 'dart:async' show Completer, Future, Stream, StreamController;
+import 'dart:collection' show UnmodifiableMapView;
 import 'dart:convert' show JSON, UTF8;
-import 'dart:io';
+import 'dart:io' show HttpClient, HttpClientResponse, WebSocket;
+
+import 'package:logging/logging.dart' show Logger;
+
+part 'src/console.dart';
+part 'src/debugger.dart';
+part 'src/page.dart';
 
 part 'src/dom.dart';
 
@@ -20,58 +26,60 @@ part 'src/dom.dart';
  * flag. The data is read from the `http://{host}:{port}/json` url.
  */
 class ChromeConnection {
-  String _url;
+  final HttpClient _client = new HttpClient();
 
-  ChromeConnection(String host, [int port = 9222]) {
-    _url = 'http://${host}:${port}/json';
+  final Uri url;
+
+  ChromeConnection(String host, [int port = 9222])
+      : url = Uri.parse('http://${host}:${port}/');
+
+  // TODO(DrMarcII): consider changing this to return Stream<ChromeTab>.
+  Future<List<ChromeTab>> getTabs() async {
+    HttpClientResponse response = await getUrl('/json');
+    String respBody = await UTF8.decodeStream(response);
+    List<Map<String, String>> data = JSON.decode(respBody);
+    return data.map((m) => new ChromeTab(m));
   }
 
-  String get url => _url;
-
-  Future<List<ChromeTab>> getTabs() {
-    return _httpGet(url).then((String str) {
-      List list = JSON.decode(str);
-      return list.map((m) => new ChromeTab.fromMap(m));
-    });
-  }
-
-  Future<ChromeTab> getTab(bool accept(ChromeTab tab), {Duration retryFor}) {
-    DateTime start = new DateTime.now();
-
-    // TODO: could switch to a repeated stream of events and a completer
-
-    var _retry = () => false;
+  Future<ChromeTab> getTab(bool accept(ChromeTab tab),
+      {Duration retryFor}) async {
+    var start = new DateTime.now();
+    var end = start;
     if (retryFor != null) {
-      _retry = () => new DateTime.now().difference(start) < retryFor;
+      end = end.add(retryFor);
     }
 
-    var _getTab;
-    _getTab = () {
-      return getTabs().then((tabs) {
-        tabs = tabs.where(accept);
-        if (!tabs.isEmpty) return tabs.first;
-        if (_retry()) {
-          return new Future.delayed(
-              new Duration(milliseconds: 25)).then((_) => _getTab());
+    while (true) {
+      try {
+        for (ChromeTab tab in await getTabs()) {
+          if (accept(tab)) {
+            return tab;
+          }
         }
-        return null;
-      }).catchError((e) {
-        if (_retry()) {
-          return new Future.delayed(
-              new Duration(milliseconds: 25)).then((_) => _getTab());
+        if (end.isAfter(new DateTime.now())) {
+          return null;
         }
-        throw e;
-      });
-    };
-
-    return _getTab();
+      } catch (e) {
+        if (end.isAfter(new DateTime.now())) {
+          rethrow;
+        }
+      }
+      await new Future.delayed(new Duration(milliseconds: 25));
+    }
   }
+
+  Future<HttpClientResponse> getUrl(String path) async {
+    var request = await _client.getUrl(url.resolve(path));
+    return await request.close();
+  }
+
+  void close() => _client.close(force: true);
 }
 
 class ChromeTab {
   final Map _map;
 
-  ChromeTab.fromMap(this._map);
+  ChromeTab(this._map);
 
   String get description => _map['description'];
   String get devtoolsFrontendUrl => _map['devtoolsFrontendUrl'];
@@ -101,6 +109,8 @@ class ChromeTab {
  * A Webkit Inspection Protocol (WIP) connection.
  */
 class WipConnection {
+  static final Logger _log = new Logger('WipConnection');
+
   /**
    * The WebSocket URL.
    */
@@ -110,17 +120,21 @@ class WipConnection {
 
   int _nextId = 0;
 
-  WipConsole console;
-  WipDebugger debugger;
-  WipPage page;
-  WipRuntime runtime;
-  WipDom dom;
+  var _console;
+  WipConsole get console => _console;
+  var _debugger;
+  WipDebugger get debugger => _debugger;
+  var _dom;
+  WipDom get dom => _dom;
+  var _page;
+  WipPage get page => _page;
 
-  Map _domains = {};
+  final _domains = <String, WipDomain>{};
 
-  Map<int, Completer> _completers = {};
+  final _completers = <int, Completer<WipResponse>>{};
 
-  StreamController<WipConnection> _closeController = new StreamController.broadcast();
+  final _closeController = new StreamController<WipConnection>.broadcast();
+  final _notificationController = new StreamController<WipEvent>.broadcast();
 
   static Future<WipConnection> connect(String url) {
     return WebSocket.connect(url).then((socket) {
@@ -129,24 +143,24 @@ class WipConnection {
   }
 
   WipConnection._(this.url, this._ws) {
-    console = new WipConsole(this);
-    debugger = new WipDebugger(this);
-    page = new WipPage(this);
-    runtime = new WipRuntime(this);
-    dom = new WipDom(this);
+    _console = new WipConsole(this);
+    _debugger = new WipDebugger(this);
+    _dom = new WipDom(this);
+    _page = new WipPage(this);
 
     _ws.listen((data) {
-      _Event event = new _Event._fromMap(JSON.decode(data));
+      var json = JSON.decode(data);
 
-      if (event.isNotification) {
-        _handleNotification(event);
+      if (json.containsKey('id')) {
+        _handleResponse(json);
       } else {
-        _handleResponse(event);
+        _handleNotification(json);
       }
     }, onDone: _handleClose);
   }
 
   Stream<WipConnection> get onClose => _closeController.stream;
+  Stream<WipEvent> get onNotification => _notificationController.stream;
 
   Future close() => _ws.close();
 
@@ -156,15 +170,20 @@ class WipConnection {
     _domains[domainId] = domain;
   }
 
-  Future<_Event> _sendCommand(_Event event) {
-    Completer completer = new Completer();
-    event.id = _nextId++;
-    _completers[event.id] = completer;
-    _ws.add(event.toJson());
+  Future<WipResponse> sendCommand(String method,
+      [Map<String, dynamic> params]) {
+    var completer = new Completer<WipResponse>();
+    var json = {'id': _nextId++, 'method': method};
+    if (params != null) {
+      json['params'] = params;
+    }
+    _completers[json['id']] = completer;
+    _ws.add(JSON.encode(json));
     return completer.future;
   }
 
-  void _handleNotification(_Event event) {
+  void _handleNotification(Map<String, dynamic> json) {
+    WipEvent event = new WipEvent(json);
     String domainId = event.method;
     int index = domainId.indexOf('.');
     if (index != -1) {
@@ -173,401 +192,94 @@ class WipConnection {
     if (_domains.containsKey(domainId)) {
       _domains[domainId]._handleNotification(event);
     } else {
-      _log('unhandled event notification: ${event.method}');
+      _log.warning('unhandled event notification: ${event.method}');
     }
+    _notificationController.add(event);
   }
 
-  void _handleResponse(_Event event) {
-    Completer completer = _completers.remove(event.id);
+  void _handleResponse(Map<String, dynamic> event) {
+    Completer completer = _completers.remove(event['id']);
 
-    assert(completer != null);
-
-    if (event.hasError) {
+    if (event.containsKey('error')) {
       completer.completeError(new WipError(event));
     } else {
       completer.complete(new WipResponse(event));
     }
   }
 
-  void _log(String str) {
-    print(str);
-  }
-
   void _handleClose() {
     _closeController.add(this);
+    _closeController.close();
+    _notificationController.close();
+    _domains.values.forEach((d) => d.close());
   }
 }
 
-abstract class WipObject {
-  final Map map;
+class WipEvent {
+  final String method;
+  final Map<String, dynamic> params;
 
-  WipObject(this.map);
-}
+  WipEvent(Map<String, dynamic> map)
+      : method = map['method'],
+        params = map['params'];
 
-class WipEvent extends WipObject {
-  WipEvent(Map map) : super(map);
-
-  String get method => map['method'];
-  Map get params => map['params'];
-
-  String toString() => '${method}()';
+  String toString() => 'WipEvent: $method($params)';
 }
 
 class WipError {
   final int id;
   final dynamic error;
 
-  WipError(_Event event) : id = event.id, error = event.error;
+  WipError(Map<String, dynamic> json)
+      : id = json['id'],
+        error = json['error'];
 
-  String toString() => '${error}';
+  String toString() => 'WipError $id: $error';
 }
 
 class WipResponse {
   final int id;
-  final Map result;
+  final Map<String, dynamic> result;
 
-  WipResponse(_Event event) : id = event.id, result = event.result;
+  WipResponse(Map<String, dynamic> json)
+      : id = json['id'],
+        result = json['result'];
 
-  String toString() => '${result}';
+  String toString() => 'WipResponse $id: $result';
 }
 
-abstract class WipDomain {
-  Map<String, Function> _callbacks = {};
+typedef WipEventCallback(WipEvent event);
 
-  WipConnection connection;
+abstract class WipDomain {
+  Map<String, WipEventCallback> _callbacks = {};
+
+  final WipConnection connection;
 
   WipDomain(this.connection);
 
-  void _register(String method, Function callback) {
+  void _register(String method, WipEventCallback callback) {
     _callbacks[method] = callback;
   }
 
-  void _handleNotification(_Event event) {
+  void _handleNotification(WipEvent event) {
     Function f = _callbacks[event.method];
     if (f != null) f(event);
   }
 
-  Future<_Event> _sendSimpleCommand(String method) {
-    return connection._sendCommand(new _Event(method));
-  }
+  Future<WipResponse> _sendCommand(String method,
+      [Map<String, dynamic> params]) => connection.sendCommand(method, params);
 
-  Future<_Event> _sendCommand(_Event event) => connection._sendCommand(event);
+  void close();
 }
 
-class WipConsole extends WipDomain {
-  StreamController<ConsoleMessageEvent> _message = new StreamController.broadcast();
-  StreamController _cleared = new StreamController.broadcast();
+class _WrappedWipEvent implements WipEvent {
+  final WipEvent _wrapped;
 
-  ConsoleMessageEvent _lastMessage;
+  _WrappedWipEvent(this._wrapped);
 
-  WipConsole(WipConnection connection): super(connection) {
-    connection._registerDomain('Console', this);
+  @override
+  String get method => _wrapped.method;
 
-    _register('Console.messageAdded', _messageAdded);
-    _register('Console.messageRepeatCountUpdated', _messageRepeatCountUpdated);
-    _register('Console.messagesCleared', _messagesCleared);
-  }
-
-  Future enable() => _sendSimpleCommand('Console.enable');
-  Future disable() => _sendSimpleCommand('Console.disable');
-  Future clearMessages() => _sendSimpleCommand('Console.clearMessages');
-
-  Stream<ConsoleMessageEvent> get onMessage => _message.stream;
-  Stream get onCleared => _cleared.stream;
-
-  void _messageAdded(_Event event) {
-    _lastMessage = new ConsoleMessageEvent(event);
-    _message.add(_lastMessage);
-  }
-
-  void _messageRepeatCountUpdated(_Event event) {
-    if (_lastMessage != null) {
-      _lastMessage.params['repeatCount'] = event.params['count'];
-      _message.add(_lastMessage);
-    }
-  }
-
-  void _messagesCleared(_Event event) {
-    _lastMessage = null;
-    _cleared.add(null);
-  }
-}
-
-class WipDebugger extends WipDomain {
-  StreamController _pausedController = new StreamController.broadcast();
-  StreamController _resumedController = new StreamController.broadcast();
-
-  Map<String, WipScript> _scripts = {};
-
-  WipDebugger(WipConnection connection): super(connection) {
-    connection._registerDomain('Debugger', this);
-
-    // TODO:
-    //_register('Debugger.breakpointResolved', _breakpointResolved);
-    _register('Debugger.globalObjectCleared', _globalObjectCleared);
-    _register('Debugger.paused', _paused);
-    _register('Debugger.resumed', _resumed);
-    //_register('Debugger.scriptFailedToParse', _scriptFailedToParse);
-    _register('Debugger.scriptParsed', _scriptParsed);
-  }
-
-  Future enable() => _sendSimpleCommand('Debugger.enable');
-  Future disable() => _sendSimpleCommand('Debugger.disable');
-
-  Future<String> getScriptSource(String scriptId) {
-    return _sendCommand(new _Event(
-        'Debugger.getScriptSource', {'scriptId': scriptId})).then((_Event event) {
-      return event.result['scriptSource'];
-    });
-  }
-
-  Future pause() => _sendSimpleCommand('Debugger.pause');
-  Future resume() => _sendSimpleCommand('Debugger.resume');
-
-  Future stepInto() => _sendSimpleCommand('Debugger.stepInto');
-  Future stepOut() => _sendSimpleCommand('Debugger.stepOut');
-  Future stepOver() => _sendSimpleCommand('Debugger.stepOver');
-
-  /**
-   * State should be one of "all", "none", or "uncaught".
-   */
-  Future setPauseOnExceptions(String state) {
-    var event = new _Event('Debugger.setPauseOnExceptions', {'state': state});
-    return connection._sendCommand(event);
-  }
-
-  Stream get onPaused => _pausedController.stream;
-  Stream get onResumed => _resumedController.stream;
-
-  WipScript getScript(String scriptId) => _scripts[scriptId];
-
-  void _globalObjectCleared(_Event event) {
-    _scripts.clear();
-  }
-
-  void _paused(_Event event) {
-    _pausedController.add(new DebuggerPausedEvent(event));
-  }
-
-  void _resumed(_Event event) {
-    _resumedController.add(null);
-  }
-
-  void _scriptParsed(_Event event) {
-    WipScript script = new WipScript(event.params);
-    _scripts[script.scriptId] = script;
-    print(script);
-  }
-}
-
-class WipPage extends WipDomain {
-  WipPage(WipConnection connection): super(connection) {
-    connection._registerDomain('Page', this);
-
-    // TODO:
-    // Page.loadEventFired
-    // Page.domContentEventFired
-  }
-
-  Future enable() => _sendSimpleCommand('Page.enable');
-  Future disable() => _sendSimpleCommand('Page.disable');
-
-  Future navigate(String url) {
-    return connection._sendCommand(new _Event('Page.navigate', {'url': url}));
-  }
-
-  Future reload({bool ignoreCache, String scriptToEvaluateOnLoad}) {
-    _Event event = new _Event('Page.navigate');
-
-    if (ignoreCache != null) {
-      event.addParam('ignoreCache', ignoreCache);
-    }
-
-    if (scriptToEvaluateOnLoad != null) {
-      event.addParam('scriptToEvaluateOnLoad', scriptToEvaluateOnLoad);
-    }
-
-    return connection._sendCommand(event);
-  }
-}
-
-class WipRuntime extends WipDomain {
-  WipRuntime(WipConnection connection): super(connection) {
-    connection._registerDomain('Page', this);
-  }
-}
-
-/**
- * See [WipConsole.onMessage].
- */
-class ConsoleMessageEvent extends WipEvent {
-  ConsoleMessageEvent(_Event event): super(event.map);
-
-  Map get _message => params['message'];
-
-  String get text => _message['text'];
-  String get level => _message['level'];
-  String get url => _message['url'];
-  int get repeatCount => _message['repeatCount'];
-
-  Iterable<WipCallFrame> getStackTrace() {
-    if (_message.containsKey('stackTrace')) {
-      return params['stackTrace'].map((frame) => new WipConsoleCallFrame(frame));
-    } else {
-      return [];
-    }
-  }
-
-  String toString() => text;
-}
-
-class WipConsoleCallFrame extends WipObject {
-  WipConsoleCallFrame(Map m): super(m);
-
-  int get columnNumber => map['columnNumber'];
-  String get functionName => map['functionName'];
-  int get lineNumber => map['lineNumber'];
-  String get scriptId => map['scriptId'];
-  String get url => map['url'];
-}
-
-class DebuggerPausedEvent extends WipEvent {
-  DebuggerPausedEvent(_Event event): super(event.map);
-
-  String get reason => params['reason'];
-  Object get data => params['data'];
-
-  Iterable<WipCallFrame> getCallFrames() {
-    return params['callFrames'].map((frame) => new WipCallFrame(frame));
-  }
-
-  String toString() => 'paused: ${reason}';
-}
-
-class ScriptParsedEvent extends WipEvent {
-  ScriptParsedEvent(Map params): super(params);
-
-  String get scriptId => params['scriptId'];
-  String get url => params['url'];
-  int get startLine => params['startLine'];
-  int get startColumn => params['startColumn'];
-  int get endLine => params['endLine'];
-  int get endColumn => params['endColumn'];
-  bool get isContentScript => params['isContentScript'];
-  String get sourceMapURL => params['sourceMapURL'];
-}
-
-class WipCallFrame extends WipObject {
-  WipCallFrame(Map params): super(params);
-
-  String get callFrameId => map['callFrameId'];
-  String get functionName => map['functionName'];
-  WipLocation get location => new WipLocation(map['location']);
-  WipRemoteObject get thisObject => new WipRemoteObject(map['this']);
-
-  Iterable<WipScope> getScopeChain() {
-    return map['scopeChain'].map((scope) => new WipScope(scope));
-  }
-
-  String toString() => '[${functionName}]';
-}
-
-class WipLocation extends WipObject {
-  WipLocation(Map params): super(params);
-
-  int get columnNumber => map['columnNumber'];
-  int get lineNumber => map['lineNumber'];
-  String get scriptId => map['scriptId'];
-
-  String toString() => '[${scriptId}:${lineNumber}:${columnNumber}]';
-}
-
-class WipScript extends WipObject {
-  WipScript(Map m): super(m);
-
-  String get scriptId => map['scriptId'];
-  String get url => map['url'];
-  int get startLine => map['startLine'];
-  int get startColumn => map['startColumn'];
-  int get endLine => map['endLine'];
-  int get endColumn => map['endColumn'];
-  bool get isContentScript => map['isContentScript'];
-  String get sourceMapURL => map['sourceMapURL'];
-
-  String toString() => '[script ${scriptId}: ${url}]';
-}
-
-class WipScope extends WipObject {
-  WipScope(Map params): super(params);
-
-  // "catch", "closure", "global", "local", "with"
-  String get scope => map['scope'];
-
-  /**
-   * Object representing the scope. For global and with scopes it represents the
-   * actual object; for the rest of the scopes, it is artificial transient
-   * object enumerating scope variables as its properties.
-   */
-  WipRemoteObject get object => new WipRemoteObject(map['object']);
-}
-
-class WipRemoteObject extends WipObject {
-  WipRemoteObject(Map map): super(map);
-
-  String get className => map['className'];
-  String get description => map['description'];
-  String get objectId => map['objectId'];
-  String get subtype => map['subtype'];
-  String get type => map['type'];
-  Object get value => map['value'];
-}
-
-class _Event {
-  final Map map;
-
-  _Event(String method, [Map params]) : map = {} {
-    map['method'] = method;
-
-    if (params != null) {
-      map['params'] = params;
-    }
-  }
-
-  _Event._fromMap(this.map);
-
-  String get method => map['method'];
-
-  int get id => map['id'];
-
-  set id(int value) {
-    map['id'] = value;
-  }
-
-  bool get isNotification => !map.containsKey('id');
-
-  bool get hasError => map.containsKey('error');
-  Object get error => map['error'];
-
-  Map get result => map['result'];
-
-  Map get params => map['params'];
-
-  void addParam(String key, Object value) {
-    map[key] = value;
-  }
-
-  String toJson() => JSON.encode(map);
-
-  String toString() => isNotification ? '${method}()' : '${method}() [${id}]';
-}
-
-Future<String> _httpGet(String url) {
-  HttpClient client = new HttpClient();
-  return client.getUrl(Uri.parse(url)).then((HttpClientRequest request) {
-    return request.close();
-  }).then((HttpClientResponse response) {
-    return response.toList();
-  }).then((List<List> data) {
-    return UTF8.decode(data.reduce((a, b) => a.addAll(b)));
-  });
+  @override
+  Map<String, dynamic> get params => _wrapped.params;
 }
