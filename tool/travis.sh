@@ -8,6 +8,5 @@
 set -e
 
 # Verify that the libraries are error free.
-# Verify that the libraries are error free.
-grep -Rl --include "*.dart" --exclude-dir="packages" '^library .*;$' lib/ test/ bin/ | \
-    xargs dartanalyzer --fatal-warnings
+pub global activate tuneup
+pub global run tuneup check
