@@ -20,8 +20,8 @@ class WipDom extends WipDomain {
   }
 
   Future<Map<String, String>> getAttributes(int nodeId) async {
-    _Event resp =
-        await _sendCommand(new _Event('DOM.getAttributes', {'nodeId': nodeId}));
+    WipResponse resp =
+        await _sendCommand('DOM.getAttributes', {'nodeId': nodeId});
     var attributes = {};
     for (int i = 0; i < resp.result['attributes'].length; i += 2) {
       attributes[resp.result['attributes'][i]] =
@@ -31,12 +31,12 @@ class WipDom extends WipDomain {
   }
 
   Future<Node> getDocument() async =>
-      new Node((await _sendSimpleCommand('DOM.getDocument')).result['root']);
+      new Node((await _sendCommand('DOM.getDocument')).result['root']);
 
   Future<String> getOuterHtml(int nodeId) async => (await _sendCommand(
-      new _Event('DOM.getOuterHTML', {'nodeId': nodeId}))).result['root'];
+      'DOM.getOuterHTML', {'nodeId': nodeId})).result['root'];
 
-  Future hideHighlight() => _sendSimpleCommand('DOM.hideHighlight');
+  Future hideHighlight() => _sendCommand('DOM.hideHighlight');
 
   Future highlightNode(int nodeId, {Rgba borderColor, Rgba contentColor,
       Rgba marginColor, Rgba paddingColor, bool showInfo}) {
@@ -62,7 +62,7 @@ class WipDom extends WipDomain {
       params['highlightConfig']['showInfo'] = showInfo;
     }
 
-    return _sendCommand(new _Event('DOM.highlightNode', params));
+    return _sendCommand('DOM.highlightNode', params);
   }
 
   Future highlightRect(int x, int y, int width, int height,
@@ -77,7 +77,7 @@ class WipDom extends WipDomain {
       params['outlineColor'] = outlineColor;
     }
 
-    return _sendCommand(new _Event('DOM.highlightRect', params));
+    return _sendCommand('DOM.highlightRect', params);
   }
 
   Future<int> moveTo(int nodeId, int targetNodeId,
@@ -88,31 +88,30 @@ class WipDom extends WipDomain {
       params['insertBeforeNodeId'] = insertBeforeNodeId;
     }
 
-    var resp = await _sendCommand(new _Event('DOM.moveTo', params));
+    var resp = await _sendCommand('DOM.moveTo', params);
     return resp.result['nodeId'];
   }
 
   Future<int> querySelector(int nodeId, String selector) async {
-    var resp = await _sendCommand(new _Event(
-        'DOM.querySelector', {'nodeId': nodeId, 'selector': selector}));
+    var resp = await _sendCommand(
+        'DOM.querySelector', {'nodeId': nodeId, 'selector': selector});
     return resp.result['nodeId'];
   }
 
   Future<List<int>> querySelectorAll(int nodeId, String selector) async {
-    var resp = await _sendCommand(new _Event(
-        'DOM.querySelectorAll', {'nodeId': nodeId, 'selector': selector}));
+    var resp = await _sendCommand(
+        'DOM.querySelectorAll', {'nodeId': nodeId, 'selector': selector});
     return resp.result['nodeIds'];
   }
 
-  Future removeAttribute(int nodeId, String name) => _sendCommand(
-      new _Event('DOM.removeAttribute', {'nodeId': nodeId, 'name': name}));
+  Future removeAttribute(int nodeId, String name) =>
+      _sendCommand('DOM.removeAttribute', {'nodeId': nodeId, 'name': name});
   Future removeNode(int nodeId) =>
-      _sendCommand(new _Event('DOM.removeNode', {'nodeId': nodeId}));
+      _sendCommand('DOM.removeNode', {'nodeId': nodeId});
   Future requestChildNodes(int nodeId) =>
-      _sendCommand(new _Event('DOM.requestChildNodes', {'nodeId': nodeId}));
+      _sendCommand('DOM.requestChildNodes', {'nodeId': nodeId});
   Future<int> requestNode(String objectId) async {
-    var resp = await _sendCommand(
-        new _Event('DOM.requestNode', {'objectId': objectId}));
+    var resp = await _sendCommand('DOM.requestNode', {'objectId': objectId});
     return resp.result['nodeId'];
   }
 
@@ -122,124 +121,138 @@ class WipDom extends WipDomain {
       params['objectGroup'] = objectGroup;
     }
 
-    var resp = await _sendCommand(new _Event('DOM.resolveNode', params));
+    var resp = await _sendCommand('DOM.resolveNode', params);
     return new WipRemoteObject(resp.result['object']);
   }
 
   Future setAttributeValue(int nodeId, String name, String value) =>
-      _sendCommand(new _Event('DOM.setAttributeValue', {
+      _sendCommand('DOM.setAttributeValue', {
     'nodeId': nodeId,
     'name': name,
     'value': value
-  }));
+  });
   Future setAttributesAsText(int nodeId, String text, {String name}) {
     var params = {'nodeId': nodeId, 'text': text};
     if (name != null) {
       params['name'] = name;
     }
-    _sendCommand(new _Event('DOM.setAttributeValue', params));
+    _sendCommand('DOM.setAttributeValue', params);
   }
 
   Future<int> setNodeName(int nodeId, String name) async {
-    var resp = await _sendCommand(
-        new _Event('DOM.setNodeName', {'nodeId': nodeId, 'name': name}));
+    var resp =
+        await _sendCommand('DOM.setNodeName', {'nodeId': nodeId, 'name': name});
     return resp.result['nodeId'];
   }
 
-  Future setNodeValue(int nodeId, String value) => _sendCommand(
-      new _Event('DOM.setNodeValue', {'nodeId': nodeId, 'value': value}));
+  Future setNodeValue(int nodeId, String value) =>
+      _sendCommand('DOM.setNodeValue', {'nodeId': nodeId, 'value': value});
 
-  Future setOuterHtml(int nodeId, String outerHtml) => _sendCommand(new _Event(
-      'DOM.setOuterHTML', {'nodeId': nodeId, 'outerHtml': outerHtml}));
+  Future setOuterHtml(int nodeId, String outerHtml) => _sendCommand(
+      'DOM.setOuterHTML', {'nodeId': nodeId, 'outerHtml': outerHtml});
 
   final _attributeModifiedController =
       new StreamController<AttributeModifiedEvent>.broadcast();
   Stream<AttributeModifiedEvent> get onAttributeModified =>
       _attributeModifiedController.stream;
-  void _attributeModified(_Event event) =>
+  void _attributeModified(WipEvent event) =>
       _attributeModifiedController.add(new AttributeModifiedEvent(event));
 
   final _attributeRemovedController =
       new StreamController<AttributeRemovedEvent>.broadcast();
   Stream<AttributeRemovedEvent> get onAttributeRemoved =>
       _attributeRemovedController.stream;
-  void _attributeRemoved(_Event event) =>
+  void _attributeRemoved(WipEvent event) =>
       _attributeRemovedController.add(new AttributeRemovedEvent(event));
 
   final _characterDataModifiedController =
       new StreamController<CharacterDataModifiedEvent>.broadcast();
   Stream<CharacterDataModifiedEvent> get onCharacterDataModified =>
       _characterDataModifiedController.stream;
-  void _characterDataModified(_Event event) => _characterDataModifiedController
-      .add(new CharacterDataModifiedEvent(event));
+  void _characterDataModified(WipEvent event) =>
+      _characterDataModifiedController
+          .add(new CharacterDataModifiedEvent(event));
 
   final _childNodeCountUpdatedController =
       new StreamController<ChildNodeCountUpdatedEvent>.broadcast();
   Stream<ChildNodeCountUpdatedEvent> get onChildNodeCountUpdated =>
       _childNodeCountUpdatedController.stream;
-  void _childNodeCountUpdated(_Event event) => _childNodeCountUpdatedController
-      .add(new ChildNodeCountUpdatedEvent(event));
+  void _childNodeCountUpdated(WipEvent event) =>
+      _childNodeCountUpdatedController
+          .add(new ChildNodeCountUpdatedEvent(event));
 
   final _childNodeInsertedController =
       new StreamController<ChildNodeInsertedEvent>.broadcast();
   Stream<ChildNodeInsertedEvent> get onChildNodeInserted =>
       _childNodeInsertedController.stream;
-  void _childNodeInserted(_Event event) =>
+  void _childNodeInserted(WipEvent event) =>
       _childNodeInsertedController.add(new ChildNodeInsertedEvent(event));
 
   final _childNodeRemovedController =
       new StreamController<ChildNodeRemovedEvent>.broadcast();
   Stream<ChildNodeRemovedEvent> get onChildNodeRemoved =>
       _childNodeRemovedController.stream;
-  void _childNodeRemoved(_Event event) =>
+  void _childNodeRemoved(WipEvent event) =>
       _childNodeRemovedController.add(new ChildNodeRemovedEvent(event));
 
   final _documentUpdatedController =
       new StreamController<DocumentUpdatedEvent>.broadcast();
   Stream<DocumentUpdatedEvent> get onDocumentUpdated =>
       _documentUpdatedController.stream;
-  void _documentUpdated(_Event event) =>
+  void _documentUpdated(WipEvent event) =>
       _documentUpdatedController.add(new DocumentUpdatedEvent(event));
 
   final _setChildNodesController =
       new StreamController<SetChildNodesEvent>.broadcast();
   Stream<SetChildNodesEvent> get onSetChildNodes =>
       _setChildNodesController.stream;
-  void _setChildNodes(_Event event) =>
+  void _setChildNodes(WipEvent event) =>
       _setChildNodesController.add(new SetChildNodesEvent(event));
+
+  @override
+  void close() {
+    _attributeModifiedController.close();
+    _attributeRemovedController.close();
+    _characterDataModifiedController.close();
+    _childNodeCountUpdatedController.close();
+    _childNodeInsertedController.close();
+    _childNodeRemovedController.close();
+    _documentUpdatedController.close();
+    _setChildNodesController.close();
+  }
 }
 
-class AttributeModifiedEvent extends WipEvent {
-  AttributeModifiedEvent(_Event event) : super(event.map);
+class AttributeModifiedEvent extends _WrappedWipEvent {
+  AttributeModifiedEvent(WipEvent event) : super(event);
 
   int get nodeId => params['nodeId'];
   String get name => params['name'];
   String get value => params['value'];
 }
 
-class AttributeRemovedEvent extends WipEvent {
-  AttributeRemovedEvent(_Event event) : super(event.map);
+class AttributeRemovedEvent extends _WrappedWipEvent {
+  AttributeRemovedEvent(WipEvent event) : super(event);
 
   int get nodeId => params['nodeId'];
   String get name => params['name'];
 }
 
-class CharacterDataModifiedEvent extends WipEvent {
-  CharacterDataModifiedEvent(_Event event) : super(event.map);
+class CharacterDataModifiedEvent extends _WrappedWipEvent {
+  CharacterDataModifiedEvent(WipEvent event) : super(event);
 
   int get nodeId => params['nodeId'];
   String get characterData => params['characterData'];
 }
 
-class ChildNodeCountUpdatedEvent extends WipEvent {
-  ChildNodeCountUpdatedEvent(_Event event) : super(event.map);
+class ChildNodeCountUpdatedEvent extends _WrappedWipEvent {
+  ChildNodeCountUpdatedEvent(WipEvent event) : super(event);
 
   int get nodeId => params['nodeId'];
   int get childNodeCount => params['childNodeCount'];
 }
 
-class ChildNodeInsertedEvent extends WipEvent {
-  ChildNodeInsertedEvent(_Event event) : super(event.map);
+class ChildNodeInsertedEvent extends _WrappedWipEvent {
+  ChildNodeInsertedEvent(WipEvent event) : super(event);
 
   int get parentNodeId => params['parentNodeId'];
   int get previousNodeId => params['previousNodeId'];
@@ -252,19 +265,19 @@ class ChildNodeInsertedEvent extends WipEvent {
   }
 }
 
-class ChildNodeRemovedEvent extends WipEvent {
-  ChildNodeRemovedEvent(_Event event) : super(event.map);
+class ChildNodeRemovedEvent extends _WrappedWipEvent {
+  ChildNodeRemovedEvent(WipEvent event) : super(event);
 
   int get parentNodeId => params['parentNodeId'];
   int get nodeId => params['nodeId'];
 }
 
-class DocumentUpdatedEvent extends WipEvent {
-  DocumentUpdatedEvent(_Event event) : super(event.map);
+class DocumentUpdatedEvent extends _WrappedWipEvent {
+  DocumentUpdatedEvent(WipEvent event) : super(event);
 }
 
-class SetChildNodesEvent extends WipEvent {
-  SetChildNodesEvent(_Event event) : super(event.map);
+class SetChildNodesEvent extends _WrappedWipEvent {
+  SetChildNodesEvent(WipEvent event) : super(event);
 
   int get nodeId => params['parentId'];
   Iterable<Node> get nodes sync* {
@@ -277,61 +290,64 @@ class SetChildNodesEvent extends WipEvent {
 /// The backend keeps track of which DOM nodes have been sent,
 /// will only send each node once, and will only send events
 /// for nodes that have been sent.
-class Node extends WipObject {
-  Node(Map<String, dynamic> map) : super(map);
+class Node {
+  final Map<String, dynamic> _map;
+
+  Node(this._map);
 
   var _attributes;
   Map<String, String> get attributes {
-    if (_attributes == null && map.containsKey('attributes')) {
+    if (_attributes == null && _map.containsKey('attributes')) {
       var attributes = {};
-      for (int i = 0; i < map['attributes'].length; i += 2) {
-        attributes[map['attributes'][i]] = attributes[map['attributes'][i + 1]];
+      for (int i = 0; i < _map['attributes'].length; i += 2) {
+        attributes[_map['attributes'][i]] =
+            attributes[_map['attributes'][i + 1]];
       }
       _attributes = new UnmodifiableMapView<String, String>(attributes);
     }
     return _attributes;
   }
 
-  int get childNodeCount => map['childNodeCount'];
+  int get childNodeCount => _map['childNodeCount'];
 
   Iterable<Node> get children sync* {
-    if (map.containsKey('children')) {
-      for (var child in map['children']) {
+    if (_map.containsKey('children')) {
+      for (var child in _map['children']) {
         yield new Node(child);
       }
     }
   }
 
   Node get contentDocument {
-    if (map.containsKey('contentDocument')) {
-      return new Node(map['contentDocument']);
+    if (_map.containsKey('contentDocument')) {
+      return new Node(_map['contentDocument']);
     }
     return null;
   }
 
-  String get documentUrl => map['documentURL'];
+  String get documentUrl => _map['documentURL'];
 
-  String get internalSubset => map['internalSubset'];
+  String get internalSubset => _map['internalSubset'];
 
-  String get localName => map['localName'];
+  String get localName => _map['localName'];
 
-  String get name => map['name'];
+  String get name => _map['name'];
 
-  int get nodeId => map['nodeId'];
+  int get nodeId => _map['nodeId'];
 
-  String get nodeName => map['nodeName'];
+  String get nodeName => _map['nodeName'];
 
-  int get nodeType => map['nodeType'];
+  int get nodeType => _map['nodeType'];
 
-  String get nodeValue => map['nodeValue'];
+  String get nodeValue => _map['nodeValue'];
 
-  String get publicId => map['publicId'];
+  String get publicId => _map['publicId'];
 
-  String get systemId => map['systemId'];
+  String get systemId => _map['systemId'];
 
-  String get value => map['value'];
+  String get value => _map['value'];
 
-  String get xmlVersion => map['xmlVersion'];
+  String get xmlVersion => _map['xmlVersion'];
 }
 
 class Rgba {
