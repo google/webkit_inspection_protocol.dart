@@ -32,8 +32,8 @@ class ChromeConnection {
 
   // TODO(DrMarcII): consider changing this to return Stream<ChromeTab>.
   Future<List<ChromeTab>> getTabs() async {
-    HttpClientResponse response = await getUrl('/json');
-    String respBody = await UTF8.decodeStream(response);
+    var response = await getUrl('/json');
+    var respBody = await UTF8.decodeStream(response);
     List<Map<String, String>> data = JSON.decode(respBody);
     return data.map((m) => new ChromeTab(m));
   }
@@ -48,7 +48,7 @@ class ChromeConnection {
 
     while (true) {
       try {
-        for (ChromeTab tab in await getTabs()) {
+        for (var tab in await getTabs()) {
           if (accept(tab)) {
             return tab;
           }
@@ -106,7 +106,7 @@ class ChromeTab {
  * A Webkit Inspection Protocol (WIP) connection.
  */
 class WipConnection {
-  static final Logger _log = new Logger('WipConnection');
+  static final _log = new Logger('WipConnection');
 
   /**
    * The WebSocket URL.
@@ -176,9 +176,9 @@ class WipConnection {
   }
 
   void _handleNotification(Map<String, dynamic> json) {
-    WipEvent event = new WipEvent(json);
-    String domainId = event.method;
-    int index = domainId.indexOf('.');
+    var event = new WipEvent(json);
+    var domainId = event.method;
+    var index = domainId.indexOf('.');
     if (index != -1) {
       domainId = domainId.substring(0, index);
     }
@@ -191,7 +191,7 @@ class WipConnection {
   }
 
   void _handleResponse(Map<String, dynamic> event) {
-    Completer completer = _completers.remove(event['id']);
+    var completer = _completers.remove(event['id']);
 
     if (event.containsKey('error')) {
       completer.completeError(new WipError(event));
@@ -255,7 +255,7 @@ abstract class WipDomain {
   }
 
   void _handleNotification(WipEvent event) {
-    Function f = _callbacks[event.method];
+    var f = _callbacks[event.method];
     if (f != null) f(event);
   }
 
