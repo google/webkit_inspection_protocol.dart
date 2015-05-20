@@ -46,7 +46,7 @@ class ChromeConnection {
     var start = new DateTime.now();
     var end = start;
     if (retryFor != null) {
-      end = end.add(retryFor);
+      end = start.add(retryFor);
     }
 
     while (true) {
@@ -56,11 +56,11 @@ class ChromeConnection {
             return tab;
           }
         }
-        if (end.isAfter(new DateTime.now())) {
+        if (end.isBefore(new DateTime.now())) {
           return null;
         }
       } catch (e) {
-        if (end.isAfter(new DateTime.now())) {
+        if (end.isBefore(new DateTime.now())) {
           rethrow;
         }
       }
