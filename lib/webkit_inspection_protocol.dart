@@ -15,9 +15,8 @@ import 'package:logging/logging.dart' show Logger;
 
 part 'src/console.dart';
 part 'src/debugger.dart';
-part 'src/page.dart';
-
 part 'src/dom.dart';
+part 'src/page.dart';
 
 /**
  * A class to connect to a Chrome instance and reflect on its available tabs.
