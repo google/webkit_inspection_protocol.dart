@@ -59,7 +59,7 @@ class WipDebugger extends WipDomain {
   }
 
   void _scriptParsed(WipEvent event) {
-    WipScript script = new WipScript(event.params);
+    var script = new WipScript(event.params);
     _scripts[script.scriptId] = script;
     print(script);
   }
@@ -77,9 +77,8 @@ class DebuggerPausedEvent extends _WrappedWipEvent {
   String get reason => params['reason'];
   Object get data => params['data'];
 
-  Iterable<WipCallFrame> getCallFrames() {
-    return params['callFrames'].map((frame) => new WipCallFrame(frame));
-  }
+  Iterable<WipCallFrame> getCallFrames() =>
+      params['callFrames'].map((frame) => new WipCallFrame(frame));
 
   String toString() => 'paused: ${reason}';
 }
@@ -94,9 +93,8 @@ class WipCallFrame {
   WipLocation get location => new WipLocation(_map['location']);
   WipRemoteObject get thisObject => new WipRemoteObject(_map['this']);
 
-  Iterable<WipScope> getScopeChain() {
-    return _map['scopeChain'].map((scope) => new WipScope(scope));
-  }
+  Iterable<WipScope> getScopeChain() =>
+      _map['scopeChain'].map((scope) => new WipScope(scope));
 
   String toString() => '[${functionName}]';
 }
