@@ -64,7 +64,6 @@ class WipDebugger extends WipDomain {
   void _scriptParsed(WipEvent event) {
     var script = new WipScript(event.params);
     _scripts[script.scriptId] = script;
-    print(script);
   }
 
   @override
