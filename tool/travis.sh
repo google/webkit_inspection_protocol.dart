@@ -10,3 +10,7 @@ set -e
 # Verify that the libraries are error free.
 pub global activate tuneup
 pub global run tuneup check
+
+/usr/bin/chromium-browser --no-sandbox --remote-debugging-port=9222 &
+
+pub run test

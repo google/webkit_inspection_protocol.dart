@@ -1,3 +1,8 @@
 language: dart
-script: ./tool/travis.sh
 sudo: false
+
+before_install:
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
+
+script: ./tool/travis.sh

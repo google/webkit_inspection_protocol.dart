@@ -60,7 +60,7 @@ class ConsoleMessageEvent extends _WrappedWipEvent {
   String get text => _message['text'];
   String get level => _message['level'];
   String get url => _message['url'];
-  int get repeatCount => _message['repeatCount'];
+  int get repeatCount => _message.putIfAbsent('repeatCount', () => 1);
 
   Iterable<WipConsoleCallFrame> getStackTrace() {
     if (_message.containsKey('stackTrace')) {

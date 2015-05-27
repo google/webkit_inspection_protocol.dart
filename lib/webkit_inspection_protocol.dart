@@ -101,6 +101,9 @@ class ChromeTab {
   bool get isChromeExtension => url.startsWith('chrome-extension://');
   bool get isBackgroundPage => type == 'background_page';
 
+  Future<WipConnection> connect() =>
+      WipConnection.connect(webSocketDebuggerUrl);
+
   String toString() => url;
 }
 
