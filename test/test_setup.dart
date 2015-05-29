@@ -40,6 +40,7 @@ Future<WipConnection> navigateToPage(String page) async {
   }
   await (await wipConnection).page
       .navigate((await _testServerUri).resolve(page).toString());
+  await new Future.delayed(new Duration(seconds: 1));
   return wipConnection;
 }
 
@@ -47,4 +48,11 @@ Future _startHttpServer(SendPort sendPort) async {
   var handler = createStaticHandler('test/data');
   var server = await io.serve(handler, InternetAddress.ANY_IP_V4, 0);
   sendPort.send(server.port);
+}
+
+Future closeConnection() async {
+  if (_wipConnection != null) {
+    await (await navigateToPage('chrome://about')).close();
+    _wipConnection = null;
+  }
 }

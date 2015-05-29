@@ -13,4 +13,4 @@ pub global run tuneup check
 
 /usr/bin/chromium-browser --no-sandbox --remote-debugging-port=9222 &
 
-pub run test
+pub run test -j 1
