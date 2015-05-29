@@ -6,7 +6,14 @@
  */
 library wip;
 
-import 'dart:async' show Completer, Future, Stream, StreamController;
+import 'dart:async'
+    show
+        Completer,
+        EventSink,
+        Future,
+        Stream,
+        StreamController,
+        StreamTransformer;
 import 'dart:collection' show UnmodifiableMapView;
 import 'dart:convert' show JSON, UTF8;
 import 'dart:io' show HttpClient, HttpClientResponse, WebSocket;
@@ -131,8 +138,6 @@ class WipConnection {
   var _page;
   WipPage get page => _page;
 
-  final _domains = <String, WipDomain>{};
-
   final _completers = <int, Completer<WipResponse>>{};
 
   final _closeController = new StreamController<WipConnection>.broadcast();
@@ -168,12 +173,9 @@ class WipConnection {
 
   String toString() => url;
 
-  void _registerDomain(String domainId, WipDomain domain) {
-    _domains[domainId] = domain;
-  }
-
   Future<WipResponse> sendCommand(String method,
       [Map<String, dynamic> params]) {
+    _log.finest('Sending command: $method($params)');
     var completer = new Completer<WipResponse>();
     var json = {'id': _nextId++, 'method': method};
     if (params != null) {
@@ -185,26 +187,18 @@ class WipConnection {
   }
 
   void _handleNotification(Map<String, dynamic> json) {
-    var event = new WipEvent(json);
-    var domainId = event.method;
-    var index = domainId.indexOf('.');
-    if (index != -1) {
-      domainId = domainId.substring(0, index);
-    }
-    if (_domains.containsKey(domainId)) {
-      _domains[domainId]._handleNotification(event);
-    } else {
-      _log.warning('unhandled event notification: ${event.method}');
-    }
-    _notificationController.add(event);
+    _log.finest('Received notification: $json');
+    _notificationController.add(new WipEvent(json));
   }
 
   void _handleResponse(Map<String, dynamic> event) {
     var completer = _completers.remove(event['id']);
 
     if (event.containsKey('error')) {
+      _log.info('Received error: $event');
       completer.completeError(new WipError(event));
     } else {
+      _log.finest('Received response: $event');
       completer.complete(new WipResponse(event));
     }
   }
@@ -213,7 +207,6 @@ class WipConnection {
     _closeController.add(this);
     _closeController.close();
     _notificationController.close();
-    _domains.values.forEach((d) => d.close());
   }
 }
 
@@ -250,28 +243,36 @@ class WipResponse {
   String toString() => 'WipResponse $id: $result';
 }
 
-typedef WipEventCallback(WipEvent event);
+typedef WipEvent WipEventTransformer(WipEvent event);
 
 abstract class WipDomain {
-  Map<String, WipEventCallback> _callbacks = {};
+  static final _log = new Logger('WipDomain');
+
+  Map<String, Stream> _eventStreams = {};
 
   final WipConnection connection;
+  var _onClosed;
+  Stream<WipDomain> get onClosed => _onClosed;
 
-  WipDomain(this.connection);
-
-  void _register(String method, WipEventCallback callback) {
-    _callbacks[method] = callback;
+  WipDomain(WipConnection connection) : this.connection = connection {
+    this._onClosed = new StreamTransformer.fromHandlers(
+        handleData: (event, EventSink sink) {
+      sink.add(this);
+    }).bind(connection.onClose);
   }
 
-  void _handleNotification(WipEvent event) {
-    var f = _callbacks[event.method];
-    if (f != null) f(event);
-  }
+  Stream<WipEvent> _eventStream(
+      String method, WipEventTransformer transformer) => _eventStreams
+      .putIfAbsent(method, () => new StreamTransformer.fromHandlers(
+          handleData: (WipEvent event, EventSink<WipEvent> sink) {
+    if (event.method == method) {
+      _log.finest('Transforming $event to $method');
+      sink.add(transformer(event));
+    }
+  }).bind(connection.onNotification));
 
   Future<WipResponse> _sendCommand(String method,
       [Map<String, dynamic> params]) => connection.sendCommand(method, params);
-
-  void close();
 }
 
 class _WrappedWipEvent implements WipEvent {

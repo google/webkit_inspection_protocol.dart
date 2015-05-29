@@ -4,13 +4,7 @@
 part of wip;
 
 class WipPage extends WipDomain {
-  WipPage(WipConnection connection) : super(connection) {
-    connection._registerDomain('Page', this);
-
-    // TODO:
-    // Page.loadEventFired
-    // Page.domContentEventFired
-  }
+  WipPage(WipConnection connection) : super(connection);
 
   Future enable() => _sendCommand('Page.enable');
   Future disable() => _sendCommand('Page.disable');
@@ -30,7 +24,4 @@ class WipPage extends WipDomain {
 
     return _sendCommand('Page.navigate', params);
   }
-
-  @override
-  void close() {}
 }

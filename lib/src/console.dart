@@ -4,49 +4,18 @@
 part of wip;
 
 class WipConsole extends WipDomain {
-  final _messageController =
-      new StreamController<ConsoleMessageEvent>.broadcast();
-  final _clearedController = new StreamController.broadcast();
-
-  ConsoleMessageEvent _lastMessage;
-
-  WipConsole(WipConnection connection) : super(connection) {
-    connection._registerDomain('Console', this);
-
-    _register('Console.messageAdded', _messageAdded);
-    _register('Console.messageRepeatCountUpdated', _messageRepeatCountUpdated);
-    _register('Console.messagesCleared', _messagesCleared);
-  }
+  WipConsole(WipConnection connection) : super(connection);
 
   Future enable() => _sendCommand('Console.enable');
   Future disable() => _sendCommand('Console.disable');
   Future clearMessages() => _sendCommand('Console.clearMessages');
 
-  Stream<ConsoleMessageEvent> get onMessage => _messageController.stream;
-  Stream get onCleared => _clearedController.stream;
-
-  void _messageAdded(WipEvent event) {
-    _lastMessage = new ConsoleMessageEvent(event);
-    _messageController.add(_lastMessage);
-  }
-
-  void _messageRepeatCountUpdated(WipEvent event) {
-    if (_lastMessage != null) {
-      _lastMessage.params['repeatCount'] = event.params['count'];
-      _messageController.add(_lastMessage);
-    }
-  }
-
-  void _messagesCleared(WipEvent event) {
-    _lastMessage = null;
-    _clearedController.add(null);
-  }
-
-  @override
-  void close() {
-    _messageController.close();
-    _clearedController.close();
-  }
+  Stream<ConsoleMessageEvent> get onMessage => _eventStream(
+      'Console.messageAdded',
+      (WipEvent event) => new ConsoleMessageEvent(event));
+  Stream<ConsoleClearedEvent> get onCleared => _eventStream(
+      'Console.messagesCleared',
+      (WipEvent event) => new ConsoleClearedEvent(event));
 }
 
 /**
@@ -72,6 +41,10 @@ class ConsoleMessageEvent extends _WrappedWipEvent {
   }
 
   String toString() => text;
+}
+
+class ConsoleClearedEvent extends _WrappedWipEvent {
+  ConsoleClearedEvent(WipEvent event) : super(event);
 }
 
 class WipConsoleCallFrame {
