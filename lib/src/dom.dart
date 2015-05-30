@@ -6,18 +6,7 @@ part of wip;
 /// Implementation of the
 /// https://developer.chrome.com/devtools/docs/protocol/1.1/dom
 class WipDom extends WipDomain {
-  WipDom(WipConnection connection) : super(connection) {
-    connection._registerDomain('DOM', this);
-
-    _register('DOM.attributeModified', _attributeModified);
-    _register('DOM.attributeRemoved', _attributeRemoved);
-    _register('DOM.characterDataModified', _characterDataModified);
-    _register('DOM.childNodeCountUpdated', _childNodeCountUpdated);
-    _register('DOM.childNodeInserted', _childNodeInserted);
-    _register('DOM.childNodeRemoved', _childNodeRemoved);
-    _register('DOM.documentUpdated', _documentUpdated);
-    _register('DOM.setChildNodes', _setChildNodes);
-  }
+  WipDom(WipConnection connection) : super(connection);
 
   Future<Map<String, String>> getAttributes(int nodeId) async {
     WipResponse resp =
@@ -106,10 +95,13 @@ class WipDom extends WipDomain {
 
   Future removeAttribute(int nodeId, String name) =>
       _sendCommand('DOM.removeAttribute', {'nodeId': nodeId, 'name': name});
+
   Future removeNode(int nodeId) =>
       _sendCommand('DOM.removeNode', {'nodeId': nodeId});
+
   Future requestChildNodes(int nodeId) =>
       _sendCommand('DOM.requestChildNodes', {'nodeId': nodeId});
+
   Future<int> requestNode(String objectId) async {
     var resp = await _sendCommand('DOM.requestNode', {'objectId': objectId});
     return resp.result['nodeId'];
@@ -131,6 +123,7 @@ class WipDom extends WipDomain {
     'name': name,
     'value': value
   });
+
   Future setAttributesAsText(int nodeId, String text, {String name}) {
     var params = {'nodeId': nodeId, 'text': text};
     if (name != null) {
@@ -151,75 +144,29 @@ class WipDom extends WipDomain {
   Future setOuterHtml(int nodeId, String outerHtml) => _sendCommand(
       'DOM.setOuterHTML', {'nodeId': nodeId, 'outerHtml': outerHtml});
 
-  final _attributeModifiedController =
-      new StreamController<AttributeModifiedEvent>.broadcast();
-  Stream<AttributeModifiedEvent> get onAttributeModified =>
-      _attributeModifiedController.stream;
-  void _attributeModified(WipEvent event) =>
-      _attributeModifiedController.add(new AttributeModifiedEvent(event));
-
-  final _attributeRemovedController =
-      new StreamController<AttributeRemovedEvent>.broadcast();
-  Stream<AttributeRemovedEvent> get onAttributeRemoved =>
-      _attributeRemovedController.stream;
-  void _attributeRemoved(WipEvent event) =>
-      _attributeRemovedController.add(new AttributeRemovedEvent(event));
-
-  final _characterDataModifiedController =
-      new StreamController<CharacterDataModifiedEvent>.broadcast();
+  Stream<AttributeModifiedEvent> get onAttributeModified => _eventStream(
+      'DOM.attributeModified',
+      (WipEvent event) => new AttributeModifiedEvent(event));
+  Stream<AttributeRemovedEvent> get onAttributeRemoved => _eventStream(
+      'DOM.attributeRemoved',
+      (WipEvent event) => new AttributeRemovedEvent(event));
   Stream<CharacterDataModifiedEvent> get onCharacterDataModified =>
-      _characterDataModifiedController.stream;
-  void _characterDataModified(WipEvent event) =>
-      _characterDataModifiedController
-          .add(new CharacterDataModifiedEvent(event));
-
-  final _childNodeCountUpdatedController =
-      new StreamController<ChildNodeCountUpdatedEvent>.broadcast();
+      _eventStream('DOM.characterDataModified',
+          (WipEvent event) => new CharacterDataModifiedEvent(event));
   Stream<ChildNodeCountUpdatedEvent> get onChildNodeCountUpdated =>
-      _childNodeCountUpdatedController.stream;
-  void _childNodeCountUpdated(WipEvent event) =>
-      _childNodeCountUpdatedController
-          .add(new ChildNodeCountUpdatedEvent(event));
-
-  final _childNodeInsertedController =
-      new StreamController<ChildNodeInsertedEvent>.broadcast();
-  Stream<ChildNodeInsertedEvent> get onChildNodeInserted =>
-      _childNodeInsertedController.stream;
-  void _childNodeInserted(WipEvent event) =>
-      _childNodeInsertedController.add(new ChildNodeInsertedEvent(event));
-
-  final _childNodeRemovedController =
-      new StreamController<ChildNodeRemovedEvent>.broadcast();
-  Stream<ChildNodeRemovedEvent> get onChildNodeRemoved =>
-      _childNodeRemovedController.stream;
-  void _childNodeRemoved(WipEvent event) =>
-      _childNodeRemovedController.add(new ChildNodeRemovedEvent(event));
-
-  final _documentUpdatedController =
-      new StreamController<DocumentUpdatedEvent>.broadcast();
-  Stream<DocumentUpdatedEvent> get onDocumentUpdated =>
-      _documentUpdatedController.stream;
-  void _documentUpdated(WipEvent event) =>
-      _documentUpdatedController.add(new DocumentUpdatedEvent(event));
-
-  final _setChildNodesController =
-      new StreamController<SetChildNodesEvent>.broadcast();
-  Stream<SetChildNodesEvent> get onSetChildNodes =>
-      _setChildNodesController.stream;
-  void _setChildNodes(WipEvent event) =>
-      _setChildNodesController.add(new SetChildNodesEvent(event));
-
-  @override
-  void close() {
-    _attributeModifiedController.close();
-    _attributeRemovedController.close();
-    _characterDataModifiedController.close();
-    _childNodeCountUpdatedController.close();
-    _childNodeInsertedController.close();
-    _childNodeRemovedController.close();
-    _documentUpdatedController.close();
-    _setChildNodesController.close();
-  }
+      _eventStream('DOM.childNodeCountUpdated',
+          (WipEvent event) => new ChildNodeCountUpdatedEvent(event));
+  Stream<ChildNodeInsertedEvent> get onChildNodeInserted => _eventStream(
+      'DOM.childNodeInserted',
+      (WipEvent event) => new ChildNodeInsertedEvent(event));
+  Stream<ChildNodeRemovedEvent> get onChildNodeRemoved => _eventStream(
+      'DOM.childNodeRemoved',
+      (WipEvent event) => new ChildNodeRemovedEvent(event));
+  Stream<DocumentUpdatedEvent> get onDocumentUpdated => _eventStream(
+      'DOM.documentUpdated',
+      (WipEvent event) => new DocumentUpdatedEvent(event));
+  Stream<SetChildNodesEvent> get onSetChildNodes => _eventStream(
+      'DOM.setChildNodes', (WipEvent event) => new SetChildNodesEvent(event));
 }
 
 class AttributeModifiedEvent extends _WrappedWipEvent {

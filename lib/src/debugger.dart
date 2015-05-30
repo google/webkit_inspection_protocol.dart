@@ -4,32 +4,23 @@
 part of wip;
 
 class WipDebugger extends WipDomain {
-  final _pausedController =
-      new StreamController<DebuggerPausedEvent>.broadcast();
-  final _resumedController = new StreamController.broadcast();
-
-  Map<String, WipScript> _scripts = {};
+  final _scripts = <String, WipScript>{};
 
   WipDebugger(WipConnection connection) : super(connection) {
-    connection._registerDomain('Debugger', this);
-
-    // TODO:
-    //_register('Debugger.breakpointResolved', _breakpointResolved);
-    _register('Debugger.globalObjectCleared', _globalObjectCleared);
-    _register('Debugger.paused', _paused);
-    _register('Debugger.resumed', _resumed);
-    //_register('Debugger.scriptFailedToParse', _scriptFailedToParse);
-    _register('Debugger.scriptParsed', _scriptParsed);
+    onScriptParsed.listen((event) {
+      _scripts[event.script.scriptId] = event.script;
+    });
+    onGlobalObjectCleared.listen((_) {
+      _scripts.clear();
+    });
   }
 
   Future enable() => _sendCommand('Debugger.enable');
   Future disable() => _sendCommand('Debugger.disable');
 
-  Future<String> getScriptSource(String scriptId) async {
-    var resp =
-        await _sendCommand('Debugger.getScriptSource', {'scriptId': scriptId});
-    return resp.result['scriptSource'];
-  }
+  Future<String> getScriptSource(String scriptId) async => (await _sendCommand(
+          'Debugger.getScriptSource', {'scriptId': scriptId})).result[
+      'scriptSource'];
 
   Future pause() => _sendCommand('Debugger.pause');
   Future resume() => _sendCommand('Debugger.resume');
@@ -38,39 +29,52 @@ class WipDebugger extends WipDomain {
   Future stepOut() => _sendCommand('Debugger.stepOut');
   Future stepOver() => _sendCommand('Debugger.stepOver');
 
-  /**
-   * State should be one of "all", "none", or "uncaught".
-   */
-  Future setPauseOnExceptions(String state) =>
-      _sendCommand('Debugger.setPauseOnExceptions', {'state': state});
+  Future setPauseOnExceptions(PauseState state) => _sendCommand(
+      'Debugger.setPauseOnExceptions', {'state': _pauseStateToString(state)});
 
-  Stream get onPaused => _pausedController.stream;
-  Stream get onResumed => _resumedController.stream;
+  Stream<DebuggerPausedEvent> get onPaused => _eventStream(
+      'Debugger.paused', (WipEvent event) => new DebuggerPausedEvent(event));
+  Stream<GlobalObjectClearedEvent> get onGlobalObjectCleared => _eventStream(
+      'Debugger.globalObjectCleared',
+      (WipEvent event) => new GlobalObjectClearedEvent(event));
+  Stream<DebuggerResumedEvent> get onResumed => _eventStream(
+      'Debugger.resumed', (WipEvent event) => new DebuggerResumedEvent(event));
+  Stream<ScriptParsedEvent> get onScriptParsed => _eventStream(
+      'Debugger.scriptParsed',
+      (WipEvent event) => new ScriptParsedEvent(event));
 
-  WipScript getScript(String scriptId) => _scripts[scriptId];
+  Map<String, WipScript> get scripts => new UnmodifiableMapView(_scripts);
+}
 
-  void _globalObjectCleared(WipEvent event) {
-    _scripts.clear();
+String _pauseStateToString(PauseState state) {
+  switch (state) {
+    case PauseState.all:
+      return 'all';
+    case PauseState.none:
+      return 'none';
+    case PauseState.uncaught:
+      return 'uncaught';
+    default:
+      throw new ArgumentError('unknown state: $state');
   }
+}
 
-  void _paused(WipEvent event) {
-    _pausedController.add(new DebuggerPausedEvent(event));
-  }
+enum PauseState { all, none, uncaught }
 
-  void _resumed(WipEvent event) {
-    _resumedController.add(null);
-  }
+class ScriptParsedEvent extends _WrappedWipEvent {
+  final WipScript script;
 
-  void _scriptParsed(WipEvent event) {
-    var script = new WipScript(event.params);
-    _scripts[script.scriptId] = script;
-  }
+  ScriptParsedEvent(WipEvent event)
+      : this.script = new WipScript(event.params),
+        super(event);
+}
 
-  @override
-  void close() {
-    _pausedController.close();
-    _resumedController.close();
-  }
+class GlobalObjectClearedEvent extends _WrappedWipEvent {
+  GlobalObjectClearedEvent(WipEvent event) : super(event);
+}
+
+class DebuggerResumedEvent extends _WrappedWipEvent {
+  DebuggerResumedEvent(WipEvent event) : super(event);
 }
 
 class DebuggerPausedEvent extends _WrappedWipEvent {
