@@ -3,21 +3,25 @@
 
 library wip.multiplex;
 
-import 'dart:async';
+import 'dart:async' show Future;
 import 'dart:convert' show JSON;
 import 'dart:io' show HttpClientResponse, HttpServer, InternetAddress, stderr;
 
-import 'package:args/args.dart';
-import 'package:logging/logging.dart';
+import 'package:args/args.dart' show ArgParser;
+import 'package:logging/logging.dart'
+    show hierarchicalLoggingEnabled, Level, Logger, LogRecord;
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as io;
 import 'package:shelf_web_socket/shelf_web_socket.dart' as ws;
-import 'package:webkit_inspection_protocol/forwarder.dart';
-import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart';
+import 'package:webkit_inspection_protocol/dom_model.dart' show WipDomModel;
+import 'package:webkit_inspection_protocol/forwarder.dart' show WipForwarder;
+import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart'
+    show ChromeConnection, ChromeTab, WipConnection;
 
 main(List<String> argv) async {
   var args = (new ArgParser()
     ..addFlag('verbose', abbr: 'v', defaultsTo: false, negatable: false)
+    ..addFlag('model_dom', defaultsTo: true, negatable: true)
     ..addOption('chrome_host', defaultsTo: 'localhost')
     ..addOption('chrome_port', defaultsTo: '9222')
     ..addOption('listen_port', defaultsTo: '9223')).parse(argv);
@@ -36,7 +40,7 @@ main(List<String> argv) async {
 
   var cr =
       new ChromeConnection(args['chrome_host'], int.parse(args['chrome_port']));
-  new Server(int.parse(args['listen_port']), cr);
+  new Server(int.parse(args['listen_port']), cr, modelDom: args['model_dom']);
 }
 
 class Server {
@@ -45,10 +49,12 @@ class Server {
   Future<HttpServer> _server;
   final ChromeConnection chrome;
   final int port;
+  final bool modelDom;
 
   final _connections = <String, Future<WipConnection>>{};
+  final _modelDoms = <String, WipDomModel>{};
 
-  Server(this.port, this.chrome) {
+  Server(this.port, this.chrome, {this.modelDom}) {
     _server = io.serve(_handler, InternetAddress.ANY_IP_V4, port);
   }
 
@@ -130,6 +136,7 @@ class Server {
   Future<shelf.Response> _forward(shelf.Request request) async {
     _log.info('forwarding: ${request.url}');
     var dtResp = await chrome.getUrl(request.url.path);
+
     if (dtResp.statusCode == 200) {
       return new shelf.Response.ok(dtResp,
           headers: {'Content-Type': dtResp.headers.contentType.toString()});
@@ -151,9 +158,16 @@ class Server {
         var tab = await chrome.getTab((tab) => tab.id == path[2]);
         return WipConnection.connect(tab.webSocketDebuggerUrl);
       });
-      var forwarder = new ChromeForwarder(debugger, ws);
+      var dom;
+      if (modelDom) {
+        dom = await _modelDoms.putIfAbsent(path[2], () {
+          return new WipDomModel(debugger.dom);
+        });
+      }
+      var forwarder = new WipForwarder(debugger, ws, domModel: dom);
       debugger.onClose.listen((_) {
         _connections.remove(path[2]);
+        _modelDoms.remove(path[2]);
         forwarder.stop();
       });
     })(request);

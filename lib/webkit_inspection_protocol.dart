@@ -14,11 +14,13 @@ import 'dart:async'
         Stream,
         StreamController,
         StreamTransformer;
-import 'dart:collection' show UnmodifiableMapView;
+import 'dart:collection' show UnmodifiableListView, UnmodifiableMapView;
 import 'dart:convert' show JSON, UTF8;
 import 'dart:io' show HttpClient, HttpClientResponse, WebSocket;
 
 import 'package:logging/logging.dart' show Logger;
+
+import 'package:logging/logging.dart';
 
 part 'src/console.dart';
 part 'src/debugger.dart';
