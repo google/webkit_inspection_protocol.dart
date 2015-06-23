@@ -324,9 +324,7 @@ List<String> flattenAttributesMap(Map<String, String> attributes) {
   var result = <String>[];
   attributes.forEach((k, v) {
     if (k != null) {
-      result
-        ..add(k)
-        ..add(v);
+      result..add(k)..add(v);
     }
   });
   return result;
