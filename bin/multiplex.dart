@@ -3,14 +3,14 @@
 
 library wip.multiplex;
 
-import 'dart:io' show HttpClientResponse, HttpServer, InternetAddress, stderr;
+import 'dart:io' show stderr;
 
 import 'package:args/args.dart' show ArgParser;
 import 'package:logging/logging.dart'
     show hierarchicalLoggingEnabled, Level, Logger, LogRecord;
 import 'package:webkit_inspection_protocol/multiplex.dart' show Server;
 import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart'
-    show ChromeConnection, ChromeTab, WipConnection;
+    show ChromeConnection;
 
 main(List<String> argv) async {
   var args = (new ArgParser()
