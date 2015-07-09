@@ -168,8 +168,10 @@ class Server {
       return json;
     } else if (obj is Uri) {
       return obj.toString();
+    } else if (obj is Iterable) {
+      return obj.toList();
     } else {
-      throw new ArgumentError('Cannot encode $obj');
+      return obj;
     }
   }
 }
