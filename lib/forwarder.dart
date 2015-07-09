@@ -28,6 +28,10 @@ class WipForwarder {
   final StreamSink _out;
   final WipConnection _debugger;
   final WipDom domModel;
+  /// If false, no Debugger.paused events will be forwarded back to the
+  /// client. This gets automatically set to true if a breakpoint is set
+  /// by the client.
+  bool forwardPausedEvents = false;
 
   final _subscriptions = <StreamSubscription>[];
 
@@ -56,6 +60,10 @@ class WipForwarder {
       String method = json['method'];
       Map<String, dynamic> params = json['params'];
       bool processed = false;
+
+      if (method.contains('reakpoint')) {
+        forwardPausedEvents = true;
+      }
 
       if (domModel != null) {
         switch (method) {
@@ -97,7 +105,12 @@ class WipForwarder {
   }
 
   void _onDebuggerDataHandler(WipEvent event) {
+    if (event.method == 'Debugger.paused' && !forwardPausedEvents) {
+      _log.info('not forwarding event: $event');
+      return;
+    }
     _log.info('forwarding event: $event');
+
     var json = {'method': event.method};
     if (event.params != null) {
       json['params'] = event.params;
