@@ -12,3 +12,4 @@ pubspec.lock
 docs/
 build/
 .settings/
+.packages
