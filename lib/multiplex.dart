@@ -124,7 +124,7 @@ class Server {
     }
     _log.info('connecting to websocket: ${request.url}');
 
-    return ws.webSocketHandler((WebSocketChannel ws) async {
+    return ws.webSocketHandler((ws) async {
       var debugger = await _connections.putIfAbsent(path[2], () async {
         var tab = await chrome.getTab((tab) => tab.id == path[2]);
         return WipConnection.connect(tab.webSocketDebuggerUrl);
