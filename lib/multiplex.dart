@@ -37,7 +37,8 @@ class Server {
           .add(_webSocket)
           .add(_mainPage)
           .add(_json)
-          .add(_forward).handler);
+          .add(_forward)
+          .handler);
 
   void _shelfLogger(String msg, bool isError) {
     if (isError) {
@@ -123,7 +124,7 @@ class Server {
     }
     _log.info('connecting to websocket: ${request.url}');
 
-    return ws.webSocketHandler((ws) async {
+    return ws.webSocketHandler((WebSocketChannel ws) async {
       var debugger = await _connections.putIfAbsent(path[2], () async {
         var tab = await chrome.getTab((tab) => tab.id == path[2]);
         return WipConnection.connect(tab.webSocketDebuggerUrl);
@@ -134,7 +135,8 @@ class Server {
           return new WipDomModel(debugger.dom);
         });
       }
-      var forwarder = new WipForwarder(debugger, ws, domModel: dom);
+      var forwarder =
+          new WipForwarder(debugger, ws.stream, sink: ws.sink, domModel: dom);
       debugger.onClose.listen((_) {
         _connections.remove(path[2]);
         _modelDoms.remove(path[2]);
