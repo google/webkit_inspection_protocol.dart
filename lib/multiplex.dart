@@ -74,7 +74,7 @@ class Server {
 
     for (var tab in await chrome.getTabs()) {
       html
-        ..write('<tr><td><a href="/devtools/devtools.html?ws=localhost:')
+        ..write('<tr><td><a href="/devtools/inspector.html?ws=localhost:')
         ..write(port)
         ..write('/devtools/page/')
         ..write(tab.id)
@@ -156,8 +156,8 @@ class Server {
     if (obj is ChromeTab) {
       var json = <String, dynamic>{
         'description': obj.description,
-        'devtoolsFrontendUrl':
-            '/devtools/devtools.html?ws=localhost:$port/devtools/page/${obj.id}',
+        'devtoolsFrontendUrl': '/devtools/inspector.html'
+            '?ws=localhost:$port/devtools/page/${obj.id}',
         'id': obj.id,
         'title': obj.title,
         'type': obj.type,
