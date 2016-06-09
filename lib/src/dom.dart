@@ -17,13 +17,18 @@ class WipDom extends WipDomain {
   Future<Node> getDocument() async =>
       new Node((await _sendCommand('DOM.getDocument')).result['root']);
 
-  Future<String> getOuterHtml(int nodeId) async => (await _sendCommand(
-      'DOM.getOuterHTML', {'nodeId': nodeId})).result['root'];
+  Future<String> getOuterHtml(int nodeId) async =>
+      (await _sendCommand('DOM.getOuterHTML', {'nodeId': nodeId})).result[
+          'root'];
 
   Future hideHighlight() => _sendCommand('DOM.hideHighlight');
 
-  Future highlightNode(int nodeId, {Rgba borderColor, Rgba contentColor,
-      Rgba marginColor, Rgba paddingColor, bool showInfo}) {
+  Future highlightNode(int nodeId,
+      {Rgba borderColor,
+      Rgba contentColor,
+      Rgba marginColor,
+      Rgba paddingColor,
+      bool showInfo}) {
     var params = {'nodeId': nodeId, 'highlightConfig': {}};
 
     if (borderColor != null) {
@@ -113,11 +118,8 @@ class WipDom extends WipDomain {
   }
 
   Future setAttributeValue(int nodeId, String name, String value) =>
-      _sendCommand('DOM.setAttributeValue', {
-    'nodeId': nodeId,
-    'name': name,
-    'value': value
-  });
+      _sendCommand('DOM.setAttributeValue',
+          {'nodeId': nodeId, 'name': name, 'value': value});
 
   Future setAttributesAsText(int nodeId, String text, {String name}) {
     var params = {'nodeId': nodeId, 'text': text};

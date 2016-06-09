@@ -9,6 +9,7 @@ import 'package:shelf_static/shelf_static.dart';
 import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart';
 
 var _wipConnection;
+
 /// Returns a (cached) debugger connection to the first regular tab of
 /// the browser with remote debugger running at 'localhost:9222',
 Future<WipConnection> get wipConnection {
@@ -26,6 +27,7 @@ Future<WipConnection> get wipConnection {
 }
 
 var _testServerUri;
+
 /// Ensures that an HTTP server serving files from 'test/data' has been
 /// started and navigates to to [page] using [wipConnection].
 /// Return [wipConnection].
@@ -38,7 +40,8 @@ Future<WipConnection> navigateToPage(String page) async {
       return new Uri.http('localhost:$port', '');
     }();
   }
-  await (await wipConnection).page
+  await (await wipConnection)
+      .page
       .navigate((await _testServerUri).resolve(page).toString());
   await new Future.delayed(new Duration(seconds: 1));
   return wipConnection;

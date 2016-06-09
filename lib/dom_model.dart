@@ -43,30 +43,30 @@ class WipDomModel implements WipDom {
   Stream<SetChildNodesEvent> onSetChildNodes;
 
   WipDomModel(this._dom) {
-    onAttributeModified = new StreamTransformer.fromHandlers(
-        handleData: _onAttributeModified).bind(_dom.onAttributeModified)
-      ..listen(_logEvent);
-    onAttributeRemoved = new StreamTransformer.fromHandlers(
-        handleData: _onAttributeRemoved).bind(_dom.onAttributeRemoved)
-      ..listen(_logEvent);
-    onCharacterDataModified = new StreamTransformer.fromHandlers(
-        handleData: _onCharacterDataModified).bind(_dom.onCharacterDataModified)
-      ..listen(_logEvent);
-    onChildNodeCountUpdated = new StreamTransformer.fromHandlers(
-        handleData: _onChildNodeCountUpdated).bind(_dom.onChildNodeCountUpdated)
-      ..listen(_logEvent);
-    onChildNodeInserted = new StreamTransformer.fromHandlers(
-        handleData: _onChildNodeInserted).bind(_dom.onChildNodeInserted)
-      ..listen(_logEvent);
-    onChildNodeRemoved = new StreamTransformer.fromHandlers(
-        handleData: _onChildNodeRemoved).bind(_dom.onChildNodeRemoved)
-      ..listen(_logEvent);
-    onDocumentUpdated = new StreamTransformer.fromHandlers(
-        handleData: _onDocumentUpdated).bind(_dom.onDocumentUpdated)
-      ..listen(_logEvent);
-    onSetChildNodes = new StreamTransformer.fromHandlers(
-        handleData: _onSetChildNodes).bind(_dom.onSetChildNodes)
-      ..listen(_logEvent);
+    onAttributeModified =
+        new StreamTransformer.fromHandlers(handleData: _onAttributeModified)
+            .bind(_dom.onAttributeModified)..listen(_logEvent);
+    onAttributeRemoved =
+        new StreamTransformer.fromHandlers(handleData: _onAttributeRemoved)
+            .bind(_dom.onAttributeRemoved)..listen(_logEvent);
+    onCharacterDataModified =
+        new StreamTransformer.fromHandlers(handleData: _onCharacterDataModified)
+            .bind(_dom.onCharacterDataModified)..listen(_logEvent);
+    onChildNodeCountUpdated =
+        new StreamTransformer.fromHandlers(handleData: _onChildNodeCountUpdated)
+            .bind(_dom.onChildNodeCountUpdated)..listen(_logEvent);
+    onChildNodeInserted =
+        new StreamTransformer.fromHandlers(handleData: _onChildNodeInserted)
+            .bind(_dom.onChildNodeInserted)..listen(_logEvent);
+    onChildNodeRemoved =
+        new StreamTransformer.fromHandlers(handleData: _onChildNodeRemoved)
+            .bind(_dom.onChildNodeRemoved)..listen(_logEvent);
+    onDocumentUpdated =
+        new StreamTransformer.fromHandlers(handleData: _onDocumentUpdated)
+            .bind(_dom.onDocumentUpdated)..listen(_logEvent);
+    onSetChildNodes =
+        new StreamTransformer.fromHandlers(handleData: _onSetChildNodes)
+            .bind(_dom.onSetChildNodes)..listen(_logEvent);
   }
 
   _logEvent(WipEvent event) {

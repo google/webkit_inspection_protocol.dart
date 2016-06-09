@@ -257,24 +257,27 @@ abstract class WipDomain {
   Stream<WipDomain> get onClosed => _onClosed;
 
   WipDomain(WipConnection connection) : this.connection = connection {
-    this._onClosed = new StreamTransformer.fromHandlers(
-        handleData: (event, EventSink sink) {
+    this._onClosed =
+        new StreamTransformer.fromHandlers(handleData: (event, EventSink sink) {
       sink.add(this);
     }).bind(connection.onClose);
   }
 
   Stream<WipEvent> _eventStream(
-      String method, WipEventTransformer transformer) => _eventStreams
-      .putIfAbsent(method, () => new StreamTransformer.fromHandlers(
-          handleData: (WipEvent event, EventSink<WipEvent> sink) {
-    if (event.method == method) {
-      _log.finest('Transforming $event to $method');
-      sink.add(transformer(event));
-    }
-  }).bind(connection.onNotification));
+          String method, WipEventTransformer transformer) =>
+      _eventStreams.putIfAbsent(
+          method,
+          () => new StreamTransformer.fromHandlers(
+                  handleData: (WipEvent event, EventSink<WipEvent> sink) {
+                if (event.method == method) {
+                  _log.finest('Transforming $event to $method');
+                  sink.add(transformer(event));
+                }
+              }).bind(connection.onNotification));
 
   Future<WipResponse> _sendCommand(String method,
-      [Map<String, dynamic> params]) => connection.sendCommand(method, params);
+          [Map<String, dynamic> params]) =>
+      connection.sendCommand(method, params);
 }
 
 class _WrappedWipEvent implements WipEvent {

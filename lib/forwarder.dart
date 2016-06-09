@@ -4,13 +4,7 @@
 library crmux.forwarder;
 
 import 'dart:async'
-    show
-        Completer,
-        Future,
-        Stream,
-        StreamController,
-        StreamSink,
-        StreamSubscription;
+    show Future, Stream, StreamController, StreamSink, StreamSubscription;
 import 'dart:convert' show JSON;
 
 import 'package:logging/logging.dart' show Logger;
@@ -28,6 +22,7 @@ class WipForwarder {
   final StreamSink _out;
   final WipConnection _debugger;
   final WipDom domModel;
+
   /// If false, no Debugger.paused events will be forwarded back to the
   /// client. This gets automatically set to true if a breakpoint is set
   /// by the client.

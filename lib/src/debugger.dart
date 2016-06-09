@@ -18,9 +18,9 @@ class WipDebugger extends WipDomain {
   Future enable() => _sendCommand('Debugger.enable');
   Future disable() => _sendCommand('Debugger.disable');
 
-  Future<String> getScriptSource(String scriptId) async => (await _sendCommand(
-          'Debugger.getScriptSource', {'scriptId': scriptId})).result[
-      'scriptSource'];
+  Future<String> getScriptSource(String scriptId) async =>
+      (await _sendCommand('Debugger.getScriptSource', {'scriptId': scriptId}))
+          .result['scriptSource'];
 
   Future pause() => _sendCommand('Debugger.pause');
   Future resume() => _sendCommand('Debugger.resume');

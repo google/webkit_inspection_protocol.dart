@@ -5,7 +5,7 @@ library wip.multiplex;
 
 import 'dart:async' show Future;
 import 'dart:convert' show JSON;
-import 'dart:io' show HttpClientResponse, HttpServer, InternetAddress;
+import 'dart:io' show HttpServer, InternetAddress;
 
 import 'package:logging/logging.dart' show Logger;
 import 'package:shelf/shelf.dart' as shelf;

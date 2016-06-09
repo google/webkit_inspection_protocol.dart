@@ -14,11 +14,12 @@ import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart'
 
 main(List<String> argv) async {
   var args = (new ArgParser()
-    ..addFlag('verbose', abbr: 'v', defaultsTo: false, negatable: false)
-    ..addFlag('model_dom', defaultsTo: false, negatable: true)
-    ..addOption('chrome_host', defaultsTo: 'localhost')
-    ..addOption('chrome_port', defaultsTo: '9222')
-    ..addOption('listen_port', defaultsTo: '9223')).parse(argv);
+        ..addFlag('verbose', abbr: 'v', defaultsTo: false, negatable: false)
+        ..addFlag('model_dom', defaultsTo: false, negatable: true)
+        ..addOption('chrome_host', defaultsTo: 'localhost')
+        ..addOption('chrome_port', defaultsTo: '9222')
+        ..addOption('listen_port', defaultsTo: '9223'))
+      .parse(argv);
 
   hierarchicalLoggingEnabled = true;
 
