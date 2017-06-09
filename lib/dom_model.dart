@@ -290,9 +290,9 @@ class _Node implements Node {
       if (childNodeCount != null) {
         map['childNodeCount'] = childNodeCount;
       }
-      if (children != null && children.isNotEmpty) {
+      if (_children != null && _children.isNotEmpty) {
         var newChildren = [];
-        children.forEach((child) {
+        _children.forEach((child) {
           if (child != null) {
             newChildren.add(child._toJsonInternal(visited));
           }

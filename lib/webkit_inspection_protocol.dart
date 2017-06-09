@@ -19,7 +19,6 @@ import 'dart:convert' show JSON, UTF8;
 import 'dart:io' show HttpClient, HttpClientResponse, WebSocket;
 
 import 'package:logging/logging.dart' show Logger;
-
 import 'package:logging/logging.dart';
 
 part 'src/console.dart';
