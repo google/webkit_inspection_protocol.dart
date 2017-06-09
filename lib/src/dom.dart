@@ -18,8 +18,8 @@ class WipDom extends WipDomain {
       new Node((await _sendCommand('DOM.getDocument')).result['root']);
 
   Future<String> getOuterHtml(int nodeId) async =>
-      (await _sendCommand('DOM.getOuterHTML', {'nodeId': nodeId})).result[
-          'root'];
+      (await _sendCommand('DOM.getOuterHTML', {'nodeId': nodeId}))
+          .result['root'];
 
   Future hideHighlight() => _sendCommand('DOM.hideHighlight');
 
