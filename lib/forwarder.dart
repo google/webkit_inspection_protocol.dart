@@ -23,14 +23,14 @@ class WipForwarder {
   final WipConnection _debugger;
   final WipDom domModel;
 
-  /// If false, no Debugger.paused events will be forwarded back to the
-  /// client. This gets automatically set to true if a breakpoint is set
-  /// by the client.
+  /// If false, no Debugger.paused events will be forwarded back to the client.
+  /// This gets automatically set to true if a breakpoint is set by the client.
   bool forwardPausedEvents = false;
 
-  final _subscriptions = <StreamSubscription>[];
+  final List<StreamSubscription> _subscriptions = <StreamSubscription>[];
 
-  final _closedController = new StreamController.broadcast();
+  final StreamController<Null> _closedController =
+      new StreamController.broadcast();
 
   factory WipForwarder(WipConnection debugger, Stream stream,
       {StreamSink sink, WipDom domModel}) {
@@ -106,7 +106,7 @@ class WipForwarder {
     }
     _log.info('forwarding event: $event');
 
-    var json = {'method': event.method};
+    var json = <String, dynamic>{'method': event.method};
     if (event.params != null) {
       json['params'] = event.params;
     }

@@ -18,8 +18,8 @@ class WipDom extends WipDomain {
       new Node((await _sendCommand('DOM.getDocument')).result['root']);
 
   Future<String> getOuterHtml(int nodeId) async =>
-      (await _sendCommand('DOM.getOuterHTML', {'nodeId': nodeId})).result[
-          'root'];
+      (await _sendCommand('DOM.getOuterHTML', {'nodeId': nodeId}))
+          .result['root'];
 
   Future hideHighlight() => _sendCommand('DOM.hideHighlight');
 
@@ -29,7 +29,7 @@ class WipDom extends WipDomain {
       Rgba marginColor,
       Rgba paddingColor,
       bool showInfo}) {
-    var params = {'nodeId': nodeId, 'highlightConfig': {}};
+    var params = <String, dynamic>{'nodeId': nodeId, 'highlightConfig': {}};
 
     if (borderColor != null) {
       params['highlightConfig']['borderColor'] = borderColor;
@@ -56,7 +56,12 @@ class WipDom extends WipDomain {
 
   Future highlightRect(int x, int y, int width, int height,
       {Rgba color, Rgba outlineColor}) {
-    var params = {'x': x, 'y': y, 'width': width, 'height': height};
+    var params = <String, dynamic>{
+      'x': x,
+      'y': y,
+      'width': width,
+      'height': height
+    };
 
     if (color != null) {
       params['color'] = color;
@@ -108,7 +113,7 @@ class WipDom extends WipDomain {
   }
 
   Future<WipRemoteObject> resolveNode(int nodeId, {String objectGroup}) async {
-    var params = {'nodeId': nodeId};
+    var params = <String, dynamic>{'nodeId': nodeId};
     if (objectGroup != null) {
       params['objectGroup'] = objectGroup;
     }

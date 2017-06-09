@@ -45,28 +45,36 @@ class WipDomModel implements WipDom {
   WipDomModel(this._dom) {
     onAttributeModified =
         new StreamTransformer.fromHandlers(handleData: _onAttributeModified)
-            .bind(_dom.onAttributeModified)..listen(_logEvent);
+            .bind(_dom.onAttributeModified)
+              ..listen(_logEvent);
     onAttributeRemoved =
         new StreamTransformer.fromHandlers(handleData: _onAttributeRemoved)
-            .bind(_dom.onAttributeRemoved)..listen(_logEvent);
+            .bind(_dom.onAttributeRemoved)
+              ..listen(_logEvent);
     onCharacterDataModified =
         new StreamTransformer.fromHandlers(handleData: _onCharacterDataModified)
-            .bind(_dom.onCharacterDataModified)..listen(_logEvent);
+            .bind(_dom.onCharacterDataModified)
+              ..listen(_logEvent);
     onChildNodeCountUpdated =
         new StreamTransformer.fromHandlers(handleData: _onChildNodeCountUpdated)
-            .bind(_dom.onChildNodeCountUpdated)..listen(_logEvent);
+            .bind(_dom.onChildNodeCountUpdated)
+              ..listen(_logEvent);
     onChildNodeInserted =
         new StreamTransformer.fromHandlers(handleData: _onChildNodeInserted)
-            .bind(_dom.onChildNodeInserted)..listen(_logEvent);
+            .bind(_dom.onChildNodeInserted)
+              ..listen(_logEvent);
     onChildNodeRemoved =
         new StreamTransformer.fromHandlers(handleData: _onChildNodeRemoved)
-            .bind(_dom.onChildNodeRemoved)..listen(_logEvent);
+            .bind(_dom.onChildNodeRemoved)
+              ..listen(_logEvent);
     onDocumentUpdated =
         new StreamTransformer.fromHandlers(handleData: _onDocumentUpdated)
-            .bind(_dom.onDocumentUpdated)..listen(_logEvent);
+            .bind(_dom.onDocumentUpdated)
+              ..listen(_logEvent);
     onSetChildNodes =
         new StreamTransformer.fromHandlers(handleData: _onSetChildNodes)
-            .bind(_dom.onSetChildNodes)..listen(_logEvent);
+            .bind(_dom.onSetChildNodes)
+              ..listen(_logEvent);
   }
 
   _logEvent(WipEvent event) {
@@ -282,9 +290,9 @@ class _Node implements Node {
       if (childNodeCount != null) {
         map['childNodeCount'] = childNodeCount;
       }
-      if (children != null && children.isNotEmpty) {
+      if (_children != null && _children.isNotEmpty) {
         var newChildren = [];
-        children.forEach((child) {
+        _children.forEach((child) {
           if (child != null) {
             newChildren.add(child._toJsonInternal(visited));
           }

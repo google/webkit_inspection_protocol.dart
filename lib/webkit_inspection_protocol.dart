@@ -19,7 +19,6 @@ import 'dart:convert' show JSON, UTF8;
 import 'dart:io' show HttpClient, HttpClientResponse, WebSocket;
 
 import 'package:logging/logging.dart' show Logger;
-
 import 'package:logging/logging.dart';
 
 part 'src/console.dart';
@@ -46,7 +45,7 @@ class ChromeConnection {
     var response = await getUrl('/json');
     var respBody = await UTF8.decodeStream(response);
     List<Map<String, String>> data = JSON.decode(respBody);
-    return data.map((m) => new ChromeTab(m));
+    return data.map((m) => new ChromeTab(m)).toList();
   }
 
   Future<ChromeTab> getTab(bool accept(ChromeTab tab),
