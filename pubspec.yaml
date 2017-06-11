@@ -1,5 +1,5 @@
 name: webkit_inspection_protocol
-version: 0.2.2
+version: 0.3.0
 description: A client for the Webkit Inspection Protocol (WIP).
 
 homepage: https://github.com/google/webkit_inspection_protocol.dart

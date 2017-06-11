@@ -6,25 +6,25 @@
  */
 library wip;
 
-import 'dart:async'
-    show
-        Completer,
-        EventSink,
-        Future,
-        Stream,
-        StreamController,
-        StreamTransformer;
-import 'dart:collection' show UnmodifiableListView, UnmodifiableMapView;
-import 'dart:convert' show JSON, UTF8;
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io' show HttpClient, HttpClientResponse, WebSocket;
 
 import 'package:logging/logging.dart' show Logger;
-import 'package:logging/logging.dart';
 
-part 'src/console.dart';
-part 'src/debugger.dart';
-part 'src/dom.dart';
-part 'src/page.dart';
+import 'src/console.dart';
+import 'src/debugger.dart';
+import 'src/dom.dart';
+import 'src/log.dart';
+import 'src/page.dart';
+import 'src/runtime.dart';
+
+export 'src/console.dart';
+export 'src/debugger.dart';
+export 'src/dom.dart';
+export 'src/log.dart';
+export 'src/page.dart';
+export 'src/runtime.dart';
 
 /**
  * A class to connect to a Chrome instance and reflect on its available tabs.
@@ -119,7 +119,7 @@ class ChromeTab {
  * A Webkit Inspection Protocol (WIP) connection.
  */
 class WipConnection {
-  static final _log = new Logger('WipConnection');
+  static final _logger = new Logger('WipConnection');
 
   /**
    * The WebSocket URL.
@@ -130,19 +130,31 @@ class WipConnection {
 
   int _nextId = 0;
 
-  var _console;
+  WipConsole _console; // ignore: deprecated_member_use
+  @Deprecated('This domain is deprecated - use Runtime or Log instead')
   WipConsole get console => _console;
-  var _debugger;
+
+  WipDebugger _debugger;
   WipDebugger get debugger => _debugger;
-  var _dom;
+
+  WipDom _dom;
   WipDom get dom => _dom;
-  var _page;
+
+  WipPage _page;
   WipPage get page => _page;
 
-  final _completers = <int, Completer<WipResponse>>{};
+  WipLog _log;
+  WipLog get log => _log;
 
-  final _closeController = new StreamController<WipConnection>.broadcast();
-  final _notificationController = new StreamController<WipEvent>.broadcast();
+  WipRuntime _runtime;
+  WipRuntime get runtime => _runtime;
+
+  final Map _completers = <int, Completer<WipResponse>>{};
+
+  final StreamController _closeController =
+      new StreamController<WipConnection>.broadcast();
+  final StreamController _notificationController =
+      new StreamController<WipEvent>.broadcast();
 
   static Future<WipConnection> connect(String url) {
     return WebSocket.connect(url).then((socket) {
@@ -151,10 +163,12 @@ class WipConnection {
   }
 
   WipConnection._(this.url, this._ws) {
-    _console = new WipConsole(this);
+    _console = new WipConsole(this); // ignore: deprecated_member_use
     _debugger = new WipDebugger(this);
     _dom = new WipDom(this);
     _page = new WipPage(this);
+    _log = new WipLog(this);
+    _runtime = new WipRuntime(this);
 
     _ws.listen((data) {
       var json = JSON.decode(data);
@@ -176,7 +190,7 @@ class WipConnection {
 
   Future<WipResponse> sendCommand(String method,
       [Map<String, dynamic> params]) {
-    _log.finest('Sending command: $method($params)');
+    _logger.finest('Sending command: $method($params)');
     var completer = new Completer<WipResponse>();
     var json = {'id': _nextId++, 'method': method};
     if (params != null) {
@@ -188,7 +202,7 @@ class WipConnection {
   }
 
   void _handleNotification(Map<String, dynamic> json) {
-    _log.finest('Received notification: $json');
+    _logger.finest('Received notification: $json');
     _notificationController.add(new WipEvent(json));
   }
 
@@ -196,10 +210,10 @@ class WipConnection {
     var completer = _completers.remove(event['id']);
 
     if (event.containsKey('error')) {
-      _log.info('Received error: $event');
+      _logger.info('Received error: $event');
       completer.completeError(new WipError(event));
     } else {
-      _log.finest('Received response: $event');
+      _logger.finest('Received response: $event');
       completer.complete(new WipResponse(event));
     }
   }
@@ -246,9 +260,10 @@ class WipResponse {
 
 typedef WipEvent WipEventTransformer(WipEvent event);
 
-abstract class WipDomain {
-  static final _log = new Logger('WipDomain');
+/// @optional
+const String optional = 'optional';
 
+abstract class WipDomain {
   Map<String, Stream> _eventStreams = {};
 
   final WipConnection connection;
@@ -262,27 +277,31 @@ abstract class WipDomain {
     }).bind(connection.onClose);
   }
 
-  Stream<WipEvent> _eventStream(
-          String method, WipEventTransformer transformer) =>
-      _eventStreams.putIfAbsent(
-          method,
-          () => new StreamTransformer.fromHandlers(
-                  handleData: (WipEvent event, EventSink<WipEvent> sink) {
-                if (event.method == method) {
-                  _log.finest('Transforming $event to $method');
-                  sink.add(transformer(event));
-                }
-              }).bind(connection.onNotification));
+  Stream<WipEvent> eventStream(String method, WipEventTransformer transformer) {
+    return _eventStreams.putIfAbsent(
+      method,
+      () => new StreamTransformer.fromHandlers(
+            handleData: (WipEvent event, EventSink<WipEvent> sink) {
+              if (event.method == method) {
+                sink.add(transformer(event));
+              }
+            },
+          ).bind(connection.onNotification),
+    );
+  }
 
-  Future<WipResponse> _sendCommand(String method,
-          [Map<String, dynamic> params]) =>
-      connection.sendCommand(method, params);
+  Future<WipResponse> sendCommand(
+    String method, {
+    Map<String, dynamic> params,
+  }) {
+    return connection.sendCommand(method, params);
+  }
 }
 
-class _WrappedWipEvent implements WipEvent {
+class WrappedWipEvent implements WipEvent {
   final WipEvent _wrapped;
 
-  _WrappedWipEvent(this._wrapped);
+  WrappedWipEvent(this._wrapped);
 
   @override
   String get method => _wrapped.method;

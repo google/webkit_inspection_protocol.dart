@@ -1,0 +1,39 @@
+// Copyright 2017 Google. All rights reserved. Use of this source code is
+// governed by a BSD-style license that can be found in the LICENSE file.
+
+import 'dart:async';
+
+import '../webkit_inspection_protocol.dart';
+
+class WipLog extends WipDomain {
+  WipLog(WipConnection connection) : super(connection);
+
+  Future enable() => sendCommand('Log.enable');
+  Future disable() => sendCommand('Log.disable');
+
+  Stream<LogEntry> get onEntryAdded =>
+      eventStream('Log.entryAdded', (WipEvent event) => new LogEntry(event));
+}
+
+class LogEntry extends WrappedWipEvent {
+  LogEntry(WipEvent event) : super(event);
+
+  Map<String, dynamic> get _entry => params['entry'];
+
+  /// Log entry source. Allowed values: xml, javascript, network, storage,
+  /// appcache, rendering, security, deprecation, worker, violation,
+  /// intervention, other.
+  String get source => _entry['source'];
+
+  /// Log entry severity. Allowed values: verbose, info, warning, error.
+  String get level => _entry['level'];
+
+  /// Logged text.
+  String get text => _entry['text'];
+
+  /// URL of the resource if known.
+  @optional
+  String get url => _entry['url'];
+
+  String toString() => text;
+}

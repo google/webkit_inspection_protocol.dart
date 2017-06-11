@@ -1,7 +1,10 @@
 // Copyright 2015 Google. All rights reserved. Use of this source code is
 // governed by a BSD-style license that can be found in the LICENSE file.
 
-part of wip;
+import 'dart:async';
+import 'dart:collection';
+
+import '../webkit_inspection_protocol.dart';
 
 /// Implementation of the
 /// https://developer.chrome.com/devtools/docs/protocol/1.1/dom
@@ -10,18 +13,18 @@ class WipDom extends WipDomain {
 
   Future<Map<String, String>> getAttributes(int nodeId) async {
     WipResponse resp =
-        await _sendCommand('DOM.getAttributes', {'nodeId': nodeId});
+        await sendCommand('DOM.getAttributes', params: {'nodeId': nodeId});
     return _attributeListToMap(resp.result['attributes']);
   }
 
   Future<Node> getDocument() async =>
-      new Node((await _sendCommand('DOM.getDocument')).result['root']);
+      new Node((await sendCommand('DOM.getDocument')).result['root']);
 
   Future<String> getOuterHtml(int nodeId) async =>
-      (await _sendCommand('DOM.getOuterHTML', {'nodeId': nodeId}))
+      (await sendCommand('DOM.getOuterHTML', params: {'nodeId': nodeId}))
           .result['root'];
 
-  Future hideHighlight() => _sendCommand('DOM.hideHighlight');
+  Future hideHighlight() => sendCommand('DOM.hideHighlight');
 
   Future highlightNode(int nodeId,
       {Rgba borderColor,
@@ -51,7 +54,7 @@ class WipDom extends WipDomain {
       params['highlightConfig']['showInfo'] = showInfo;
     }
 
-    return _sendCommand('DOM.highlightNode', params);
+    return sendCommand('DOM.highlightNode', params: params);
   }
 
   Future highlightRect(int x, int y, int width, int height,
@@ -71,7 +74,7 @@ class WipDom extends WipDomain {
       params['outlineColor'] = outlineColor;
     }
 
-    return _sendCommand('DOM.highlightRect', params);
+    return sendCommand('DOM.highlightRect', params: params);
   }
 
   Future<int> moveTo(int nodeId, int targetNodeId,
@@ -82,33 +85,35 @@ class WipDom extends WipDomain {
       params['insertBeforeNodeId'] = insertBeforeNodeId;
     }
 
-    var resp = await _sendCommand('DOM.moveTo', params);
+    var resp = await sendCommand('DOM.moveTo', params: params);
     return resp.result['nodeId'];
   }
 
   Future<int> querySelector(int nodeId, String selector) async {
-    var resp = await _sendCommand(
-        'DOM.querySelector', {'nodeId': nodeId, 'selector': selector});
+    var resp = await sendCommand('DOM.querySelector',
+        params: {'nodeId': nodeId, 'selector': selector});
     return resp.result['nodeId'];
   }
 
   Future<List<int>> querySelectorAll(int nodeId, String selector) async {
-    var resp = await _sendCommand(
-        'DOM.querySelectorAll', {'nodeId': nodeId, 'selector': selector});
+    var resp = await sendCommand('DOM.querySelectorAll',
+        params: {'nodeId': nodeId, 'selector': selector});
     return resp.result['nodeIds'];
   }
 
   Future removeAttribute(int nodeId, String name) =>
-      _sendCommand('DOM.removeAttribute', {'nodeId': nodeId, 'name': name});
+      sendCommand('DOM.removeAttribute',
+          params: {'nodeId': nodeId, 'name': name});
 
   Future removeNode(int nodeId) =>
-      _sendCommand('DOM.removeNode', {'nodeId': nodeId});
+      sendCommand('DOM.removeNode', params: {'nodeId': nodeId});
 
   Future requestChildNodes(int nodeId) =>
-      _sendCommand('DOM.requestChildNodes', {'nodeId': nodeId});
+      sendCommand('DOM.requestChildNodes', params: {'nodeId': nodeId});
 
   Future<int> requestNode(String objectId) async {
-    var resp = await _sendCommand('DOM.requestNode', {'objectId': objectId});
+    var resp =
+        await sendCommand('DOM.requestNode', params: {'objectId': objectId});
     return resp.result['nodeId'];
   }
 
@@ -118,60 +123,62 @@ class WipDom extends WipDomain {
       params['objectGroup'] = objectGroup;
     }
 
-    var resp = await _sendCommand('DOM.resolveNode', params);
+    var resp = await sendCommand('DOM.resolveNode', params: params);
     return new WipRemoteObject(resp.result['object']);
   }
 
   Future setAttributeValue(int nodeId, String name, String value) =>
-      _sendCommand('DOM.setAttributeValue',
-          {'nodeId': nodeId, 'name': name, 'value': value});
+      sendCommand('DOM.setAttributeValue',
+          params: {'nodeId': nodeId, 'name': name, 'value': value});
 
   Future setAttributesAsText(int nodeId, String text, {String name}) {
     var params = {'nodeId': nodeId, 'text': text};
     if (name != null) {
       params['name'] = name;
     }
-    return _sendCommand('DOM.setAttributeValue', params);
+    return sendCommand('DOM.setAttributeValue', params: params);
   }
 
   Future<int> setNodeName(int nodeId, String name) async {
-    var resp =
-        await _sendCommand('DOM.setNodeName', {'nodeId': nodeId, 'name': name});
+    var resp = await sendCommand('DOM.setNodeName',
+        params: {'nodeId': nodeId, 'name': name});
     return resp.result['nodeId'];
   }
 
   Future setNodeValue(int nodeId, String value) =>
-      _sendCommand('DOM.setNodeValue', {'nodeId': nodeId, 'value': value});
+      sendCommand('DOM.setNodeValue',
+          params: {'nodeId': nodeId, 'value': value});
 
-  Future setOuterHtml(int nodeId, String outerHtml) => _sendCommand(
-      'DOM.setOuterHTML', {'nodeId': nodeId, 'outerHtml': outerHtml});
+  Future setOuterHtml(int nodeId, String outerHtml) =>
+      sendCommand('DOM.setOuterHTML',
+          params: {'nodeId': nodeId, 'outerHtml': outerHtml});
 
-  Stream<AttributeModifiedEvent> get onAttributeModified => _eventStream(
+  Stream<AttributeModifiedEvent> get onAttributeModified => eventStream(
       'DOM.attributeModified',
       (WipEvent event) => new AttributeModifiedEvent(event));
-  Stream<AttributeRemovedEvent> get onAttributeRemoved => _eventStream(
+  Stream<AttributeRemovedEvent> get onAttributeRemoved => eventStream(
       'DOM.attributeRemoved',
       (WipEvent event) => new AttributeRemovedEvent(event));
-  Stream<CharacterDataModifiedEvent> get onCharacterDataModified =>
-      _eventStream('DOM.characterDataModified',
-          (WipEvent event) => new CharacterDataModifiedEvent(event));
-  Stream<ChildNodeCountUpdatedEvent> get onChildNodeCountUpdated =>
-      _eventStream('DOM.childNodeCountUpdated',
-          (WipEvent event) => new ChildNodeCountUpdatedEvent(event));
-  Stream<ChildNodeInsertedEvent> get onChildNodeInserted => _eventStream(
+  Stream<CharacterDataModifiedEvent> get onCharacterDataModified => eventStream(
+      'DOM.characterDataModified',
+      (WipEvent event) => new CharacterDataModifiedEvent(event));
+  Stream<ChildNodeCountUpdatedEvent> get onChildNodeCountUpdated => eventStream(
+      'DOM.childNodeCountUpdated',
+      (WipEvent event) => new ChildNodeCountUpdatedEvent(event));
+  Stream<ChildNodeInsertedEvent> get onChildNodeInserted => eventStream(
       'DOM.childNodeInserted',
       (WipEvent event) => new ChildNodeInsertedEvent(event));
-  Stream<ChildNodeRemovedEvent> get onChildNodeRemoved => _eventStream(
+  Stream<ChildNodeRemovedEvent> get onChildNodeRemoved => eventStream(
       'DOM.childNodeRemoved',
       (WipEvent event) => new ChildNodeRemovedEvent(event));
-  Stream<DocumentUpdatedEvent> get onDocumentUpdated => _eventStream(
+  Stream<DocumentUpdatedEvent> get onDocumentUpdated => eventStream(
       'DOM.documentUpdated',
       (WipEvent event) => new DocumentUpdatedEvent(event));
-  Stream<SetChildNodesEvent> get onSetChildNodes => _eventStream(
+  Stream<SetChildNodesEvent> get onSetChildNodes => eventStream(
       'DOM.setChildNodes', (WipEvent event) => new SetChildNodesEvent(event));
 }
 
-class AttributeModifiedEvent extends _WrappedWipEvent {
+class AttributeModifiedEvent extends WrappedWipEvent {
   AttributeModifiedEvent(WipEvent event) : super(event);
 
   int get nodeId => params['nodeId'];
@@ -179,28 +186,28 @@ class AttributeModifiedEvent extends _WrappedWipEvent {
   String get value => params['value'];
 }
 
-class AttributeRemovedEvent extends _WrappedWipEvent {
+class AttributeRemovedEvent extends WrappedWipEvent {
   AttributeRemovedEvent(WipEvent event) : super(event);
 
   int get nodeId => params['nodeId'];
   String get name => params['name'];
 }
 
-class CharacterDataModifiedEvent extends _WrappedWipEvent {
+class CharacterDataModifiedEvent extends WrappedWipEvent {
   CharacterDataModifiedEvent(WipEvent event) : super(event);
 
   int get nodeId => params['nodeId'];
   String get characterData => params['characterData'];
 }
 
-class ChildNodeCountUpdatedEvent extends _WrappedWipEvent {
+class ChildNodeCountUpdatedEvent extends WrappedWipEvent {
   ChildNodeCountUpdatedEvent(WipEvent event) : super(event);
 
   int get nodeId => params['nodeId'];
   int get childNodeCount => params['childNodeCount'];
 }
 
-class ChildNodeInsertedEvent extends _WrappedWipEvent {
+class ChildNodeInsertedEvent extends WrappedWipEvent {
   ChildNodeInsertedEvent(WipEvent event) : super(event);
 
   int get parentNodeId => params['parentNodeId'];
@@ -214,18 +221,18 @@ class ChildNodeInsertedEvent extends _WrappedWipEvent {
   }
 }
 
-class ChildNodeRemovedEvent extends _WrappedWipEvent {
+class ChildNodeRemovedEvent extends WrappedWipEvent {
   ChildNodeRemovedEvent(WipEvent event) : super(event);
 
   int get parentNodeId => params['parentNodeId'];
   int get nodeId => params['nodeId'];
 }
 
-class DocumentUpdatedEvent extends _WrappedWipEvent {
+class DocumentUpdatedEvent extends WrappedWipEvent {
   DocumentUpdatedEvent(WipEvent event) : super(event);
 }
 
-class SetChildNodesEvent extends _WrappedWipEvent {
+class SetChildNodesEvent extends WrappedWipEvent {
   SetChildNodesEvent(WipEvent event) : super(event);
 
   int get nodeId => params['parentId'];

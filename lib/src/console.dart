@@ -1,27 +1,27 @@
 // Copyright 2015 Google. All rights reserved. Use of this source code is
 // governed by a BSD-style license that can be found in the LICENSE file.
 
-part of wip;
+import 'dart:async';
 
+import '../webkit_inspection_protocol.dart';
+
+@Deprecated('This domain is deprecated - use Runtime or Log instead')
 class WipConsole extends WipDomain {
   WipConsole(WipConnection connection) : super(connection);
 
-  Future enable() => _sendCommand('Console.enable');
-  Future disable() => _sendCommand('Console.disable');
-  Future clearMessages() => _sendCommand('Console.clearMessages');
+  Future enable() => sendCommand('Console.enable');
+  Future disable() => sendCommand('Console.disable');
+  Future clearMessages() => sendCommand('Console.clearMessages');
 
-  Stream<ConsoleMessageEvent> get onMessage => _eventStream(
+  Stream<ConsoleMessageEvent> get onMessage => eventStream(
       'Console.messageAdded',
       (WipEvent event) => new ConsoleMessageEvent(event));
-  Stream<ConsoleClearedEvent> get onCleared => _eventStream(
+  Stream<ConsoleClearedEvent> get onCleared => eventStream(
       'Console.messagesCleared',
       (WipEvent event) => new ConsoleClearedEvent(event));
 }
 
-/**
- * See [WipConsole.onMessage].
- */
-class ConsoleMessageEvent extends _WrappedWipEvent {
+class ConsoleMessageEvent extends WrappedWipEvent {
   ConsoleMessageEvent(WipEvent event) : super(event);
 
   Map get _message => params['message'];
@@ -42,7 +42,7 @@ class ConsoleMessageEvent extends _WrappedWipEvent {
   String toString() => text;
 }
 
-class ConsoleClearedEvent extends _WrappedWipEvent {
+class ConsoleClearedEvent extends WrappedWipEvent {
   ConsoleClearedEvent(WipEvent event) : super(event);
 }
 

@@ -13,7 +13,7 @@ import 'test_setup.dart';
 
 main() {
   group('WipConsole', () {
-    WipConsole console;
+    WipConsole console; // ignore: deprecated_member_use
     List<ConsoleMessageEvent> events = [];
     var subs = [];
 
@@ -32,6 +32,7 @@ main() {
     }
 
     setUp(() async {
+      // ignore: deprecated_member_use
       console = (await wipConnection).console;
       await console.clearMessages();
       events.clear();
