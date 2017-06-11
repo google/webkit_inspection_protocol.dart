@@ -1,7 +1,10 @@
 // Copyright 2015 Google. All rights reserved. Use of this source code is
 // governed by a BSD-style license that can be found in the LICENSE file.
 
-part of wip;
+import 'dart:async';
+import 'dart:collection';
+
+import '../webkit_inspection_protocol.dart';
 
 class WipDebugger extends WipDomain {
   final _scripts = <String, WipScript>{};
@@ -15,31 +18,33 @@ class WipDebugger extends WipDomain {
     });
   }
 
-  Future enable() => _sendCommand('Debugger.enable');
-  Future disable() => _sendCommand('Debugger.disable');
+  Future enable() => sendCommand('Debugger.enable');
+  Future disable() => sendCommand('Debugger.disable');
 
   Future<String> getScriptSource(String scriptId) async =>
-      (await _sendCommand('Debugger.getScriptSource', {'scriptId': scriptId}))
+      (await sendCommand('Debugger.getScriptSource',
+              params: {'scriptId': scriptId}))
           .result['scriptSource'];
 
-  Future pause() => _sendCommand('Debugger.pause');
-  Future resume() => _sendCommand('Debugger.resume');
+  Future pause() => sendCommand('Debugger.pause');
+  Future resume() => sendCommand('Debugger.resume');
 
-  Future stepInto() => _sendCommand('Debugger.stepInto');
-  Future stepOut() => _sendCommand('Debugger.stepOut');
-  Future stepOver() => _sendCommand('Debugger.stepOver');
+  Future stepInto() => sendCommand('Debugger.stepInto');
+  Future stepOut() => sendCommand('Debugger.stepOut');
+  Future stepOver() => sendCommand('Debugger.stepOver');
 
-  Future setPauseOnExceptions(PauseState state) => _sendCommand(
-      'Debugger.setPauseOnExceptions', {'state': _pauseStateToString(state)});
+  Future setPauseOnExceptions(PauseState state) =>
+      sendCommand('Debugger.setPauseOnExceptions',
+          params: {'state': _pauseStateToString(state)});
 
-  Stream<DebuggerPausedEvent> get onPaused => _eventStream(
+  Stream<DebuggerPausedEvent> get onPaused => eventStream(
       'Debugger.paused', (WipEvent event) => new DebuggerPausedEvent(event));
-  Stream<GlobalObjectClearedEvent> get onGlobalObjectCleared => _eventStream(
+  Stream<GlobalObjectClearedEvent> get onGlobalObjectCleared => eventStream(
       'Debugger.globalObjectCleared',
       (WipEvent event) => new GlobalObjectClearedEvent(event));
-  Stream<DebuggerResumedEvent> get onResumed => _eventStream(
+  Stream<DebuggerResumedEvent> get onResumed => eventStream(
       'Debugger.resumed', (WipEvent event) => new DebuggerResumedEvent(event));
-  Stream<ScriptParsedEvent> get onScriptParsed => _eventStream(
+  Stream<ScriptParsedEvent> get onScriptParsed => eventStream(
       'Debugger.scriptParsed',
       (WipEvent event) => new ScriptParsedEvent(event));
 
@@ -61,7 +66,7 @@ String _pauseStateToString(PauseState state) {
 
 enum PauseState { all, none, uncaught }
 
-class ScriptParsedEvent extends _WrappedWipEvent {
+class ScriptParsedEvent extends WrappedWipEvent {
   final WipScript script;
 
   ScriptParsedEvent(WipEvent event)
@@ -69,15 +74,15 @@ class ScriptParsedEvent extends _WrappedWipEvent {
         super(event);
 }
 
-class GlobalObjectClearedEvent extends _WrappedWipEvent {
+class GlobalObjectClearedEvent extends WrappedWipEvent {
   GlobalObjectClearedEvent(WipEvent event) : super(event);
 }
 
-class DebuggerResumedEvent extends _WrappedWipEvent {
+class DebuggerResumedEvent extends WrappedWipEvent {
   DebuggerResumedEvent(WipEvent event) : super(event);
 }
 
-class DebuggerPausedEvent extends _WrappedWipEvent {
+class DebuggerPausedEvent extends WrappedWipEvent {
   DebuggerPausedEvent(WipEvent event) : super(event);
 
   String get reason => params['reason'];
