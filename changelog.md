@@ -1,6 +1,10 @@
 # webkit_inspection_protocol.dart
 
 ## 0.3.0
+- Expose `ConsoleAPIEvent.timestamp`
+- Expose `LogEntry.timestamp`
+
+## 0.3.0
 - Expose the `runtime` domain.
 - Expose the `log` domain.
 - Deprecated the `console` domain.

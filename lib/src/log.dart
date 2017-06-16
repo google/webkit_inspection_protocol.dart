@@ -35,5 +35,8 @@ class LogEntry extends WrappedWipEvent {
   @optional
   String get url => _entry['url'];
 
+  /// Timestamp when this entry was added.
+  num get timestamp => _entry['timestamp'];
+
   String toString() => text;
 }

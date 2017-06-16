@@ -29,6 +29,9 @@ class ConsoleAPIEvent extends WrappedWipEvent {
   /// assert, profile, profileEnd.
   String get type => params['type'];
 
+  // Call timestamp.
+  num get timestamp => params['timestamp'];
+
   /// Call arguments.
   List<RemoteObject> get args =>
       (params['args'] as List).map((m) => new RemoteObject(m)).toList();
