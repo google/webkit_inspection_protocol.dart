@@ -7,9 +7,11 @@
 .svn
 packages
 pubspec.lock
-.idea
 .pub/
 docs/
 build/
 .settings/
 .packages
+
+.idea/
+webkit_inspection_protocol.dart.iml

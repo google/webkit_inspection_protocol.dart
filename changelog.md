@@ -1,6 +1,6 @@
 # webkit_inspection_protocol.dart
 
-## 0.3.0
+## 0.3.1
 - Expose `ConsoleAPIEvent.timestamp`
 - Expose `LogEntry.timestamp`
 
