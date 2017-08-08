@@ -29,6 +29,10 @@ class Server {
 
   Server(this.port, this.chrome, {this.modelDom}) {
     _server = io.serve(_handler, InternetAddress.ANY_IP_V4, port);
+      
+    // Allows cross origin.
+    _server.then((httpServer) =>
+        httpServer.defaultResponseHeaders.removeAll('X-Frame-Options'));
   }
 
   shelf.Handler get _handler => const shelf.Pipeline()
