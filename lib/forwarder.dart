@@ -18,7 +18,7 @@ import 'webkit_inspection_protocol.dart'
 class WipForwarder {
   static final _log = new Logger('ChromeForwarder');
 
-  final Stream _in;
+  final Stream<String> _in;
   final StreamSink _out;
   final WipConnection _debugger;
   final WipDom domModel;
