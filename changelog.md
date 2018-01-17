@@ -1,5 +1,9 @@
 # webkit_inspection_protocol.dart
 
+## 0.3.2
+- Analysis fixes for strong mode
+- Upgrade to the latest package dependencies
+
 ## 0.3.1
 - Expose `ConsoleAPIEvent.timestamp`
 - Expose `LogEntry.timestamp`
