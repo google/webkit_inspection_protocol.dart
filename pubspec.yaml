@@ -8,7 +8,8 @@ authors:
 - Marc Fisher <fisherii@google.com>
 
 environment:
-  sdk: '>=1.10.0 <2.0.0'
+  sdk: '>=2.0.0-dev.17.0 <2.0.0'
+
 dependencies:
   args: '>=0.13.0 <2.0.0'
   logging: '^0.11.0'

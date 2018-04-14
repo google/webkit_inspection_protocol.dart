@@ -43,8 +43,8 @@ class ChromeConnection {
   // TODO(DrMarcII): consider changing this to return Stream<ChromeTab>.
   Future<List<ChromeTab>> getTabs() async {
     var response = await getUrl('/json');
-    var respBody = await UTF8.decodeStream(response);
-    List<Map<String, String>> data = JSON.decode(respBody);
+    var respBody = await utf8.decodeStream(response);
+    List<Map<String, String>> data = jsonDecode(respBody);
     return data.map((m) => new ChromeTab(m)).toList();
   }
 
@@ -171,7 +171,7 @@ class WipConnection {
     _runtime = new WipRuntime(this);
 
     _ws.listen((data) {
-      var json = JSON.decode(data);
+      var json = jsonDecode(data);
 
       if (json.containsKey('id')) {
         _handleResponse(json);
@@ -197,7 +197,7 @@ class WipConnection {
       json['params'] = params;
     }
     _completers[json['id']] = completer;
-    _ws.add(JSON.encode(json));
+    _ws.add(jsonEncode(json));
     return completer.future;
   }
 
