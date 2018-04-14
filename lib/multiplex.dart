@@ -4,7 +4,7 @@
 library wip.multiplex;
 
 import 'dart:async' show Future;
-import 'dart:convert' show JSON;
+import 'dart:convert' show jsonEncode;
 import 'dart:io' show HttpServer, InternetAddress;
 
 import 'package:logging/logging.dart' show Logger;
@@ -96,7 +96,7 @@ class Server {
   Future<shelf.Response> _json(shelf.Request request) async {
     var path = request.url.pathSegments;
     if (path.length == 1 && path[0] == 'json') {
-      var resp = JSON.encode(await chrome.getTabs(), toEncodable: _jsonEncode);
+      var resp = jsonEncode(await chrome.getTabs(), toEncodable: _jsonEncode);
       _log.info('json: $resp');
       return new shelf.Response.ok(resp,
           headers: {'Content-Type': 'application/json'});

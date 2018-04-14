@@ -5,7 +5,7 @@ library crmux.forwarder;
 
 import 'dart:async'
     show Future, Stream, StreamController, StreamSink, StreamSubscription;
-import 'dart:convert' show JSON;
+import 'dart:convert' show jsonDecode, jsonEncode;
 
 import 'package:logging/logging.dart' show Logger;
 
@@ -48,7 +48,7 @@ class WipForwarder {
   }
 
   Future _onClientDataHandler(String data) async {
-    var json = JSON.decode(data);
+    var json = jsonDecode(data);
     var response = {'id': json['id']};
     _log.info('Forwarding to debugger: $data');
     try {
@@ -87,7 +87,7 @@ class WipForwarder {
       response['error'] = e.toString();
     }
     _log.info('forwarding response: $response');
-    _out.add(JSON.encode(response));
+    _out.add(jsonEncode(response));
   }
 
   void _onClientErrorHandler(Object error, StackTrace stackTrace) {
@@ -110,7 +110,7 @@ class WipForwarder {
     if (event.params != null) {
       json['params'] = event.params;
     }
-    _out.add(JSON.encode(json));
+    _out.add(jsonEncode(json));
   }
 
   void _onDebuggerErrorHandler(Object error, StackTrace stackTrace) {
