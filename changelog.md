@@ -1,5 +1,9 @@
 # webkit_inspection_protocol.dart
 
+## 0.3.3
+- Upgrade the Dart SDK minimum to 2.0.0-dev
+- Rename uses of deprecated dart:convert constants
+
 ## 0.3.2
 - Analysis fixes for strong mode
 - Upgrade to the latest package dependencies
