@@ -1,5 +1,9 @@
 # webkit_inspection_protocol.dart
 
+## 0.3.4
+- Several fixes for strong mode at runtime issues
+- Rename uses of deprecated dart:io constants
+
 ## 0.3.3
 - Upgrade the Dart SDK minimum to 2.0.0-dev
 - Rename uses of deprecated dart:convert constants
