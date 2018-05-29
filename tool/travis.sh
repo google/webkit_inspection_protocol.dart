@@ -11,6 +11,6 @@ set -e
 pub global activate tuneup
 pub global run tuneup check
 
-/usr/bin/chromium-browser --no-sandbox --remote-debugging-port=9222 &
-
-pub run test -j 1
+# Temporarily disabled due to issues/24
+# /usr/bin/chromium-browser --no-sandbox --remote-debugging-port=9222 &
+# pub run test -j 1

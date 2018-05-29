@@ -1,5 +1,5 @@
 name: webkit_inspection_protocol
-version: 0.3.3
+version: 0.3.4-dev
 description: A client for the Webkit Inspection Protocol (WIP).
 
 homepage: https://github.com/google/webkit_inspection_protocol.dart
@@ -8,7 +8,7 @@ authors:
 - Marc Fisher <fisherii@google.com>
 
 environment:
-  sdk: '>=2.0.0-dev.17.0 <2.0.0'
+  sdk: '>=2.0.0-dev.54.0 <2.0.0'
 
 dependencies:
   args: '>=0.13.0 <2.0.0'
