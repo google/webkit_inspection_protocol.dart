@@ -49,7 +49,7 @@ Future<WipConnection> navigateToPage(String page) async {
 
 Future _startHttpServer(SendPort sendPort) async {
   var handler = createStaticHandler('test/data');
-  var server = await io.serve(handler, InternetAddress.ANY_IP_V4, 0);
+  var server = await io.serve(handler, InternetAddress.anyIPv4, 0);
   sendPort.send(server.port);
 }
 

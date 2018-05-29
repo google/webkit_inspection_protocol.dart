@@ -28,7 +28,7 @@ class Server {
   final _modelDoms = <String, WipDomModel>{};
 
   Server(this.port, this.chrome, {this.modelDom}) {
-    _server = io.serve(_handler, InternetAddress.ANY_IP_V4, port);
+    _server = io.serve(_handler, InternetAddress.anyIPv4, port);
   }
 
   shelf.Handler get _handler => const shelf.Pipeline()
