@@ -44,8 +44,8 @@ class ChromeConnection {
   Future<List<ChromeTab>> getTabs() async {
     var response = await getUrl('/json');
     var respBody = await utf8.decodeStream(response);
-    List<Map<String, String>> data = jsonDecode(respBody);
-    return data.map((m) => new ChromeTab(m)).toList();
+    return new List<ChromeTab>.from(
+        jsonDecode(respBody).map((m) => new ChromeTab(m)));
   }
 
   Future<ChromeTab> getTab(bool accept(ChromeTab tab),
@@ -258,7 +258,7 @@ class WipResponse {
   String toString() => 'WipResponse $id: $result';
 }
 
-typedef WipEvent WipEventTransformer(WipEvent event);
+typedef T WipEventTransformer<T>(WipEvent event);
 
 /// @optional
 const String optional = 'optional';
@@ -277,11 +277,11 @@ abstract class WipDomain {
     }).bind(connection.onClose);
   }
 
-  Stream<WipEvent> eventStream(String method, WipEventTransformer transformer) {
+  Stream<T> eventStream<T>(String method, WipEventTransformer<T> transformer) {
     return _eventStreams.putIfAbsent(
       method,
       () => new StreamTransformer.fromHandlers(
-            handleData: (WipEvent event, EventSink<WipEvent> sink) {
+            handleData: (WipEvent event, EventSink<T> sink) {
               if (event.method == method) {
                 sink.add(transformer(event));
               }
