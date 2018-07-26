@@ -1,5 +1,8 @@
 # webkit_inspection_protocol.dart
 
+## 0.3.5
+- Widen the Dart SDK constraint
+
 ## 0.3.4
 - Several fixes for strong mode at runtime issues
 - Rename uses of deprecated dart:io constants
