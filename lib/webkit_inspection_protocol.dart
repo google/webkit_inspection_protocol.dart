@@ -1,9 +1,7 @@
 // Copyright 2015 Google. All rights reserved. Use of this source code is
 // governed by a BSD-style license that can be found in the LICENSE file.
 
-/**
- * A library to connect to a Webkit Inspection Protocol server (like Chrome).
- */
+/// A library to connect to a Webkit Inspection Protocol server (like Chrome).
 library wip;
 
 import 'dart:async';
@@ -18,6 +16,7 @@ import 'src/dom.dart';
 import 'src/log.dart';
 import 'src/page.dart';
 import 'src/runtime.dart';
+import 'src/target.dart';
 
 export 'src/console.dart';
 export 'src/debugger.dart';
@@ -25,6 +24,7 @@ export 'src/dom.dart';
 export 'src/log.dart';
 export 'src/page.dart';
 export 'src/runtime.dart';
+export 'src/target.dart';
 
 /**
  * A class to connect to a Chrome instance and reflect on its available tabs.
@@ -89,7 +89,9 @@ class ChromeTab {
   ChromeTab(this._map);
 
   String get description => _map['description'];
+
   String get devtoolsFrontendUrl => _map['devtoolsFrontendUrl'];
+
   String get faviconUrl => _map['faviconUrl'];
 
   /// Ex. `E1999E8A-EE27-0450-9900-5BFF4C69CA83`.
@@ -106,7 +108,9 @@ class ChromeTab {
   String get webSocketDebuggerUrl => _map['webSocketDebuggerUrl'];
 
   bool get hasIcon => _map.containsKey('faviconUrl');
+
   bool get isChromeExtension => url.startsWith('chrome-extension://');
+
   bool get isBackgroundPage => type == 'background_page';
 
   Future<WipConnection> connect() =>
@@ -135,18 +139,27 @@ class WipConnection {
   WipConsole get console => _console;
 
   WipDebugger _debugger;
+
   WipDebugger get debugger => _debugger;
 
   WipDom _dom;
+
   WipDom get dom => _dom;
 
   WipPage _page;
+
   WipPage get page => _page;
 
+  WipTarget _target;
+
+  WipTarget get target => _target;
+
   WipLog _log;
+
   WipLog get log => _log;
 
   WipRuntime _runtime;
+
   WipRuntime get runtime => _runtime;
 
   final Map _completers = <int, Completer<WipResponse>>{};
@@ -167,6 +180,7 @@ class WipConnection {
     _debugger = new WipDebugger(this);
     _dom = new WipDom(this);
     _page = new WipPage(this);
+    _target = new WipTarget(this);
     _log = new WipLog(this);
     _runtime = new WipRuntime(this);
 
@@ -182,6 +196,7 @@ class WipConnection {
   }
 
   Stream<WipConnection> get onClose => _closeController.stream;
+
   Stream<WipEvent> get onNotification => _notificationController.stream;
 
   Future close() => _ws.close();
@@ -268,6 +283,7 @@ abstract class WipDomain {
 
   final WipConnection connection;
   var _onClosed;
+
   Stream<WipDomain> get onClosed => _onClosed;
 
   WipDomain(WipConnection connection) : this.connection = connection {
@@ -308,4 +324,10 @@ class WrappedWipEvent implements WipEvent {
 
   @override
   Map<String, dynamic> get params => _wrapped.params;
+}
+
+const _Experimental experimental = const _Experimental();
+
+class _Experimental {
+  const _Experimental();
 }
