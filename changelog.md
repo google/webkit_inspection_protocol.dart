@@ -1,5 +1,8 @@
 # webkit_inspection_protocol.dart
 
+## 0.3.6
+- Expose the `target` domain and additional `runtime` domain calls
+
 ## 0.3.5
 - Widen the Dart SDK constraint
 

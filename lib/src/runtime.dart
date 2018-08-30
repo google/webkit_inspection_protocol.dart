@@ -10,7 +10,58 @@ class WipRuntime extends WipDomain {
   WipRuntime(WipConnection connection) : super(connection);
 
   Future enable() => sendCommand('Runtime.enable');
+
   Future disable() => sendCommand('Runtime.disable');
+
+  /// Evaluates expression on global object.
+  Future<RemoteObject> evaluate(String expression) async {
+    final WipResponse response = await sendCommand('Runtime.evaluate', params: {
+      'expression': expression,
+    });
+
+    if (response.result.containsKey('exceptionDetails')) {
+      throw new ExceptionDetails(response.result['exceptionDetails']);
+    } else {
+      return new RemoteObject(response.result['result']);
+    }
+  }
+
+  /// Calls function with given declaration on the given object. Object group of
+  /// the result is inherited from the target object.
+  Future<RemoteObject> callFunctionOn(
+    String functionDeclaration, {
+    String objectId,
+    int executionContextId,
+    List<dynamic> arguments,
+  }) async {
+    Map<String, dynamic> params = {
+      'functionDeclaration': functionDeclaration,
+    };
+
+    if (objectId != null) {
+      params['objectId'] = objectId;
+    }
+
+    if (executionContextId != null) {
+      params['executionContextId'] = executionContextId;
+    }
+
+    if (objectId != null) {
+      // Convert to a ist of CallArguments.
+      params['arguments'] = arguments.map((dynamic value) {
+        return {'value': value};
+      }).toList();
+    }
+
+    final WipResponse response =
+        await sendCommand('Runtime.callFunctionOn', params: params);
+
+    if (response.result.containsKey('exceptionDetails')) {
+      throw new ExceptionDetails(response.result['exceptionDetails']);
+    } else {
+      return new RemoteObject(response.result['result']);
+    }
+  }
 
   Stream<ConsoleAPIEvent> get onConsoleAPICalled => eventStream(
       'Runtime.consoleAPICalled',
@@ -36,7 +87,7 @@ class ConsoleAPIEvent extends WrappedWipEvent {
   List<RemoteObject> get args =>
       (params['args'] as List).map((m) => new RemoteObject(m)).toList();
 
-  // TODO: stackTrace, StackTrace, Stack trace captured when the call was made.
+// TODO: stackTrace, StackTrace, Stack trace captured when the call was made.
 }
 
 class ExceptionThrownEvent extends WrappedWipEvent {
@@ -86,7 +137,7 @@ class ExceptionDetails {
   RemoteObject get exception =>
       _map['exception'] == null ? null : new RemoteObject(_map['exception']);
 
-  String toString() => text;
+  String toString() => '$text, $url, $scriptId, $lineNumber, $exception';
 }
 
 class StackTrace {
@@ -144,13 +195,25 @@ class CallFrame {
   String toString() => '$functionName() ($url $lineNumber:$columnNumber)';
 }
 
+/// Mirror object referencing original JavaScript object.
 class RemoteObject {
   final Map<String, dynamic> _map;
 
   RemoteObject(this._map);
 
+  /// Object type.object, function, undefined, string, number, boolean, symbol,
+  /// bigint.
   String get type => _map['type'];
+
+  /// Remote object value in case of primitive values or JSON values (if it was
+  /// requested). (optional)
   String get value => _map['value'];
+
+  /// String representation of the object. (optional)
+  String get description => _map['description'];
+
+  /// Unique object identifier (for non-primitive values). (optional)
+  String get objectId => _map['objectId'];
 
   String toString() => '$type $value';
 }
