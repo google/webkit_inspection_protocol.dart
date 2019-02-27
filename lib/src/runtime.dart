@@ -207,7 +207,7 @@ class RemoteObject {
 
   /// Remote object value in case of primitive values or JSON values (if it was
   /// requested). (optional)
-  String get value => _map['value'];
+  Object get value => _map['value'];
 
   /// String representation of the object. (optional)
   String get description => _map['description'];
