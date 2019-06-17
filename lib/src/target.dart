@@ -16,7 +16,7 @@ class WipTarget extends WipDomain {
   Future<String> createTarget(String url) async {
     WipResponse response =
         await sendCommand('Target.createTarget', params: {'url': url});
-    return response.result['targetId'];
+    return response.result['targetId'] as String;
   }
 
   /// Activates (focuses) the target.
@@ -29,7 +29,7 @@ class WipTarget extends WipDomain {
   Future<bool> closeTarget(String targetId) async {
     WipResponse response =
         await sendCommand('Target.closeTarget', params: {'targetId': targetId});
-    return response.result['success'];
+    return response.result['success'] as bool;
   }
 
   /// Inject object to the target's main frame that provides a communication

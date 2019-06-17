@@ -18,25 +18,25 @@ class WipLog extends WipDomain {
 class LogEntry extends WrappedWipEvent {
   LogEntry(WipEvent event) : super(event);
 
-  Map<String, dynamic> get _entry => params['entry'];
+  Map<String, dynamic> get _entry => params['entry'] as Map<String, dynamic>;
 
   /// Log entry source. Allowed values: xml, javascript, network, storage,
   /// appcache, rendering, security, deprecation, worker, violation,
   /// intervention, other.
-  String get source => _entry['source'];
+  String get source => _entry['source'] as String;
 
   /// Log entry severity. Allowed values: verbose, info, warning, error.
-  String get level => _entry['level'];
+  String get level => _entry['level'] as String;
 
   /// Logged text.
-  String get text => _entry['text'];
+  String get text => _entry['text'] as String;
 
   /// URL of the resource if known.
   @optional
-  String get url => _entry['url'];
+  String get url => _entry['url'] as String;
 
   /// Timestamp when this entry was added.
-  num get timestamp => _entry['timestamp'];
+  num get timestamp => _entry['timestamp'] as num;
 
   String toString() => text;
 }

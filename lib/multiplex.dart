@@ -11,6 +11,8 @@ import 'package:logging/logging.dart' show Logger;
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as io;
 import 'package:shelf_web_socket/shelf_web_socket.dart' as ws;
+import 'package:web_socket_channel/web_socket_channel.dart'
+    show WebSocketChannel;
 import 'package:webkit_inspection_protocol/dom_model.dart' show WipDomModel;
 import 'package:webkit_inspection_protocol/forwarder.dart' show WipForwarder;
 import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart'
@@ -124,19 +126,19 @@ class Server {
     }
     _log.info('connecting to websocket: ${request.url}');
 
-    return ws.webSocketHandler((ws) async {
+    return ws.webSocketHandler((WebSocketChannel webSocket) async {
       var debugger = await _connections.putIfAbsent(path[2], () async {
         var tab = await chrome.getTab((tab) => tab.id == path[2]);
         return WipConnection.connect(tab.webSocketDebuggerUrl);
       });
-      var dom;
+      WipDomModel dom;
       if (modelDom) {
         dom = await _modelDoms.putIfAbsent(path[2], () {
           return new WipDomModel(debugger.dom);
         });
       }
-      var forwarder =
-          new WipForwarder(debugger, ws.stream, sink: ws.sink, domModel: dom);
+      var forwarder = new WipForwarder(debugger, webSocket.stream.cast(),
+          sink: webSocket.sink, domModel: dom);
       debugger.onClose.listen((_) {
         _connections.remove(path[2]);
         _modelDoms.remove(path[2]);

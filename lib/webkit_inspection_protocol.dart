@@ -45,7 +45,7 @@ class ChromeConnection {
     var response = await getUrl('/json');
     var respBody = await utf8.decodeStream(response);
     return new List<ChromeTab>.from(
-        jsonDecode(respBody).map((m) => new ChromeTab(m)));
+        (jsonDecode(respBody) as List).map((m) => new ChromeTab(m as Map)));
   }
 
   Future<ChromeTab> getTab(bool accept(ChromeTab tab),
@@ -88,24 +88,24 @@ class ChromeTab {
 
   ChromeTab(this._map);
 
-  String get description => _map['description'];
+  String get description => _map['description'] as String;
 
-  String get devtoolsFrontendUrl => _map['devtoolsFrontendUrl'];
+  String get devtoolsFrontendUrl => _map['devtoolsFrontendUrl'] as String;
 
-  String get faviconUrl => _map['faviconUrl'];
+  String get faviconUrl => _map['faviconUrl'] as String;
 
   /// Ex. `E1999E8A-EE27-0450-9900-5BFF4C69CA83`.
-  String get id => _map['id'];
+  String get id => _map['id'] as String;
 
-  String get title => _map['title'];
+  String get title => _map['title'] as String;
 
   /// Ex. `background_page`, `page`.
-  String get type => _map['type'];
+  String get type => _map['type'] as String;
 
-  String get url => _map['url'];
+  String get url => _map['url'] as String;
 
   /// Ex. `ws://localhost:1234/devtools/page/4F98236D-4EB0-7C6C-5DD1-AF9B6BE4BC71`.
-  String get webSocketDebuggerUrl => _map['webSocketDebuggerUrl'];
+  String get webSocketDebuggerUrl => _map['webSocketDebuggerUrl'] as String;
 
   bool get hasIcon => _map.containsKey('faviconUrl');
 
@@ -164,10 +164,8 @@ class WipConnection {
 
   final Map _completers = <int, Completer<WipResponse>>{};
 
-  final StreamController _closeController =
-      new StreamController<WipConnection>.broadcast();
-  final StreamController _notificationController =
-      new StreamController<WipEvent>.broadcast();
+  final _closeController = new StreamController<WipConnection>.broadcast();
+  final _notificationController = new StreamController<WipEvent>.broadcast();
 
   static Future<WipConnection> connect(String url) {
     return WebSocket.connect(url).then((socket) {
@@ -185,7 +183,7 @@ class WipConnection {
     _runtime = new WipRuntime(this);
 
     _ws.listen((data) {
-      var json = jsonDecode(data);
+      var json = jsonDecode(data as String) as Map<String, dynamic>;
 
       if (json.containsKey('id')) {
         _handleResponse(json);
@@ -245,8 +243,8 @@ class WipEvent {
   final Map<String, dynamic> params;
 
   WipEvent(Map<String, dynamic> map)
-      : method = map['method'],
-        params = map['params'];
+      : method = map['method'] as String,
+        params = map['params'] as Map<String, dynamic>;
 
   String toString() => 'WipEvent: $method($params)';
 }
@@ -256,7 +254,7 @@ class WipError {
   final dynamic error;
 
   WipError(Map<String, dynamic> json)
-      : id = json['id'],
+      : id = json['id'] as int,
         error = json['error'];
 
   String toString() => 'WipError $id: $error';
@@ -267,8 +265,8 @@ class WipResponse {
   final Map<String, dynamic> result;
 
   WipResponse(Map<String, dynamic> json)
-      : id = json['id'],
-        result = json['result'];
+      : id = json['id'] as int,
+        result = json['result'] as Map<String, dynamic>;
 
   String toString() => 'WipResponse $id: $result';
 }
@@ -282,28 +280,30 @@ abstract class WipDomain {
   Map<String, Stream> _eventStreams = {};
 
   final WipConnection connection;
-  var _onClosed;
+  Stream<WipDomain> _onClosed;
 
   Stream<WipDomain> get onClosed => _onClosed;
 
   WipDomain(WipConnection connection) : this.connection = connection {
-    this._onClosed =
-        new StreamTransformer.fromHandlers(handleData: (event, EventSink sink) {
+    this._onClosed = new StreamTransformer.fromHandlers(
+        handleData: (event, EventSink<WipDomain> sink) {
       sink.add(this);
     }).bind(connection.onClose);
   }
 
   Stream<T> eventStream<T>(String method, WipEventTransformer<T> transformer) {
-    return _eventStreams.putIfAbsent(
-      method,
-      () => new StreamTransformer.fromHandlers(
-            handleData: (WipEvent event, EventSink<T> sink) {
-              if (event.method == method) {
-                sink.add(transformer(event));
-              }
-            },
-          ).bind(connection.onNotification),
-    );
+    return _eventStreams
+        .putIfAbsent(
+          method,
+          () => new StreamTransformer.fromHandlers(
+                handleData: (WipEvent event, EventSink<T> sink) {
+                  if (event.method == method) {
+                    sink.add(transformer(event));
+                  }
+                },
+              ).bind(connection.onNotification),
+        )
+        .cast();
   }
 
   Future<WipResponse> sendCommand(

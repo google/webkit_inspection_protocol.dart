@@ -8,7 +8,7 @@ import 'package:shelf/shelf_io.dart' as io;
 import 'package:shelf_static/shelf_static.dart';
 import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart';
 
-var _wipConnection;
+Future<WipConnection> _wipConnection;
 
 /// Returns a (cached) debugger connection to the first regular tab of
 /// the browser with remote debugger running at 'localhost:9222',

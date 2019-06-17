@@ -14,15 +14,16 @@ class WipDom extends WipDomain {
   Future<Map<String, String>> getAttributes(int nodeId) async {
     WipResponse resp =
         await sendCommand('DOM.getAttributes', params: {'nodeId': nodeId});
-    return _attributeListToMap(resp.result['attributes']);
+    return _attributeListToMap((resp.result['attributes'] as List).cast());
   }
 
   Future<Node> getDocument() async =>
-      new Node((await sendCommand('DOM.getDocument')).result['root']);
+      new Node((await sendCommand('DOM.getDocument')).result['root']
+          as Map<String, dynamic>);
 
   Future<String> getOuterHtml(int nodeId) async =>
       (await sendCommand('DOM.getOuterHTML', params: {'nodeId': nodeId}))
-          .result['root'];
+          .result['root'] as String;
 
   Future hideHighlight() => sendCommand('DOM.hideHighlight');
 
@@ -86,19 +87,19 @@ class WipDom extends WipDomain {
     }
 
     var resp = await sendCommand('DOM.moveTo', params: params);
-    return resp.result['nodeId'];
+    return resp.result['nodeId'] as int;
   }
 
   Future<int> querySelector(int nodeId, String selector) async {
     var resp = await sendCommand('DOM.querySelector',
         params: {'nodeId': nodeId, 'selector': selector});
-    return resp.result['nodeId'];
+    return resp.result['nodeId'] as int;
   }
 
   Future<List<int>> querySelectorAll(int nodeId, String selector) async {
     var resp = await sendCommand('DOM.querySelectorAll',
         params: {'nodeId': nodeId, 'selector': selector});
-    return resp.result['nodeIds'];
+    return (resp.result['nodeIds'] as List).cast();
   }
 
   Future removeAttribute(int nodeId, String name) =>
@@ -114,7 +115,7 @@ class WipDom extends WipDomain {
   Future<int> requestNode(String objectId) async {
     var resp =
         await sendCommand('DOM.requestNode', params: {'objectId': objectId});
-    return resp.result['nodeId'];
+    return resp.result['nodeId'] as int;
   }
 
   Future<WipRemoteObject> resolveNode(int nodeId, {String objectGroup}) async {
@@ -124,7 +125,7 @@ class WipDom extends WipDomain {
     }
 
     var resp = await sendCommand('DOM.resolveNode', params: params);
-    return new WipRemoteObject(resp.result['object']);
+    return new WipRemoteObject(resp.result['object'] as Map<String, dynamic>);
   }
 
   Future setAttributeValue(int nodeId, String name, String value) =>
@@ -142,7 +143,7 @@ class WipDom extends WipDomain {
   Future<int> setNodeName(int nodeId, String name) async {
     var resp = await sendCommand('DOM.setNodeName',
         params: {'nodeId': nodeId, 'name': name});
-    return resp.result['nodeId'];
+    return resp.result['nodeId'] as int;
   }
 
   Future setNodeValue(int nodeId, String value) =>
@@ -181,41 +182,41 @@ class WipDom extends WipDomain {
 class AttributeModifiedEvent extends WrappedWipEvent {
   AttributeModifiedEvent(WipEvent event) : super(event);
 
-  int get nodeId => params['nodeId'];
-  String get name => params['name'];
-  String get value => params['value'];
+  int get nodeId => params['nodeId'] as int;
+  String get name => params['name'] as String;
+  String get value => params['value'] as String;
 }
 
 class AttributeRemovedEvent extends WrappedWipEvent {
   AttributeRemovedEvent(WipEvent event) : super(event);
 
-  int get nodeId => params['nodeId'];
-  String get name => params['name'];
+  int get nodeId => params['nodeId'] as int;
+  String get name => params['name'] as String;
 }
 
 class CharacterDataModifiedEvent extends WrappedWipEvent {
   CharacterDataModifiedEvent(WipEvent event) : super(event);
 
-  int get nodeId => params['nodeId'];
-  String get characterData => params['characterData'];
+  int get nodeId => params['nodeId'] as int;
+  String get characterData => params['characterData'] as String;
 }
 
 class ChildNodeCountUpdatedEvent extends WrappedWipEvent {
   ChildNodeCountUpdatedEvent(WipEvent event) : super(event);
 
-  int get nodeId => params['nodeId'];
-  int get childNodeCount => params['childNodeCount'];
+  int get nodeId => params['nodeId'] as int;
+  int get childNodeCount => params['childNodeCount'] as int;
 }
 
 class ChildNodeInsertedEvent extends WrappedWipEvent {
   ChildNodeInsertedEvent(WipEvent event) : super(event);
 
-  int get parentNodeId => params['parentNodeId'];
-  int get previousNodeId => params['previousNodeId'];
+  int get parentNodeId => params['parentNodeId'] as int;
+  int get previousNodeId => params['previousNodeId'] as int;
   Node _node;
   Node get node {
     if (_node == null) {
-      _node = new Node(params['node']);
+      _node = new Node(params['node'] as Map<String, dynamic>);
     }
     return _node;
   }
@@ -224,8 +225,8 @@ class ChildNodeInsertedEvent extends WrappedWipEvent {
 class ChildNodeRemovedEvent extends WrappedWipEvent {
   ChildNodeRemovedEvent(WipEvent event) : super(event);
 
-  int get parentNodeId => params['parentNodeId'];
-  int get nodeId => params['nodeId'];
+  int get parentNodeId => params['parentNodeId'] as int;
+  int get nodeId => params['nodeId'] as int;
 }
 
 class DocumentUpdatedEvent extends WrappedWipEvent {
@@ -235,10 +236,10 @@ class DocumentUpdatedEvent extends WrappedWipEvent {
 class SetChildNodesEvent extends WrappedWipEvent {
   SetChildNodesEvent(WipEvent event) : super(event);
 
-  int get nodeId => params['parentId'];
+  int get nodeId => params['parentId'] as int;
   Iterable<Node> get nodes sync* {
     for (Map node in params['nodes']) {
-      yield new Node(node);
+      yield new Node(node as Map<String, dynamic>);
     }
   }
 
@@ -253,55 +254,55 @@ class Node {
 
   Node(this._map);
 
-  var _attributes;
+  Map<String, String> _attributes;
   Map<String, String> get attributes {
     if (_attributes == null && _map.containsKey('attributes')) {
-      _attributes = _attributeListToMap(_map['attributes']);
+      _attributes = _attributeListToMap((_map['attributes'] as List).cast());
     }
     return _attributes;
   }
 
-  int get childNodeCount => _map['childNodeCount'];
+  int get childNodeCount => _map['childNodeCount'] as int;
 
-  var _children;
+  List<Node> _children;
   List<Node> get children {
     if (_children == null && _map.containsKey('children')) {
-      _children =
-          new UnmodifiableListView(_map['children'].map((c) => new Node(c)));
+      _children = new UnmodifiableListView((_map['children'] as List)
+          .map((c) => new Node(c as Map<String, dynamic>)));
     }
     return _children;
   }
 
   Node get contentDocument {
     if (_map.containsKey('contentDocument')) {
-      return new Node(_map['contentDocument']);
+      return new Node(_map['contentDocument'] as Map<String, dynamic>);
     }
     return null;
   }
 
-  String get documentUrl => _map['documentURL'];
+  String get documentUrl => _map['documentURL'] as String;
 
-  String get internalSubset => _map['internalSubset'];
+  String get internalSubset => _map['internalSubset'] as String;
 
-  String get localName => _map['localName'];
+  String get localName => _map['localName'] as String;
 
-  String get name => _map['name'];
+  String get name => _map['name'] as String;
 
-  int get nodeId => _map['nodeId'];
+  int get nodeId => _map['nodeId'] as int;
 
-  String get nodeName => _map['nodeName'];
+  String get nodeName => _map['nodeName'] as String;
 
-  int get nodeType => _map['nodeType'];
+  int get nodeType => _map['nodeType'] as int;
 
-  String get nodeValue => _map['nodeValue'];
+  String get nodeValue => _map['nodeValue'] as String;
 
-  String get publicId => _map['publicId'];
+  String get publicId => _map['publicId'] as String;
 
-  String get systemId => _map['systemId'];
+  String get systemId => _map['systemId'] as String;
 
-  String get value => _map['value'];
+  String get value => _map['value'] as String;
 
-  String get xmlVersion => _map['xmlVersion'];
+  String get xmlVersion => _map['xmlVersion'] as String;
 
   String toString() => '$nodeName: $nodeId $attributes';
 }
@@ -324,7 +325,7 @@ class Rgba {
 }
 
 Map<String, String> _attributeListToMap(List<String> attrList) {
-  var attributes = {};
+  var attributes = <String, String>{};
   for (int i = 0; i < attrList.length; i += 2) {
     attributes[attrList[i]] = attrList[i + 1];
   }

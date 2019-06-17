@@ -32,7 +32,7 @@ class WipForwarder {
   final StreamController<Null> _closedController =
       new StreamController.broadcast();
 
-  factory WipForwarder(WipConnection debugger, Stream stream,
+  factory WipForwarder(WipConnection debugger, Stream<String> stream,
       {StreamSink sink, WipDom domModel}) {
     if (sink == null) {
       sink = stream as StreamSink;
@@ -52,8 +52,8 @@ class WipForwarder {
     var response = {'id': json['id']};
     _log.info('Forwarding to debugger: $data');
     try {
-      String method = json['method'];
-      Map<String, dynamic> params = json['params'];
+      var method = json['method'] as String;
+      var params = json['params'] as Map<String, dynamic>;
       bool processed = false;
 
       if (method.contains('reakpoint')) {
@@ -68,7 +68,7 @@ class WipForwarder {
             break;
           case 'DOM.getAttributes':
             var attributes = flattenAttributesMap(
-                await domModel.getAttributes(params['nodeId']));
+                await domModel.getAttributes(params['nodeId'] as int));
             response['result'] = {'attributes': attributes};
             processed = true;
             break;
