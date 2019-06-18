@@ -23,7 +23,7 @@ main(List<String> argv) async {
 
   hierarchicalLoggingEnabled = true;
 
-  if (args['verbose']) {
+  if (args['verbose'] == true) {
     Logger.root.level = Level.ALL;
   } else {
     Logger.root.level = Level.WARNING;
@@ -33,7 +33,8 @@ main(List<String> argv) async {
     stderr.writeln('${rec.level.name}: ${rec.time}: ${rec.message}');
   });
 
-  var cr =
-      new ChromeConnection(args['chrome_host'], int.parse(args['chrome_port']));
-  new Server(int.parse(args['listen_port']), cr, modelDom: args['model_dom']);
+  var cr = new ChromeConnection(
+      args['chrome_host'] as String, int.parse(args['chrome_port'] as String));
+  new Server(int.parse(args['listen_port'] as String), cr,
+      modelDom: args['model_dom'] as bool);
 }

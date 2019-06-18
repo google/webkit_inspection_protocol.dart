@@ -20,9 +20,11 @@ class WipRuntime extends WipDomain {
     });
 
     if (response.result.containsKey('exceptionDetails')) {
-      throw new ExceptionDetails(response.result['exceptionDetails']);
+      throw new ExceptionDetails(
+          response.result['exceptionDetails'] as Map<String, dynamic>);
     } else {
-      return new RemoteObject(response.result['result']);
+      return new RemoteObject(
+          response.result['result'] as Map<String, dynamic>);
     }
   }
 
@@ -57,9 +59,11 @@ class WipRuntime extends WipDomain {
         await sendCommand('Runtime.callFunctionOn', params: params);
 
     if (response.result.containsKey('exceptionDetails')) {
-      throw new ExceptionDetails(response.result['exceptionDetails']);
+      throw new ExceptionDetails(
+          response.result['exceptionDetails'] as Map<String, dynamic>);
     } else {
-      return new RemoteObject(response.result['result']);
+      return new RemoteObject(
+          response.result['result'] as Map<String, dynamic>);
     }
   }
 
@@ -78,14 +82,15 @@ class ConsoleAPIEvent extends WrappedWipEvent {
   /// Type of the call. Allowed values: log, debug, info, error, warning, dir,
   /// dirxml, table, trace, clear, startGroup, startGroupCollapsed, endGroup,
   /// assert, profile, profileEnd.
-  String get type => params['type'];
+  String get type => params['type'] as String;
 
   // Call timestamp.
-  num get timestamp => params['timestamp'];
+  num get timestamp => params['timestamp'] as num;
 
   /// Call arguments.
-  List<RemoteObject> get args =>
-      (params['args'] as List).map((m) => new RemoteObject(m)).toList();
+  List<RemoteObject> get args => (params['args'] as List)
+      .map((m) => new RemoteObject(m as Map<String, dynamic>))
+      .toList();
 
 // TODO: stackTrace, StackTrace, Stack trace captured when the call was made.
 }
@@ -94,10 +99,10 @@ class ExceptionThrownEvent extends WrappedWipEvent {
   ExceptionThrownEvent(WipEvent event) : super(event);
 
   /// Timestamp of the exception.
-  int get timestamp => params['timestamp'];
+  int get timestamp => params['timestamp'] as int;
 
   ExceptionDetails get exceptionDetails =>
-      new ExceptionDetails(params['exceptionDetails']);
+      new ExceptionDetails(params['exceptionDetails'] as Map<String, dynamic>);
 }
 
 class ExceptionDetails {
@@ -106,36 +111,38 @@ class ExceptionDetails {
   ExceptionDetails(this._map);
 
   /// Exception id.
-  int get exceptionId => _map['exceptionId'];
+  int get exceptionId => _map['exceptionId'] as int;
 
   /// Exception text, which should be used together with exception object when
   /// available.
-  String get text => _map['text'];
+  String get text => _map['text'] as String;
 
   /// Line number of the exception location (0-based).
-  int get lineNumber => _map['lineNumber'];
+  int get lineNumber => _map['lineNumber'] as int;
 
   /// Column number of the exception location (0-based).
-  int get columnNumber => _map['columnNumber'];
+  int get columnNumber => _map['columnNumber'] as int;
 
   /// URL of the exception location, to be used when the script was not
   /// reported.
   @optional
-  String get url => _map['url'];
+  String get url => _map['url'] as String;
 
   /// Script ID of the exception location.
   @optional
-  String get scriptId => _map['scriptId'];
+  String get scriptId => _map['scriptId'] as String;
 
   /// JavaScript stack trace if available.
   @optional
-  StackTrace get stackTrace =>
-      _map['stackTrace'] == null ? null : new StackTrace(_map['stackTrace']);
+  StackTrace get stackTrace => _map['stackTrace'] == null
+      ? null
+      : new StackTrace(_map['stackTrace'] as Map<String, dynamic>);
 
   /// Exception object if available.
   @optional
-  RemoteObject get exception =>
-      _map['exception'] == null ? null : new RemoteObject(_map['exception']);
+  RemoteObject get exception => _map['exception'] == null
+      ? null
+      : new RemoteObject(_map['exception'] as Map<String, dynamic>);
 
   String toString() => '$text, $url, $scriptId, $lineNumber, $exception';
 }
@@ -148,10 +155,11 @@ class StackTrace {
   /// String label of this stack trace. For async traces this may be a name of
   /// the function that initiated the async call.
   @optional
-  String get description => _map['description'];
+  String get description => _map['description'] as String;
 
-  List<CallFrame> get callFrames =>
-      (_map['callFrames'] as List).map((m) => new CallFrame(m)).toList();
+  List<CallFrame> get callFrames => (_map['callFrames'] as List)
+      .map((m) => new CallFrame(m as Map<String, dynamic>))
+      .toList();
 
   // TODO: parent, StackTrace, Asynchronous JavaScript stack trace that preceded
   // this stack, if available.
@@ -178,19 +186,19 @@ class CallFrame {
   CallFrame(this._map);
 
   /// JavaScript function name.
-  String get functionName => _map['functionName'];
+  String get functionName => _map['functionName'] as String;
 
   /// JavaScript script id.
-  String get scriptId => _map['scriptId'];
+  String get scriptId => _map['scriptId'] as String;
 
   /// JavaScript script name or url.
-  String get url => _map['url'];
+  String get url => _map['url'] as String;
 
   /// JavaScript script line number (0-based).
-  int get lineNumber => _map['lineNumber'];
+  int get lineNumber => _map['lineNumber'] as int;
 
   /// JavaScript script column number (0-based).
-  int get columnNumber => _map['columnNumber'];
+  int get columnNumber => _map['columnNumber'] as int;
 
   String toString() => '$functionName() ($url $lineNumber:$columnNumber)';
 }
@@ -203,17 +211,17 @@ class RemoteObject {
 
   /// Object type.object, function, undefined, string, number, boolean, symbol,
   /// bigint.
-  String get type => _map['type'];
+  String get type => _map['type'] as String;
 
   /// Remote object value in case of primitive values or JSON values (if it was
   /// requested). (optional)
   Object get value => _map['value'];
 
   /// String representation of the object. (optional)
-  String get description => _map['description'];
+  String get description => _map['description'] as String;
 
   /// Unique object identifier (for non-primitive values). (optional)
-  String get objectId => _map['objectId'];
+  String get objectId => _map['objectId'] as String;
 
   String toString() => '$type $value';
 }

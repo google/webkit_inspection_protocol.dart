@@ -1,5 +1,9 @@
 # webkit_inspection_protocol.dart
 
+## 0.4.1
+- Fix `page.reload` method.
+- Disable implicit casts when developing this package.
+
 ## 0.4.0
 - Change the `RemoteObject.value` return type to `Object`.
 

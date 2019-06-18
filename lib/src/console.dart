@@ -24,16 +24,16 @@ class WipConsole extends WipDomain {
 class ConsoleMessageEvent extends WrappedWipEvent {
   ConsoleMessageEvent(WipEvent event) : super(event);
 
-  Map get _message => params['message'];
+  Map get _message => params['message'] as Map;
 
-  String get text => _message['text'];
-  String get level => _message['level'];
-  String get url => _message['url'];
+  String get text => _message['text'] as String;
+  String get level => _message['level'] as String;
+  String get url => _message['url'] as String;
 
   Iterable<WipConsoleCallFrame> getStackTrace() {
     if (_message.containsKey('stackTrace')) {
-      return params['stackTrace']
-          .map((frame) => new WipConsoleCallFrame.fromMap(frame));
+      return (params['stackTrace'] as List).map((frame) =>
+          new WipConsoleCallFrame.fromMap(frame as Map<String, dynamic>));
     } else {
       return [];
     }
@@ -51,9 +51,9 @@ class WipConsoleCallFrame {
 
   WipConsoleCallFrame.fromMap(this._map);
 
-  int get columnNumber => _map['columnNumber'];
-  String get functionName => _map['functionName'];
-  int get lineNumber => _map['lineNumber'];
-  String get scriptId => _map['scriptId'];
-  String get url => _map['url'];
+  int get columnNumber => _map['columnNumber'] as int;
+  String get functionName => _map['functionName'] as String;
+  int get lineNumber => _map['lineNumber'] as int;
+  String get scriptId => _map['scriptId'] as String;
+  String get url => _map['url'] as String;
 }

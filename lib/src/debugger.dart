@@ -24,7 +24,7 @@ class WipDebugger extends WipDomain {
   Future<String> getScriptSource(String scriptId) async =>
       (await sendCommand('Debugger.getScriptSource',
               params: {'scriptId': scriptId}))
-          .result['scriptSource'];
+          .result['scriptSource'] as String;
 
   Future pause() => sendCommand('Debugger.pause');
   Future resume() => sendCommand('Debugger.resume');
@@ -85,11 +85,11 @@ class DebuggerResumedEvent extends WrappedWipEvent {
 class DebuggerPausedEvent extends WrappedWipEvent {
   DebuggerPausedEvent(WipEvent event) : super(event);
 
-  String get reason => params['reason'];
+  String get reason => params['reason'] as String;
   Object get data => params['data'];
 
-  Iterable<WipCallFrame> getCallFrames() =>
-      params['callFrames'].map((frame) => new WipCallFrame(frame));
+  Iterable<WipCallFrame> getCallFrames() => (params['callFrames'] as List)
+      .map((frame) => new WipCallFrame(frame as Map<String, dynamic>));
 
   String toString() => 'paused: ${reason}';
 }
@@ -99,13 +99,15 @@ class WipCallFrame {
 
   WipCallFrame(this._map);
 
-  String get callFrameId => _map['callFrameId'];
-  String get functionName => _map['functionName'];
-  WipLocation get location => new WipLocation(_map['location']);
-  WipRemoteObject get thisObject => new WipRemoteObject(_map['this']);
+  String get callFrameId => _map['callFrameId'] as String;
+  String get functionName => _map['functionName'] as String;
+  WipLocation get location =>
+      new WipLocation(_map['location'] as Map<String, dynamic>);
+  WipRemoteObject get thisObject =>
+      new WipRemoteObject(_map['this'] as Map<String, dynamic>);
 
-  Iterable<WipScope> getScopeChain() =>
-      _map['scopeChain'].map((scope) => new WipScope(scope));
+  Iterable<WipScope> getScopeChain() => (_map['scopeChain'] as List)
+      .map((scope) => new WipScope(scope as Map<String, dynamic>));
 
   String toString() => '[${functionName}]';
 }
@@ -115,9 +117,9 @@ class WipLocation {
 
   WipLocation(this._map);
 
-  int get columnNumber => _map['columnNumber'];
-  int get lineNumber => _map['lineNumber'];
-  String get scriptId => _map['scriptId'];
+  int get columnNumber => _map['columnNumber'] as int;
+  int get lineNumber => _map['lineNumber'] as int;
+  String get scriptId => _map['scriptId'] as String;
 
   String toString() => '[${scriptId}:${lineNumber}:${columnNumber}]';
 }
@@ -127,11 +129,11 @@ class WipRemoteObject {
 
   WipRemoteObject(this._map);
 
-  String get className => _map['className'];
-  String get description => _map['description'];
-  String get objectId => _map['objectId'];
-  String get subtype => _map['subtype'];
-  String get type => _map['type'];
+  String get className => _map['className'] as String;
+  String get description => _map['description'] as String;
+  String get objectId => _map['objectId'] as String;
+  String get subtype => _map['subtype'] as String;
+  String get type => _map['type'] as String;
   Object get value => _map['value'];
 }
 
@@ -140,14 +142,14 @@ class WipScript {
 
   WipScript(this._map);
 
-  String get scriptId => _map['scriptId'];
-  String get url => _map['url'];
-  int get startLine => _map['startLine'];
-  int get startColumn => _map['startColumn'];
-  int get endLine => _map['endLine'];
-  int get endColumn => _map['endColumn'];
-  bool get isContentScript => _map['isContentScript'];
-  String get sourceMapURL => _map['sourceMapURL'];
+  String get scriptId => _map['scriptId'] as String;
+  String get url => _map['url'] as String;
+  int get startLine => _map['startLine'] as int;
+  int get startColumn => _map['startColumn'] as int;
+  int get endLine => _map['endLine'] as int;
+  int get endColumn => _map['endColumn'] as int;
+  bool get isContentScript => _map['isContentScript'] as bool;
+  String get sourceMapURL => _map['sourceMapURL'] as String;
 
   String toString() => '[script ${scriptId}: ${url}]';
 }
@@ -158,12 +160,13 @@ class WipScope {
   WipScope(this._map);
 
   // "catch", "closure", "global", "local", "with"
-  String get scope => _map['scope'];
+  String get scope => _map['scope'] as String;
 
   /**
    * Object representing the scope. For global and with scopes it represents the
    * actual object; for the rest of the scopes, it is artificial transient
    * object enumerating scope variables as its properties.
    */
-  WipRemoteObject get object => new WipRemoteObject(_map['object']);
+  WipRemoteObject get object =>
+      new WipRemoteObject(_map['object'] as Map<String, dynamic>);
 }

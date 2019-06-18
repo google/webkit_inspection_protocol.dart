@@ -15,7 +15,7 @@ class WipPage extends WipDomain {
       sendCommand('Page.navigate', params: {'url': url});
 
   Future reload({bool ignoreCache, String scriptToEvaluateOnLoad}) {
-    var params = {};
+    var params = <String, dynamic>{};
 
     if (ignoreCache != null) {
       params['ignoreCache'] = ignoreCache;
