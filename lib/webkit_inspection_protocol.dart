@@ -43,7 +43,7 @@ class ChromeConnection {
   // TODO(DrMarcII): consider changing this to return Stream<ChromeTab>.
   Future<List<ChromeTab>> getTabs() async {
     var response = await getUrl('/json');
-    var respBody = await utf8.decodeStream(response);
+    var respBody = await utf8.decodeStream(response.cast<List<int>>());
     return new List<ChromeTab>.from(
         (jsonDecode(respBody) as List).map((m) => new ChromeTab(m as Map)));
   }
