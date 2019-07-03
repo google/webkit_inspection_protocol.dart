@@ -1,5 +1,9 @@
 # webkit_inspection_protocol.dart
 
+## 0.4.2
+- Cast `HttpClientResponse` to `Stream<List<int>>` in response to
+  SDK breaking change.
+
 ## 0.4.1
 - Fix `page.reload` method.
 - Disable implicit casts when developing this package.
