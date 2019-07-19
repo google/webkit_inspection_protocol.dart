@@ -5,8 +5,9 @@
 
 ## What is it?
 
-The `webkit_inspection_protocol` package is a client of the Webkit Inspection
-Protocol (WIP). It's used to talk to Chrome DevTools based debuggers.
+The `webkit_inspection_protocol` package is a client for the Chrome DevTools Protocol
+(previously called the Webkit Inspection Protocol). It's used to talk to Chrome DevTools
+based debuggers.
 
 ## The protocol
 
