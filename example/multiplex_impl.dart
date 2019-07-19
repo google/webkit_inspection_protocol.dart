@@ -1,7 +1,7 @@
 // Copyright 2015 Google. All rights reserved. Use of this source code is
 // governed by a BSD-style license that can be found in the LICENSE file.
 
-library wip.multiplex;
+library wip.multiplex_impl;
 
 import 'dart:async' show Future;
 import 'dart:convert' show jsonEncode;
@@ -154,7 +154,7 @@ class Server {
     }
   }
 
-  _jsonEncode(obj) {
+  Object _jsonEncode(Object obj) {
     if (obj is ChromeTab) {
       var json = <String, dynamic>{
         'description': obj.description,

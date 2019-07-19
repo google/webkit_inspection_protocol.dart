@@ -11,7 +11,7 @@ import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart';
 
 import 'test_setup.dart';
 
-main() {
+void main() {
   group('WipConsole', () {
     WipConsole console; // ignore: deprecated_member_use
     List<ConsoleMessageEvent> events = [];
@@ -50,7 +50,7 @@ main() {
     });
 
     test('receives new console messages', () async {
-      console.enable();
+      await console.enable();
       await navigateToPage('console_test.html');
       await checkMessages(4);
     });

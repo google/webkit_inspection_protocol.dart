@@ -1,5 +1,9 @@
 # webkit_inspection_protocol.dart
 
+## 0.5.0
+- removed the bin/multiplex.dart binary to the example/ directory
+- remove dependencies on `package:args`, package:shelf`, and `package:shelf_web_socket`
+
 ## 0.4.2
 - Cast `HttpClientResponse` to `Stream<List<int>>` in response to
   SDK breaking change.

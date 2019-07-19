@@ -8,11 +8,12 @@ import 'dart:io' show stderr;
 import 'package:args/args.dart' show ArgParser;
 import 'package:logging/logging.dart'
     show hierarchicalLoggingEnabled, Level, Logger, LogRecord;
-import 'package:webkit_inspection_protocol/multiplex.dart' show Server;
 import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart'
     show ChromeConnection;
 
-main(List<String> argv) async {
+import 'multiplex_impl.dart' show Server;
+
+void main(List<String> argv) async {
   var args = (new ArgParser()
         ..addFlag('verbose', abbr: 'v', defaultsTo: false, negatable: false)
         ..addFlag('model_dom', defaultsTo: false, negatable: true)

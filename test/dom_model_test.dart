@@ -10,7 +10,7 @@ import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart';
 
 import 'test_setup.dart';
 
-main() {
+void main() {
   group('WipDomModel', () {
     WipDom dom;
 
