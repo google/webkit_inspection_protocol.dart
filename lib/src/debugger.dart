@@ -162,11 +162,9 @@ class WipScope {
   // "catch", "closure", "global", "local", "with"
   String get scope => _map['scope'] as String;
 
-  /**
-   * Object representing the scope. For global and with scopes it represents the
-   * actual object; for the rest of the scopes, it is artificial transient
-   * object enumerating scope variables as its properties.
-   */
+  /// Object representing the scope. For global and with scopes it represents
+  /// the actual object; for the rest of the scopes, it is artificial transient
+  /// object enumerating scope variables as its properties.
   WipRemoteObject get object =>
       new WipRemoteObject(_map['object'] as Map<String, dynamic>);
 }

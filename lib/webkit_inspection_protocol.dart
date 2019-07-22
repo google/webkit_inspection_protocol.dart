@@ -26,12 +26,10 @@ export 'src/page.dart';
 export 'src/runtime.dart';
 export 'src/target.dart';
 
-/**
- * A class to connect to a Chrome instance and reflect on its available tabs.
- *
- * This assumes the browser has been started with the `--remote-debugging-port`
- * flag. The data is read from the `http://{host}:{port}/json` url.
- */
+/// A class to connect to a Chrome instance and reflect on its available tabs.
+///
+/// This assumes the browser has been started with the `--remote-debugging-port`
+/// flag. The data is read from the `http://{host}:{port}/json` url.
 class ChromeConnection {
   final HttpClient _client = new HttpClient();
 
@@ -119,15 +117,11 @@ class ChromeTab {
   String toString() => url;
 }
 
-/**
- * A Webkit Inspection Protocol (WIP) connection.
- */
+/// A Webkit Inspection Protocol (WIP) connection.
 class WipConnection {
   static final _logger = new Logger('WipConnection');
 
-  /**
-   * The WebSocket URL.
-   */
+  /// The WebSocket URL.
   final String url;
 
   final WebSocket _ws;
@@ -277,7 +271,7 @@ typedef T WipEventTransformer<T>(WipEvent event);
 const String optional = 'optional';
 
 abstract class WipDomain {
-  Map<String, Stream> _eventStreams = {};
+  final Map<String, Stream> _eventStreams = {};
 
   final WipConnection connection;
   Stream<WipDomain> _onClosed;

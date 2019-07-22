@@ -30,7 +30,7 @@ class WipDomModel implements WipDom {
 
   final WipDom _dom;
 
-  Map<int, _Node> _nodeCache = {};
+  final Map<int, _Node> _nodeCache = {};
   Future<_Node> _root;
 
   Stream<AttributeModifiedEvent> onAttributeModified;
@@ -77,39 +77,39 @@ class WipDomModel implements WipDom {
               ..listen(_logEvent);
   }
 
-  _logEvent(WipEvent event) {
+  void _logEvent(WipEvent event) {
     _log.finest('Event $event');
   }
 
-  _onAttributeModified(
+  void _onAttributeModified(
       AttributeModifiedEvent event, EventSink<AttributeModifiedEvent> sink) {
     var node = _getOrCreateNode(event.nodeId);
     node._attributes[event.name] = event.value;
     sink.add(event);
   }
 
-  _onAttributeRemoved(
+  void _onAttributeRemoved(
       AttributeRemovedEvent event, EventSink<AttributeRemovedEvent> sink) {
     var node = _getOrCreateNode(event.nodeId);
     node._attributes.remove(event.name);
     sink.add(event);
   }
 
-  _onCharacterDataModified(CharacterDataModifiedEvent event,
+  void _onCharacterDataModified(CharacterDataModifiedEvent event,
       EventSink<CharacterDataModifiedEvent> sink) {
     var node = _getOrCreateNode(event.nodeId);
     node._nodeValue = event.characterData;
     sink.add(event);
   }
 
-  _onChildNodeCountUpdated(ChildNodeCountUpdatedEvent event,
+  void _onChildNodeCountUpdated(ChildNodeCountUpdatedEvent event,
       EventSink<ChildNodeCountUpdatedEvent> sink) {
     var node = _getOrCreateNode(event.nodeId);
     node._childNodeCount = event.childNodeCount;
     sink.add(event);
   }
 
-  _onChildNodeInserted(
+  void _onChildNodeInserted(
       ChildNodeInsertedEvent event, EventSink<ChildNodeInsertedEvent> sink) {
     var parent = _getOrCreateNode(event.parentNodeId);
     int index = 0;
@@ -123,7 +123,7 @@ class WipDomModel implements WipDom {
     sink.add(event);
   }
 
-  _onChildNodeRemoved(
+  void _onChildNodeRemoved(
       ChildNodeRemovedEvent event, EventSink<ChildNodeRemovedEvent> sink) {
     var parent = _getOrCreateNode(event.parentNodeId);
     var node = _nodeCache.remove(event.nodeId);
@@ -132,14 +132,14 @@ class WipDomModel implements WipDom {
     sink.add(event);
   }
 
-  _onDocumentUpdated(
+  void _onDocumentUpdated(
       DocumentUpdatedEvent event, EventSink<DocumentUpdatedEvent> sink) {
     _nodeCache.clear();
     _root = null;
     sink.add(event);
   }
 
-  _onSetChildNodes(
+  void _onSetChildNodes(
       SetChildNodesEvent event, EventSink<SetChildNodesEvent> sink) {
     var parent = _getOrCreateNode(event.nodeId);
     parent._children =
@@ -202,41 +202,50 @@ class WipDomModel implements WipDom {
     }
   }
 
-  noSuchMethod(Invocation invocation) => reflect(_dom).delegate(invocation);
+  dynamic noSuchMethod(Invocation invocation) =>
+      reflect(_dom).delegate(invocation);
 }
 
 class _Node implements Node {
   Map<String, String> _attributes;
+
   @override
   Map<String, String> get attributes =>
       _attributes != null ? new UnmodifiableMapView(_attributes) : null;
 
   int _childNodeCount;
+
   @override
   int get childNodeCount => _childNodeCount;
 
   List<_Node> _children;
+
   @override
   List<Node> get children =>
       _children != null ? new UnmodifiableListView(_children) : null;
 
   _Node _contentDocument;
+
   @override
   Node get contentDocument => _contentDocument;
 
   String _documentUrl;
+
   @override
   String get documentUrl => _documentUrl;
 
   String _internalSubset;
+
   @override
   String get internalSubset => _internalSubset;
 
   String _localName;
+
   @override
   String get localName => _localName;
 
   String _name;
+
   @override
   String get name => _name;
 
@@ -244,30 +253,37 @@ class _Node implements Node {
   final int nodeId;
 
   String _nodeName;
+
   @override
   String get nodeName => _nodeName;
 
   int _nodeType;
+
   @override
   int get nodeType => _nodeType;
 
   String _nodeValue;
+
   @override
   String get nodeValue => _nodeValue;
 
   String _publicId;
+
   @override
   String get publicId => _publicId;
 
   String _systemId;
+
   @override
   String get systemId => _systemId;
 
   String _value;
+
   @override
   String get value => _value;
 
   String _xmlVersion;
+
   @override
   String get xmlVersion => _xmlVersion;
 
