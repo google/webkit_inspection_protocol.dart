@@ -1,5 +1,8 @@
 # webkit_inspection_protocol.dart
 
+## 0.5.0+1
+- fixed a bug in reading type of `WipScope`
+
 ## 0.5.0
 - removed the bin/multiplex.dart binary to the example/ directory
 - remove dependencies on `package:args`, package:shelf`, and `package:shelf_web_socket`
