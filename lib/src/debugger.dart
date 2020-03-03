@@ -160,7 +160,7 @@ class WipScope {
   WipScope(this._map);
 
   // "catch", "closure", "global", "local", "with"
-  String get scope => _map['scope'] as String;
+  String get scope => _map['type'] as String;
 
   /// Object representing the scope. For global and with scopes it represents
   /// the actual object; for the rest of the scopes, it is artificial transient
