@@ -23,8 +23,8 @@ void main() {
       expect(events, hasLength(expectedCount));
       for (int i = 0; i < expectedCount; i++) {
         if (i == 0) {
-          // clear adds an empty message
-          expect(events[i].text, '');
+          // Clearing adds this message.
+          expect(events[i].text, 'console.clear');
         } else {
           expect(events[i].text, 'message $i');
         }
@@ -34,14 +34,11 @@ void main() {
     setUp(() async {
       // ignore: deprecated_member_use
       console = (await wipConnection).console;
-      await console.clearMessages();
       events.clear();
       subs.add(console.onMessage.listen(events.add));
-      subs.add(console.onCleared.listen((_) => events.clear()));
     });
 
     tearDown(() async {
-      await console.clearMessages();
       await console.disable();
       console = null;
       await closeConnection();
@@ -59,13 +56,6 @@ void main() {
       await navigateToPage('console_test.html');
       await console.enable();
       await checkMessages(4);
-    });
-
-    test('does not receive messages if cleared', () async {
-      await navigateToPage('console_test.html');
-      await console.clearMessages();
-      await console.enable();
-      await checkMessages(0);
     });
 
     test('does not receive messages if not enabled', () async {

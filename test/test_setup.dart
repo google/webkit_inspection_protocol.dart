@@ -1,11 +1,13 @@
 library wip.test.setup;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
 import 'package:shelf/shelf_io.dart' as io;
 import 'package:shelf_static/shelf_static.dart';
+import 'package:webdriver/io.dart';
 import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart';
 
 Future<WipConnection> _wipConnection;
@@ -15,7 +17,8 @@ Future<WipConnection> _wipConnection;
 Future<WipConnection> get wipConnection {
   if (_wipConnection == null) {
     _wipConnection = () async {
-      var chrome = new ChromeConnection('localhost');
+      var debugPort = await _startWebDriver(await _startChromeDriver());
+      var chrome = new ChromeConnection('localhost', debugPort);
       var tab = await chrome
           .getTab((tab) => !tab.isBackgroundPage && !tab.isChromeExtension);
       var connection = await tab.connect();
@@ -24,6 +27,66 @@ Future<WipConnection> get wipConnection {
     }();
   }
   return _wipConnection;
+}
+
+Process _chromeDriver;
+
+/// Starts ChromeDriver and returns the listening port.
+Future<int> _startChromeDriver() async {
+  var chromeDriverPort = await findUnusedPort();
+  try {
+    var _exeExt = Platform.isWindows ? '.exe' : '';
+    _chromeDriver = await Process.start('chromedriver$_exeExt',
+        ['--port=$chromeDriverPort', '--url-base=wd/hub']);
+    // On windows this takes a while to boot up, wait for the first line
+    // of stdout as a signal that it is ready.
+    await _chromeDriver.stdout
+        .transform(utf8.decoder)
+        .transform(const LineSplitter())
+        .first;
+  } catch (e) {
+    throw StateError(
+        'Could not start ChromeDriver. Is it installed?\nError: $e');
+  }
+  return chromeDriverPort;
+}
+
+WebDriver _webDriver;
+
+/// Starts WebDriver and returns the listening debug port.
+Future<int> _startWebDriver(int chromeDriverPort) async {
+  var debugPort = await findUnusedPort();
+  var capabilities = Capabilities.chrome
+    ..addAll({
+      Capabilities.chromeOptions: {
+        'args': ['remote-debugging-port=$debugPort', '--headless']
+      }
+    });
+
+  await createDriver(
+      spec: WebDriverSpec.JsonWire,
+      desired: capabilities,
+      uri: Uri.parse('http://127.0.0.1:$chromeDriverPort/wd/hub/'));
+
+  return debugPort;
+}
+
+/// Returns a port that is probably, but not definitely, not in use.
+///
+/// This has a built-in race condition: another process may bind this port at
+/// any time after this call has returned.
+Future<int> findUnusedPort() async {
+  int port;
+  ServerSocket socket;
+  try {
+    socket =
+        await ServerSocket.bind(InternetAddress.loopbackIPv6, 0, v6Only: true);
+  } on SocketException {
+    socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+  }
+  port = socket.port;
+  await socket.close();
+  return port;
 }
 
 var _testServerUri;
@@ -55,7 +118,10 @@ Future _startHttpServer(SendPort sendPort) async {
 
 Future closeConnection() async {
   if (_wipConnection != null) {
-    await (await navigateToPage('chrome://about')).close();
+    await _webDriver?.quit(closeSession: true);
+    _webDriver = null;
+    _chromeDriver?.kill();
+    _chromeDriver = null;
     _wipConnection = null;
   }
 }
