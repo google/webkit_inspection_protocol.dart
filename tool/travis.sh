@@ -19,6 +19,7 @@ export CHROME_DRIVER_VERSION=$(wget -qO- https://chromedriver.storage.googleapis
 wget https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_$CHROMEDRIVER_OS.zip
 unzip "chromedriver_${CHROMEDRIVER_OS}.zip"
 export CHROMEDRIVER_ARGS=--no-sandbox
+export PATH=$PATH:$PWD
 
 # Run tests
 pub run test -j 1
