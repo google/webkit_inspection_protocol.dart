@@ -11,6 +11,14 @@ set -e
 pub global activate tuneup
 pub global run tuneup check
 
-# Temporarily disabled due to issues/24
-# /usr/bin/chromium-browser --no-sandbox --remote-debugging-port=9222 &
-# pub run test -j 1
+# Install CHROMEDRIVER
+export CHROMEDRIVER_BINARY=/usr/bin/google-chrome
+export CHROMEDRIVER_OS=linux64
+export CHROME_LATEST_VERSION=$("$CHROMEDRIVER_BINARY" --version | cut -d' ' -f3 | cut -d'.' -f1)
+export CHROME_DRIVER_VERSION=$(wget -qO- https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_LATEST_VERSION)
+wget https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_$CHROMEDRIVER_OS.zip
+unzip "chromedriver_${CHROMEDRIVER_OS}.zip"
+export CHROMEDRIVER_ARGS=--no-sandbox
+
+# Run tests
+pub run test -j 1

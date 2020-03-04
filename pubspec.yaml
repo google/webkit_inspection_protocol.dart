@@ -19,3 +19,4 @@ dev_dependencies:
   shelf_static: ^0.2.0
   shelf_web_socket: ^0.2.0
   test: ^1.0.0
+  webdriver: ^2.0.0
