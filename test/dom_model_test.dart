@@ -68,7 +68,7 @@ void main() {
       expect(div1.childNodeCount, 0);
       expect(div2.childNodeCount, 1);
       expect(div2.children, hasLength(1));
-    });
+    }, skip: 'google/webkit_inspection_protocol.dart/issues/52');
 
     test('Setting node value updates value', () async {
       Node bodyNode = (await dom.getDocument()).children[1].children[1];
