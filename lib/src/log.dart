@@ -8,8 +8,9 @@ import '../webkit_inspection_protocol.dart';
 class WipLog extends WipDomain {
   WipLog(WipConnection connection) : super(connection);
 
-  Future enable() => sendCommand('Log.enable');
-  Future disable() => sendCommand('Log.disable');
+  Future<WipResponse> enable() => sendCommand('Log.enable');
+
+  Future<WipResponse> disable() => sendCommand('Log.disable');
 
   Stream<LogEntry> get onEntryAdded =>
       eventStream('Log.entryAdded', (WipEvent event) => new LogEntry(event));
