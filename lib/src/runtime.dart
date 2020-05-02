@@ -78,8 +78,7 @@ class WipRuntime extends WipDomain {
       params['executionContextId'] = executionContextId;
     }
     if (arguments != null) {
-      // Convert to a list of RemoteObjects and primitive values to
-      // CallArguments.
+      // Convert a list of RemoteObjects and primitive values to CallArguments.
       params['arguments'] = arguments.map((dynamic value) {
         if (value is RemoteObject) {
           return {'objectId': value.objectId};
