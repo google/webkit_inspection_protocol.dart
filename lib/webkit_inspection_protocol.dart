@@ -69,7 +69,7 @@ class ChromeConnection {
           rethrow;
         }
       }
-      await new Future.delayed(new Duration(milliseconds: 25));
+      await new Future.delayed(const Duration(milliseconds: 25));
     }
   }
 
@@ -244,10 +244,12 @@ class WipEvent {
 }
 
 class WipError {
+  final Map<String, dynamic> json;
+
   final int id;
   final dynamic error;
 
-  WipError(Map<String, dynamic> json)
+  WipError(this.json)
       : id = json['id'] as int,
         error = json['error'];
 
@@ -255,10 +257,12 @@ class WipError {
 }
 
 class WipResponse {
+  final Map<String, dynamic> json;
+
   final int id;
   final Map<String, dynamic> result;
 
-  WipResponse(Map<String, dynamic> json)
+  WipResponse(this.json)
       : id = json['id'] as int,
         result = json['result'] as Map<String, dynamic>;
 
@@ -290,12 +294,12 @@ abstract class WipDomain {
         .putIfAbsent(
           method,
           () => new StreamTransformer.fromHandlers(
-                handleData: (WipEvent event, EventSink<T> sink) {
-                  if (event.method == method) {
-                    sink.add(transformer(event));
-                  }
-                },
-              ).bind(connection.onNotification),
+            handleData: (WipEvent event, EventSink<T> sink) {
+              if (event.method == method) {
+                sink.add(transformer(event));
+              }
+            },
+          ).bind(connection.onNotification),
         )
         .cast();
   }

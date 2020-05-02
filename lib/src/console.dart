@@ -9,13 +9,16 @@ import '../webkit_inspection_protocol.dart';
 class WipConsole extends WipDomain {
   WipConsole(WipConnection connection) : super(connection);
 
-  Future enable() => sendCommand('Console.enable');
-  Future disable() => sendCommand('Console.disable');
-  Future clearMessages() => sendCommand('Console.clearMessages');
+  Future<WipResponse> enable() => sendCommand('Console.enable');
+
+  Future<WipResponse> disable() => sendCommand('Console.disable');
+
+  Future<WipResponse> clearMessages() => sendCommand('Console.clearMessages');
 
   Stream<ConsoleMessageEvent> get onMessage => eventStream(
       'Console.messageAdded',
       (WipEvent event) => new ConsoleMessageEvent(event));
+
   Stream<ConsoleClearedEvent> get onCleared => eventStream(
       'Console.messagesCleared',
       (WipEvent event) => new ConsoleClearedEvent(event));
@@ -27,7 +30,9 @@ class ConsoleMessageEvent extends WrappedWipEvent {
   Map get _message => params['message'] as Map;
 
   String get text => _message['text'] as String;
+
   String get level => _message['level'] as String;
+
   String get url => _message['url'] as String;
 
   Iterable<WipConsoleCallFrame> getStackTrace() {
@@ -52,8 +57,12 @@ class WipConsoleCallFrame {
   WipConsoleCallFrame.fromMap(this._map);
 
   int get columnNumber => _map['columnNumber'] as int;
+
   String get functionName => _map['functionName'] as String;
+
   int get lineNumber => _map['lineNumber'] as int;
+
   String get scriptId => _map['scriptId'] as String;
+
   String get url => _map['url'] as String;
 }

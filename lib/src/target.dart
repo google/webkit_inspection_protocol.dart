@@ -20,7 +20,7 @@ class WipTarget extends WipDomain {
   }
 
   /// Activates (focuses) the target.
-  Future activateTarget(String targetId) =>
+  Future<WipResponse> activateTarget(String targetId) =>
       sendCommand('Target.activateTarget', params: {'targetId': targetId});
 
   /// Closes the target. If the target is a page that gets closed too.
@@ -41,19 +41,17 @@ class WipTarget extends WipDomain {
   ///  - binding.onmessage = json => handleMessage(json) - a callback that will
   ///    be called for the protocol notifications and command responses.
   @experimental
-  Future<void> exposeDevToolsProtocol(
+  Future<WipResponse> exposeDevToolsProtocol(
     String targetId, {
     String bindingName,
-  }) async {
+  }) {
     final Map<String, dynamic> params = {'targetId': targetId};
     if (bindingName != null) {
       params['bindingName'] = bindingName;
     }
-    final WipResponse response = await sendCommand(
+    return sendCommand(
       'Target.exposeDevToolsProtocol',
       params: params,
     );
-    dynamic foo = await response.result['targetId'];
-    print(foo);
   }
 }

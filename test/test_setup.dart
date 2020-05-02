@@ -106,7 +106,7 @@ Future<WipConnection> navigateToPage(String page) async {
   await (await wipConnection)
       .page
       .navigate((await _testServerUri).resolve(page).toString());
-  await new Future.delayed(new Duration(seconds: 1));
+  await new Future.delayed(const Duration(seconds: 1));
   return wipConnection;
 }
 

@@ -1,5 +1,12 @@
 # webkit_inspection_protocol.dart
 
+## 0.5.1
+- add `Runtime.evaluate`
+- add `Debugger.setBreakpoint`
+- add `Debugger.removeBreakpoint`
+- add `Debugger.evaluateOnCallFrame`
+- add `Debugger.getPossibleBreakpoints`
+
 ## 0.5.0+1
 - fixed a bug in reading type of `WipScope`
 

@@ -9,15 +9,40 @@ import '../webkit_inspection_protocol.dart';
 class WipRuntime extends WipDomain {
   WipRuntime(WipConnection connection) : super(connection);
 
-  Future enable() => sendCommand('Runtime.enable');
+  Future<WipResponse> enable() => sendCommand('Runtime.enable');
 
-  Future disable() => sendCommand('Runtime.disable');
+  Future<WipResponse> disable() => sendCommand('Runtime.disable');
 
   /// Evaluates expression on global object.
-  Future<RemoteObject> evaluate(String expression) async {
-    final WipResponse response = await sendCommand('Runtime.evaluate', params: {
+  ///
+  /// - `returnByValue`: Whether the result is expected to be a JSON object that
+  ///    should be sent by value.
+  /// - `contextId`: Specifies in which execution context to perform evaluation.
+  ///    If the parameter is omitted the evaluation will be performed in the
+  ///    context of the inspected page.
+  ///  - `awaitPromise`: Whether execution should await for resulting value and
+  ///     return once awaited promise is resolved.
+  Future<RemoteObject> evaluate(
+    String expression, {
+    bool returnByValue,
+    int contextId,
+    bool awaitPromise,
+  }) async {
+    Map<String, dynamic> params = {
       'expression': expression,
-    });
+    };
+    if (returnByValue != null) {
+      params['returnByValue'] = returnByValue;
+    }
+    if (contextId != null) {
+      params['contextId'] = contextId;
+    }
+    if (awaitPromise != null) {
+      params['awaitPromise'] = awaitPromise;
+    }
+
+    final WipResponse response =
+        await sendCommand('Runtime.evaluate', params: params);
 
     if (response.result.containsKey('exceptionDetails')) {
       throw new ExceptionDetails(
@@ -30,28 +55,37 @@ class WipRuntime extends WipDomain {
 
   /// Calls function with given declaration on the given object. Object group of
   /// the result is inherited from the target object.
+  ///
+  /// Each element in [arguments] must be either a [RemoteObject] or a primitive
+  /// object (int, String, double, bool).
   Future<RemoteObject> callFunctionOn(
     String functionDeclaration, {
-    String objectId,
-    int executionContextId,
     List<dynamic> arguments,
+    String objectId,
+    bool returnByValue,
+    int executionContextId,
   }) async {
     Map<String, dynamic> params = {
       'functionDeclaration': functionDeclaration,
     };
-
     if (objectId != null) {
       params['objectId'] = objectId;
     }
-
+    if (returnByValue != null) {
+      params['returnByValue'] = returnByValue;
+    }
     if (executionContextId != null) {
       params['executionContextId'] = executionContextId;
     }
-
-    if (objectId != null) {
-      // Convert to a ist of CallArguments.
+    if (arguments != null) {
+      // Convert to a list of RemoteObjects and primitive values to
+      // CallArguments.
       params['arguments'] = arguments.map((dynamic value) {
-        return {'value': value};
+        if (value is RemoteObject) {
+          return {'objectId': value.objectId};
+        } else {
+          return {'value': value};
+        }
       }).toList();
     }
 
@@ -109,6 +143,8 @@ class ExceptionDetails {
   final Map<String, dynamic> _map;
 
   ExceptionDetails(this._map);
+
+  Map<String, dynamic> get json => _map;
 
   /// Exception id.
   int get exceptionId => _map['exceptionId'] as int;

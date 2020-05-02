@@ -19,7 +19,7 @@ void main() {
 
     Future checkMessages(int expectedCount) async {
       // make sure all messages have been delivered
-      await new Future.delayed(new Duration(seconds: 1));
+      await new Future.delayed(const Duration(seconds: 1));
       expect(events, hasLength(expectedCount));
       for (int i = 0; i < expectedCount; i++) {
         if (i == 0) {
