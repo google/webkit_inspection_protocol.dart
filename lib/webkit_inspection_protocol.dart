@@ -243,7 +243,7 @@ class WipEvent {
   String toString() => 'WipEvent: $method($params)';
 }
 
-class WipError {
+class WipError implements Exception {
   final Map<String, dynamic> json;
 
   final int id;
@@ -253,7 +253,11 @@ class WipError {
       : id = json['id'] as int,
         error = json['error'];
 
-  String toString() => 'WipError $id: $error';
+  int get code => error == null ? null : error['code'];
+
+  String get message => error == null ? null : error['message'];
+
+  String toString() => 'WipError $code $message';
 }
 
 class WipResponse {

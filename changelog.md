@@ -1,5 +1,9 @@
 # webkit_inspection_protocol.dart
 
+## 0.5.2
+- have `ExceptionDetails` and `WipError` implement `Exception`
+- add `code` and `message` getters to `WipError`
+
 ## 0.5.1
 - add `Runtime.evaluate`
 - add `Debugger.setBreakpoint`

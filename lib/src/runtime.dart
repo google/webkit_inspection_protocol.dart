@@ -138,7 +138,7 @@ class ExceptionThrownEvent extends WrappedWipEvent {
       new ExceptionDetails(params['exceptionDetails'] as Map<String, dynamic>);
 }
 
-class ExceptionDetails {
+class ExceptionDetails implements Exception {
   final Map<String, dynamic> _map;
 
   ExceptionDetails(this._map);
