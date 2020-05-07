@@ -1,5 +1,8 @@
 # webkit_inspection_protocol.dart
 
+## 0.5.3
+- expose name in `WipScope`
+
 ## 0.5.2
 - have `ExceptionDetails` and `WipError` implement `Exception`
 - add `code` and `message` getters to `WipError`
