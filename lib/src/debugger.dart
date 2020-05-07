@@ -303,6 +303,9 @@ class WipScope {
   // "catch", "closure", "global", "local", "with"
   String get scope => _map['type'] as String;
 
+  /// Name of the scope, null if unnamed closure or global scope
+  String get name => _map['name'] as String;
+
   /// Object representing the scope. For global and with scopes it represents
   /// the actual object; for the rest of the scopes, it is artificial transient
   /// object enumerating scope variables as its properties.
