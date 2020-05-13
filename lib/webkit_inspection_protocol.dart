@@ -8,8 +8,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show HttpClient, HttpClientResponse, WebSocket;
 
-import 'package:logging/logging.dart' show Logger;
-
 import 'src/console.dart';
 import 'src/debugger.dart';
 import 'src/dom.dart';
@@ -119,8 +117,6 @@ class ChromeTab {
 
 /// A Webkit Inspection Protocol (WIP) connection.
 class WipConnection {
-  static final _logger = new Logger('WipConnection');
-
   /// The WebSocket URL.
   final String url;
 
@@ -156,6 +152,11 @@ class WipConnection {
 
   WipRuntime get runtime => _runtime;
 
+  final StreamController<String> _onSend =
+      StreamController.broadcast(sync: true);
+  final StreamController<String> _onReceive =
+      StreamController.broadcast(sync: true);
+
   final Map _completers = <int, Completer<WipResponse>>{};
 
   final _closeController = new StreamController<WipConnection>.broadcast();
@@ -178,6 +179,7 @@ class WipConnection {
 
     _ws.listen((data) {
       var json = jsonDecode(data as String) as Map<String, dynamic>;
+      _onReceive.add(data);
 
       if (json.containsKey('id')) {
         _handleResponse(json);
@@ -197,19 +199,19 @@ class WipConnection {
 
   Future<WipResponse> sendCommand(String method,
       [Map<String, dynamic> params]) {
-    _logger.finest('Sending command: $method($params)');
     var completer = new Completer<WipResponse>();
     var json = {'id': _nextId++, 'method': method};
     if (params != null) {
       json['params'] = params;
     }
     _completers[json['id']] = completer;
-    _ws.add(jsonEncode(json));
+    String message = jsonEncode(json);
+    _ws.add(message);
+    _onSend.add(message);
     return completer.future;
   }
 
   void _handleNotification(Map<String, dynamic> json) {
-    _logger.finest('Received notification: $json');
     _notificationController.add(new WipEvent(json));
   }
 
@@ -217,10 +219,8 @@ class WipConnection {
     var completer = _completers.remove(event['id']);
 
     if (event.containsKey('error')) {
-      _logger.info('Received error: $event');
       completer.completeError(new WipError(event));
     } else {
-      _logger.finest('Received response: $event');
       completer.complete(new WipResponse(event));
     }
   }
@@ -230,6 +230,12 @@ class WipConnection {
     _closeController.close();
     _notificationController.close();
   }
+
+  /// Listen for all traffic sent on this WipConnection.
+  Stream<String> get onSend => _onSend.stream;
+
+  /// Listen for all traffic received by this WipConnection.
+  Stream<String> get onReceive => _onReceive.stream;
 }
 
 class WipEvent {

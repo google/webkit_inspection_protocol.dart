@@ -9,8 +9,12 @@ import '../webkit_inspection_protocol.dart';
 class WipRuntime extends WipDomain {
   WipRuntime(WipConnection connection) : super(connection);
 
+  /// Enables reporting of execution contexts creation by means of
+  /// executionContextCreated event. When the reporting gets enabled the event
+  /// will be sent immediately for each existing execution context.
   Future<WipResponse> enable() => sendCommand('Runtime.enable');
 
+  /// Disables reporting of execution contexts creation.
   Future<WipResponse> disable() => sendCommand('Runtime.disable');
 
   /// Evaluates expression on global object.
@@ -107,6 +111,22 @@ class WipRuntime extends WipDomain {
   Stream<ExceptionThrownEvent> get onExceptionThrown => eventStream(
       'Runtime.exceptionThrown',
       (WipEvent event) => new ExceptionThrownEvent(event));
+
+  /// Issued when new execution context is created.
+  Stream<ExecutionContextDescription> get onExecutionContextCreated =>
+      eventStream(
+          'Runtime.executionContextCreated',
+          (WipEvent event) =>
+              new ExecutionContextDescription(event.params['context']));
+
+  /// Issued when execution context is destroyed.
+  Stream<String> get onExecutionContextDestroyed => eventStream(
+      'Runtime.executionContextDestroyed',
+      (WipEvent event) => event.params['executionContextId']);
+
+  /// Issued when all executionContexts were cleared in browser.
+  Stream get onExecutionContextsCleared => eventStream(
+      'Runtime.executionContextsCleared', (WipEvent event) => event);
 }
 
 class ConsoleAPIEvent extends WrappedWipEvent {
@@ -126,6 +146,23 @@ class ConsoleAPIEvent extends WrappedWipEvent {
       .toList();
 
 // TODO: stackTrace, StackTrace, Stack trace captured when the call was made.
+}
+
+/// Description of an isolated world.
+class ExecutionContextDescription {
+  final Map<String, dynamic> map;
+
+  ExecutionContextDescription(this.map);
+
+  /// Unique id of the execution context. It can be used to specify in which
+  /// execution context script evaluation should be performed.
+  int get id => map['id'] as int;
+
+  /// Execution context origin.
+  String get origin => map['origin'];
+
+  /// Human readable name describing given context.
+  String get name => map['name'];
 }
 
 class ExceptionThrownEvent extends WrappedWipEvent {
