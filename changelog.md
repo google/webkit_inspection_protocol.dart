@@ -1,7 +1,12 @@
 # webkit_inspection_protocol.dart
 
+## 0.6.0
+- Add `onSend` and `onReceive` in `WipConnection` 
+- Expose `onExecutionContextCreated`, `onExecutionContextDestroyed`,
+  and `onExecutionContextsCleared` on WipRuntime
+
 ## 0.5.3
-- expose name in `WipScope`
+- expose `name` in `WipScope`
 
 ## 0.5.2
 - have `ExceptionDetails` and `WipError` implement `Exception`
