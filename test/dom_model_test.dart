@@ -124,6 +124,6 @@ void main() {
 
       expect(getAttributes, attributes);
       expect(bodyNode.attributes, attributes);
-    });
-  }, skip: 'google/webkit_inspection_protocol.dart/issues/52');
+    }, skip: 'google/webkit_inspection_protocol.dart/issues/52');
+  });
 }
