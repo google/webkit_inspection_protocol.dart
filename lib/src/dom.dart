@@ -118,14 +118,14 @@ class WipDom extends WipDomain {
     return resp.result['nodeId'] as int;
   }
 
-  Future<WipRemoteObject> resolveNode(int nodeId, {String objectGroup}) async {
+  Future<RemoteObject> resolveNode(int nodeId, {String objectGroup}) async {
     var params = <String, dynamic>{'nodeId': nodeId};
     if (objectGroup != null) {
       params['objectGroup'] = objectGroup;
     }
 
     var resp = await sendCommand('DOM.resolveNode', params: params);
-    return new WipRemoteObject(resp.result['object'] as Map<String, dynamic>);
+    return new RemoteObject(resp.result['object'] as Map<String, dynamic>);
   }
 
   Future setAttributeValue(int nodeId, String name, String value) =>
@@ -156,64 +156,79 @@ class WipDom extends WipDomain {
 
   Stream<AttributeModifiedEvent> get onAttributeModified => eventStream(
       'DOM.attributeModified',
-      (WipEvent event) => new AttributeModifiedEvent(event));
+      (WipEvent event) => new AttributeModifiedEvent(event.json));
+
   Stream<AttributeRemovedEvent> get onAttributeRemoved => eventStream(
       'DOM.attributeRemoved',
-      (WipEvent event) => new AttributeRemovedEvent(event));
+      (WipEvent event) => new AttributeRemovedEvent(event.json));
+
   Stream<CharacterDataModifiedEvent> get onCharacterDataModified => eventStream(
       'DOM.characterDataModified',
-      (WipEvent event) => new CharacterDataModifiedEvent(event));
+      (WipEvent event) => new CharacterDataModifiedEvent(event.json));
+
   Stream<ChildNodeCountUpdatedEvent> get onChildNodeCountUpdated => eventStream(
       'DOM.childNodeCountUpdated',
-      (WipEvent event) => new ChildNodeCountUpdatedEvent(event));
+      (WipEvent event) => new ChildNodeCountUpdatedEvent(event.json));
+
   Stream<ChildNodeInsertedEvent> get onChildNodeInserted => eventStream(
       'DOM.childNodeInserted',
-      (WipEvent event) => new ChildNodeInsertedEvent(event));
+      (WipEvent event) => new ChildNodeInsertedEvent(event.json));
+
   Stream<ChildNodeRemovedEvent> get onChildNodeRemoved => eventStream(
       'DOM.childNodeRemoved',
-      (WipEvent event) => new ChildNodeRemovedEvent(event));
+      (WipEvent event) => new ChildNodeRemovedEvent(event.json));
+
   Stream<DocumentUpdatedEvent> get onDocumentUpdated => eventStream(
       'DOM.documentUpdated',
-      (WipEvent event) => new DocumentUpdatedEvent(event));
+      (WipEvent event) => new DocumentUpdatedEvent(event.json));
+
   Stream<SetChildNodesEvent> get onSetChildNodes => eventStream(
-      'DOM.setChildNodes', (WipEvent event) => new SetChildNodesEvent(event));
+      'DOM.setChildNodes',
+      (WipEvent event) => new SetChildNodesEvent(event.json));
 }
 
-class AttributeModifiedEvent extends WrappedWipEvent {
-  AttributeModifiedEvent(WipEvent event) : super(event);
+class AttributeModifiedEvent extends WipEvent {
+  AttributeModifiedEvent(Map<String, dynamic> json) : super(json);
 
   int get nodeId => params['nodeId'] as int;
+
   String get name => params['name'] as String;
+
   String get value => params['value'] as String;
 }
 
-class AttributeRemovedEvent extends WrappedWipEvent {
-  AttributeRemovedEvent(WipEvent event) : super(event);
+class AttributeRemovedEvent extends WipEvent {
+  AttributeRemovedEvent(Map<String, dynamic> json) : super(json);
 
   int get nodeId => params['nodeId'] as int;
+
   String get name => params['name'] as String;
 }
 
-class CharacterDataModifiedEvent extends WrappedWipEvent {
-  CharacterDataModifiedEvent(WipEvent event) : super(event);
+class CharacterDataModifiedEvent extends WipEvent {
+  CharacterDataModifiedEvent(Map<String, dynamic> json) : super(json);
 
   int get nodeId => params['nodeId'] as int;
+
   String get characterData => params['characterData'] as String;
 }
 
-class ChildNodeCountUpdatedEvent extends WrappedWipEvent {
-  ChildNodeCountUpdatedEvent(WipEvent event) : super(event);
+class ChildNodeCountUpdatedEvent extends WipEvent {
+  ChildNodeCountUpdatedEvent(Map<String, dynamic> json) : super(json);
 
   int get nodeId => params['nodeId'] as int;
+
   int get childNodeCount => params['childNodeCount'] as int;
 }
 
-class ChildNodeInsertedEvent extends WrappedWipEvent {
-  ChildNodeInsertedEvent(WipEvent event) : super(event);
+class ChildNodeInsertedEvent extends WipEvent {
+  ChildNodeInsertedEvent(Map<String, dynamic> json) : super(json);
 
   int get parentNodeId => params['parentNodeId'] as int;
+
   int get previousNodeId => params['previousNodeId'] as int;
   Node _node;
+
   Node get node {
     if (_node == null) {
       _node = new Node(params['node'] as Map<String, dynamic>);
@@ -222,21 +237,23 @@ class ChildNodeInsertedEvent extends WrappedWipEvent {
   }
 }
 
-class ChildNodeRemovedEvent extends WrappedWipEvent {
-  ChildNodeRemovedEvent(WipEvent event) : super(event);
+class ChildNodeRemovedEvent extends WipEvent {
+  ChildNodeRemovedEvent(Map<String, dynamic> json) : super(json);
 
   int get parentNodeId => params['parentNodeId'] as int;
+
   int get nodeId => params['nodeId'] as int;
 }
 
-class DocumentUpdatedEvent extends WrappedWipEvent {
-  DocumentUpdatedEvent(WipEvent event) : super(event);
+class DocumentUpdatedEvent extends WipEvent {
+  DocumentUpdatedEvent(Map<String, dynamic> json) : super(json);
 }
 
-class SetChildNodesEvent extends WrappedWipEvent {
-  SetChildNodesEvent(WipEvent event) : super(event);
+class SetChildNodesEvent extends WipEvent {
+  SetChildNodesEvent(Map<String, dynamic> json) : super(json);
 
   int get nodeId => params['parentId'] as int;
+
   Iterable<Node> get nodes sync* {
     for (Map node in params['nodes']) {
       yield new Node(node as Map<String, dynamic>);
@@ -255,6 +272,7 @@ class Node {
   Node(this._map);
 
   Map<String, String> _attributes;
+
   Map<String, String> get attributes {
     if (_attributes == null && _map.containsKey('attributes')) {
       _attributes = _attributeListToMap((_map['attributes'] as List).cast());
@@ -265,6 +283,7 @@ class Node {
   int get childNodeCount => _map['childNodeCount'] as int;
 
   List<Node> _children;
+
   List<Node> get children {
     if (_children == null && _map.containsKey('children')) {
       _children = new UnmodifiableListView((_map['children'] as List)

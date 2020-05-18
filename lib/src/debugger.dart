@@ -22,10 +22,11 @@ class WipDebugger extends WipDomain {
 
   Future<WipResponse> disable() => sendCommand('Debugger.disable');
 
-  Future<String> getScriptSource(String scriptId) async =>
-      (await sendCommand('Debugger.getScriptSource',
-              params: {'scriptId': scriptId}))
-          .result['scriptSource'] as String;
+  Future<String> getScriptSource(String scriptId) async {
+    return (await sendCommand('Debugger.getScriptSource',
+            params: {'scriptId': scriptId}))
+        .result['scriptSource'] as String;
+  }
 
   Future<WipResponse> pause() => sendCommand('Debugger.pause');
 
@@ -142,19 +143,19 @@ class WipDebugger extends WipDomain {
     }
   }
 
-  Stream<DebuggerPausedEvent> get onPaused => eventStream(
-      'Debugger.paused', (WipEvent event) => new DebuggerPausedEvent(event));
+  Stream<DebuggerPausedEvent> get onPaused => eventStream('Debugger.paused',
+      (WipEvent event) => new DebuggerPausedEvent(event.json));
 
   Stream<GlobalObjectClearedEvent> get onGlobalObjectCleared => eventStream(
       'Debugger.globalObjectCleared',
       (WipEvent event) => new GlobalObjectClearedEvent(event));
 
-  Stream<DebuggerResumedEvent> get onResumed => eventStream(
-      'Debugger.resumed', (WipEvent event) => new DebuggerResumedEvent(event));
+  Stream<DebuggerResumedEvent> get onResumed => eventStream('Debugger.resumed',
+      (WipEvent event) => new DebuggerResumedEvent(event.json));
 
   Stream<ScriptParsedEvent> get onScriptParsed => eventStream(
       'Debugger.scriptParsed',
-      (WipEvent event) => new ScriptParsedEvent(event));
+      (WipEvent event) => new ScriptParsedEvent(event.json));
 
   Map<String, WipScript> get scripts => new UnmodifiableMapView(_scripts);
 }
@@ -174,158 +175,177 @@ String _pauseStateToString(PauseState state) {
 
 enum PauseState { all, none, uncaught }
 
-class ScriptParsedEvent extends WrappedWipEvent {
-  final WipScript script;
+class ScriptParsedEvent extends WipEvent {
+  ScriptParsedEvent(Map<String, dynamic> json) : super(json);
 
-  ScriptParsedEvent(WipEvent event)
-      : this.script = new WipScript(event.params),
-        super(event);
+  WipScript get script => new WipScript(params);
 
   String toString() => script.toString();
 }
 
-class GlobalObjectClearedEvent extends WrappedWipEvent {
-  GlobalObjectClearedEvent(WipEvent event) : super(event);
+class GlobalObjectClearedEvent extends WipEvent {
+  GlobalObjectClearedEvent(json) : super(json);
 }
 
-class DebuggerResumedEvent extends WrappedWipEvent {
-  DebuggerResumedEvent(WipEvent event) : super(event);
+class DebuggerResumedEvent extends WipEvent {
+  DebuggerResumedEvent(Map<String, dynamic> json) : super(json);
 }
 
-class DebuggerPausedEvent extends WrappedWipEvent {
-  DebuggerPausedEvent(WipEvent event) : super(event);
+/// Fired when the virtual machine stopped on breakpoint or exception or any
+/// other stop criteria.
+class DebuggerPausedEvent extends WipEvent {
+  DebuggerPausedEvent(Map<String, dynamic> json) : super(json);
 
+  /// Call stack the virtual machine stopped on.
+  List<WipCallFrame> getCallFrames() => (params['callFrames'] as List)
+      .map((frame) => new WipCallFrame(frame as Map<String, dynamic>))
+      .toList();
+
+  /// Pause reason.
+  ///
+  /// Allowed Values: ambiguous, assert, debugCommand, DOM, EventListener,
+  /// exception, instrumentation, OOM, other, promiseRejection, XHR.
   String get reason => params['reason'] as String;
 
+  /// Object containing break-specific auxiliary properties.
   Object get data => params['data'];
 
-  Iterable<WipCallFrame> getCallFrames() => (params['callFrames'] as List)
-      .map((frame) => new WipCallFrame(frame as Map<String, dynamic>));
+  /// Hit breakpoints IDs (optional).
+  List<String> get hitBreakpoints {
+    if (params['hitBreakpoints'] == null) return null;
+    return (params['hitBreakpoints'] as List).cast<String>();
+  }
+
+  /// Async stack trace, if any.
+  StackTrace get asyncStackTrace => params['asyncStackTrace'] == null
+      ? null
+      : StackTrace(params['asyncStackTrace']);
 
   String toString() => 'paused: ${reason}';
 }
 
 class WipCallFrame {
-  final Map<String, dynamic> _map;
+  final Map<String, dynamic> json;
 
-  WipCallFrame(this._map);
+  WipCallFrame(this.json);
 
-  String get callFrameId => _map['callFrameId'] as String;
+  /// Call frame identifier.
+  ///
+  /// This identifier is only valid while the virtual machine is paused.
+  String get callFrameId => json['callFrameId'] as String;
 
-  String get functionName => _map['functionName'] as String;
+  /// Name of the JavaScript function called on this call frame.
+  String get functionName => json['functionName'] as String;
 
+  /// Location in the source code.
   WipLocation get location =>
-      new WipLocation(_map['location'] as Map<String, dynamic>);
+      new WipLocation(json['location'] as Map<String, dynamic>);
 
-  WipRemoteObject get thisObject =>
-      new WipRemoteObject(_map['this'] as Map<String, dynamic>);
+  /// JavaScript script name or url.
+  String get url => json['url'] as String;
 
-  Iterable<WipScope> getScopeChain() => (_map['scopeChain'] as List)
+  /// Scope chain for this call frame.
+  Iterable<WipScope> getScopeChain() => (json['scopeChain'] as List)
       .map((scope) => new WipScope(scope as Map<String, dynamic>));
+
+  /// `this` object for this call frame.
+  RemoteObject get thisObject =>
+      new RemoteObject(json['this'] as Map<String, dynamic>);
+
+  /// The value being returned, if the function is at return point.
+  ///
+  /// (optional)
+  RemoteObject get returnValue {
+    return json.containsKey('returnValue')
+        ? new RemoteObject(json['returnValue'] as Map<String, dynamic>)
+        : null;
+  }
 
   String toString() => '[${functionName}]';
 }
 
 class WipLocation {
-  final Map<String, dynamic> _map;
+  final Map<String, dynamic> json;
 
-  WipLocation(this._map);
+  WipLocation(this.json);
 
   WipLocation.fromValues(String scriptId, int lineNumber, {int columnNumber})
-      : _map = {} {
-    _map['scriptId'] = scriptId;
-    _map['lineNumber'] = lineNumber;
+      : json = {} {
+    json['scriptId'] = scriptId;
+    json['lineNumber'] = lineNumber;
     if (columnNumber != null) {
-      _map['columnNumber'] = columnNumber;
+      json['columnNumber'] = columnNumber;
     }
   }
 
-  String get scriptId => _map['scriptId'];
+  String get scriptId => json['scriptId'];
 
-  int get lineNumber => _map['lineNumber'];
+  int get lineNumber => json['lineNumber'];
 
-  int get columnNumber => _map['columnNumber'];
+  int get columnNumber => json['columnNumber'];
 
   Map<String, dynamic> toJsonMap() {
-    return _map;
+    return json;
   }
 
   String toString() => '[${scriptId}:${lineNumber}:${columnNumber}]';
 }
 
-class WipRemoteObject {
-  final Map<String, dynamic> _map;
-
-  WipRemoteObject(this._map);
-
-  String get className => _map['className'] as String;
-
-  String get description => _map['description'] as String;
-
-  String get objectId => _map['objectId'] as String;
-
-  String get subtype => _map['subtype'] as String;
-
-  String get type => _map['type'] as String;
-
-  Object get value => _map['value'];
-}
-
 class WipScript {
-  final Map<String, dynamic> _map;
+  final Map<String, dynamic> json;
 
-  WipScript(this._map);
+  WipScript(this.json);
 
-  String get scriptId => _map['scriptId'] as String;
+  String get scriptId => json['scriptId'] as String;
 
-  String get url => _map['url'] as String;
+  String get url => json['url'] as String;
 
-  int get startLine => _map['startLine'] as int;
+  int get startLine => json['startLine'] as int;
 
-  int get startColumn => _map['startColumn'] as int;
+  int get startColumn => json['startColumn'] as int;
 
-  int get endLine => _map['endLine'] as int;
+  int get endLine => json['endLine'] as int;
 
-  int get endColumn => _map['endColumn'] as int;
+  int get endColumn => json['endColumn'] as int;
 
-  bool get isContentScript => _map['isContentScript'] as bool;
+  bool get isContentScript => json['isContentScript'] as bool;
 
-  String get sourceMapURL => _map['sourceMapURL'] as String;
+  String get sourceMapURL => json['sourceMapURL'] as String;
 
   String toString() => '[script ${scriptId}: ${url}]';
 }
 
 class WipScope {
-  final Map<String, dynamic> _map;
+  final Map<String, dynamic> json;
 
-  WipScope(this._map);
+  WipScope(this.json);
 
   // "catch", "closure", "global", "local", "with"
-  String get scope => _map['type'] as String;
+  String get scope => json['type'] as String;
 
   /// Name of the scope, null if unnamed closure or global scope
-  String get name => _map['name'] as String;
+  String get name => json['name'] as String;
 
   /// Object representing the scope. For global and with scopes it represents
   /// the actual object; for the rest of the scopes, it is artificial transient
   /// object enumerating scope variables as its properties.
-  WipRemoteObject get object =>
-      new WipRemoteObject(_map['object'] as Map<String, dynamic>);
+  RemoteObject get object =>
+      new RemoteObject(json['object'] as Map<String, dynamic>);
 }
 
 class WipBreakLocation extends WipLocation {
-  WipBreakLocation(Map<String, dynamic> map) : super(map);
+  WipBreakLocation(Map<String, dynamic> json) : super(json);
 
   WipBreakLocation.fromValues(String scriptId, int lineNumber,
       {int columnNumber, String type})
       : super.fromValues(scriptId, lineNumber, columnNumber: columnNumber) {
     if (type != null) {
-      _map['type'] = type;
+      json['type'] = type;
     }
   }
 
   /// Allowed Values: `debuggerStatement`, `call`, `return`.
-  String get type => _map['type'];
+  String get type => json['type'];
 }
 
 /// The response from [WipDebugger.setBreakpoint].

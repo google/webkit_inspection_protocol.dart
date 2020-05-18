@@ -239,12 +239,14 @@ class WipConnection {
 }
 
 class WipEvent {
+  final Map<String, dynamic> json;
+
   final String method;
   final Map<String, dynamic> params;
 
-  WipEvent(Map<String, dynamic> map)
-      : method = map['method'] as String,
-        params = map['params'] as Map<String, dynamic>;
+  WipEvent(this.json)
+      : method = json['method'] as String,
+        params = json['params'] as Map<String, dynamic>;
 
   String toString() => 'WipEvent: $method($params)';
 }
@@ -320,18 +322,6 @@ abstract class WipDomain {
   }) {
     return connection.sendCommand(method, params);
   }
-}
-
-class WrappedWipEvent implements WipEvent {
-  final WipEvent _wrapped;
-
-  WrappedWipEvent(this._wrapped);
-
-  @override
-  String get method => _wrapped.method;
-
-  @override
-  Map<String, dynamic> get params => _wrapped.params;
 }
 
 const _Experimental experimental = const _Experimental();
