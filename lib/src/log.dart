@@ -12,12 +12,12 @@ class WipLog extends WipDomain {
 
   Future<WipResponse> disable() => sendCommand('Log.disable');
 
-  Stream<LogEntry> get onEntryAdded =>
-      eventStream('Log.entryAdded', (WipEvent event) => new LogEntry(event));
+  Stream<LogEntry> get onEntryAdded => eventStream(
+      'Log.entryAdded', (WipEvent event) => new LogEntry(event.json));
 }
 
-class LogEntry extends WrappedWipEvent {
-  LogEntry(WipEvent event) : super(event);
+class LogEntry extends WipEvent {
+  LogEntry(Map<String, dynamic> json) : super(json);
 
   Map<String, dynamic> get _entry => params['entry'] as Map<String, dynamic>;
 

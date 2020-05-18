@@ -34,6 +34,10 @@ Process _chromeDriver;
 /// Starts ChromeDriver and returns the listening port.
 Future<int> _startChromeDriver() async {
   var chromeDriverPort = await findUnusedPort();
+
+  // Delay a small amount to allow us to close the above port.
+  await Future.delayed(const Duration(milliseconds: 25));
+
   try {
     var _exeExt = Platform.isWindows ? '.exe' : '';
     _chromeDriver = await Process.start('chromedriver$_exeExt',

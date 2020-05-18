@@ -17,15 +17,15 @@ class WipConsole extends WipDomain {
 
   Stream<ConsoleMessageEvent> get onMessage => eventStream(
       'Console.messageAdded',
-      (WipEvent event) => new ConsoleMessageEvent(event));
+      (WipEvent event) => new ConsoleMessageEvent(event.json));
 
   Stream<ConsoleClearedEvent> get onCleared => eventStream(
       'Console.messagesCleared',
-      (WipEvent event) => new ConsoleClearedEvent(event));
+      (WipEvent event) => new ConsoleClearedEvent(event.json));
 }
 
-class ConsoleMessageEvent extends WrappedWipEvent {
-  ConsoleMessageEvent(WipEvent event) : super(event);
+class ConsoleMessageEvent extends WipEvent {
+  ConsoleMessageEvent(Map<String, dynamic> json) : super(json);
 
   Map get _message => params['message'] as Map;
 
@@ -47,22 +47,22 @@ class ConsoleMessageEvent extends WrappedWipEvent {
   String toString() => text;
 }
 
-class ConsoleClearedEvent extends WrappedWipEvent {
-  ConsoleClearedEvent(WipEvent event) : super(event);
+class ConsoleClearedEvent extends WipEvent {
+  ConsoleClearedEvent(Map<String, dynamic> json) : super(json);
 }
 
 class WipConsoleCallFrame {
-  final Map<String, dynamic> _map;
+  final Map<String, dynamic> json;
 
-  WipConsoleCallFrame.fromMap(this._map);
+  WipConsoleCallFrame.fromMap(this.json);
 
-  int get columnNumber => _map['columnNumber'] as int;
+  int get columnNumber => json['columnNumber'] as int;
 
-  String get functionName => _map['functionName'] as String;
+  String get functionName => json['functionName'] as String;
 
-  int get lineNumber => _map['lineNumber'] as int;
+  int get lineNumber => json['lineNumber'] as int;
 
-  String get scriptId => _map['scriptId'] as String;
+  String get scriptId => json['scriptId'] as String;
 
-  String get url => _map['url'] as String;
+  String get url => json['url'] as String;
 }
