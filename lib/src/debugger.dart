@@ -143,6 +143,16 @@ class WipDebugger extends WipDomain {
     }
   }
 
+  /// Enables or disables async call stacks tracking.
+  ///
+  /// maxDepth - Maximum depth of async call stacks. Setting to 0 will
+  /// effectively disable collecting async call stacks (default).
+  Future<WipResponse> setAsyncCallStackDepth(int maxDepth) {
+    return sendCommand('Debugger.setAsyncCallStackDepth', params: {
+      'maxDepth': maxDepth,
+    });
+  }
+
   Stream<DebuggerPausedEvent> get onPaused => eventStream('Debugger.paused',
       (WipEvent event) => new DebuggerPausedEvent(event.json));
 
@@ -224,6 +234,9 @@ class DebuggerPausedEvent extends WipEvent {
   String toString() => 'paused: ${reason}';
 }
 
+/// A debugger call frame.
+///
+/// This class is for the 'debugger' domain.
 class WipCallFrame {
   final Map<String, dynamic> json;
 
