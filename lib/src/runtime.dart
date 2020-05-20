@@ -266,17 +266,21 @@ class StackTrace {
 
   StackTrace(this.json);
 
+  List<CallFrame> get callFrames => (json['callFrames'] as List)
+      .map((m) => new CallFrame(m as Map<String, dynamic>))
+      .toList();
+
   /// String label of this stack trace. For async traces this may be a name of
   /// the function that initiated the async call.
   @optional
   String get description => json['description'] as String;
 
-  List<CallFrame> get callFrames => (json['callFrames'] as List)
-      .map((m) => new CallFrame(m as Map<String, dynamic>))
-      .toList();
-
-  // TODO: parent, StackTrace, Asynchronous JavaScript stack trace that preceded
-  // this stack, if available.
+  /// Asynchronous JavaScript stack trace that preceded this stack, if
+  /// available.
+  @optional
+  StackTrace get parent {
+    return json['callFrames'] == null ? null : StackTrace(json['callFrames']);
+  }
 
   List<String> printFrames() {
     List<CallFrame> frames = callFrames;
@@ -295,6 +299,8 @@ class StackTrace {
 }
 
 /// Stack entry for runtime errors and assertions.
+///
+/// This class is for the 'runtime' domain.
 class CallFrame {
   final Map<String, dynamic> json;
 

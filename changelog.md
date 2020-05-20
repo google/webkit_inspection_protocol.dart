@@ -1,8 +1,12 @@
 # webkit_inspection_protocol.dart
 
+## 0.7.1
+- Exposed `Debugger.setAsyncCallStackDepth`
+- Exposed `StackTrace.parent`
+
 ## 0.7.0
-- Normalized all objects to expose a `json` field for raw access to the protocol information.
-- Exposed Runtime.getProperties, Runtime.getHeapUsage, and Runtime.getIsolateId
+- Normalized all objects to expose a `json` field for raw access to the protocol information
+- Exposed `Runtime.getProperties`, `Runtime.getHeapUsage`, and `Runtime.getIsolateId`
 - Exposed `DebuggerPausedEvent.hitBreakpoints` and `DebuggerPausedEvent.asyncStackTrace`
 - Exposed `WipCallFrame.returnValue`
 - Removed `WrappedWipEvent` (in favor of just using `WipEvent`)
