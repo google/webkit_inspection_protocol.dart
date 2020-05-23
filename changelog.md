@@ -1,5 +1,8 @@
 # webkit_inspection_protocol.dart
 
+## 0.7.2
+- Fix a bug in `StackTrace.parent`
+
 ## 0.7.1
 - Exposed `Debugger.setAsyncCallStackDepth`
 - Exposed `StackTrace.parent`

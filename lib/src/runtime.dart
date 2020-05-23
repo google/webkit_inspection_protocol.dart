@@ -279,7 +279,7 @@ class StackTrace {
   /// available.
   @optional
   StackTrace get parent {
-    return json['callFrames'] == null ? null : StackTrace(json['callFrames']);
+    return json['parent'] == null ? null : StackTrace(json['parent']);
   }
 
   List<String> printFrames() {
