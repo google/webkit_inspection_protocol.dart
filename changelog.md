@@ -1,5 +1,8 @@
 # webkit_inspection_protocol.dart
 
+## 0.7.3
+- Fix a type issue with `GlobalObjectClearedEvent`s 
+
 ## 0.7.2
 - Fix a bug in `StackTrace.parent`
 
