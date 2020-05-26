@@ -158,7 +158,7 @@ class WipDebugger extends WipDomain {
 
   Stream<GlobalObjectClearedEvent> get onGlobalObjectCleared => eventStream(
       'Debugger.globalObjectCleared',
-      (WipEvent event) => new GlobalObjectClearedEvent(event));
+      (WipEvent event) => new GlobalObjectClearedEvent(event.json));
 
   Stream<DebuggerResumedEvent> get onResumed => eventStream('Debugger.resumed',
       (WipEvent event) => new DebuggerResumedEvent(event.json));
@@ -194,7 +194,7 @@ class ScriptParsedEvent extends WipEvent {
 }
 
 class GlobalObjectClearedEvent extends WipEvent {
-  GlobalObjectClearedEvent(json) : super(json);
+  GlobalObjectClearedEvent(Map<String, dynamic> json) : super(json);
 }
 
 class DebuggerResumedEvent extends WipEvent {
