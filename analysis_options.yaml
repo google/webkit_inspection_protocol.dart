@@ -13,3 +13,4 @@ linter:
     - prefer_const_declarations
     - prefer_const_literals_to_create_immutables
     - prefer_final_fields
+    - type_annotate_public_apis
