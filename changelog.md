@@ -3,7 +3,6 @@
 ## 0.7.4
 - Support `params` to `stepInto` and `stepOver`. 
 
-
 ## 0.7.3
 - Fix a type issue with `GlobalObjectClearedEvent`s 
 
