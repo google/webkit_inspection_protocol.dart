@@ -1,5 +1,8 @@
 # webkit_inspection_protocol.dart
 
+## 0.7.5
+- Allow the latest `logging` package.
+
 ## 0.7.4
 - Support `params` to `stepInto` and `stepOver`. 
 
