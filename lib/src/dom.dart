@@ -14,25 +14,25 @@ class WipDom extends WipDomain {
   Future<Map<String, String>> getAttributes(int nodeId) async {
     WipResponse resp =
         await sendCommand('DOM.getAttributes', params: {'nodeId': nodeId});
-    return _attributeListToMap((resp.result['attributes'] as List).cast());
+    return _attributeListToMap((resp.result!['attributes'] as List).cast());
   }
 
   Future<Node> getDocument() async =>
-      new Node((await sendCommand('DOM.getDocument')).result['root']
+      new Node((await sendCommand('DOM.getDocument')).result!['root']
           as Map<String, dynamic>);
 
   Future<String> getOuterHtml(int nodeId) async =>
       (await sendCommand('DOM.getOuterHTML', params: {'nodeId': nodeId}))
-          .result['root'] as String;
+          .result!['root'] as String;
 
-  Future hideHighlight() => sendCommand('DOM.hideHighlight');
+  Future<void> hideHighlight() => sendCommand('DOM.hideHighlight');
 
-  Future highlightNode(int nodeId,
-      {Rgba borderColor,
-      Rgba contentColor,
-      Rgba marginColor,
-      Rgba paddingColor,
-      bool showInfo}) {
+  Future<void> highlightNode(int nodeId,
+      {Rgba? borderColor,
+      Rgba? contentColor,
+      Rgba? marginColor,
+      Rgba? paddingColor,
+      bool? showInfo}) {
     var params = <String, dynamic>{'nodeId': nodeId, 'highlightConfig': {}};
 
     if (borderColor != null) {
@@ -58,8 +58,8 @@ class WipDom extends WipDomain {
     return sendCommand('DOM.highlightNode', params: params);
   }
 
-  Future highlightRect(int x, int y, int width, int height,
-      {Rgba color, Rgba outlineColor}) {
+  Future<void> highlightRect(int x, int y, int width, int height,
+      {Rgba? color, Rgba? outlineColor}) {
     var params = <String, dynamic>{
       'x': x,
       'y': y,
@@ -79,7 +79,7 @@ class WipDom extends WipDomain {
   }
 
   Future<int> moveTo(int nodeId, int targetNodeId,
-      {int insertBeforeNodeId}) async {
+      {int? insertBeforeNodeId}) async {
     var params = {'nodeId': nodeId, 'targetNodeId': targetNodeId};
 
     if (insertBeforeNodeId != null) {
@@ -87,52 +87,52 @@ class WipDom extends WipDomain {
     }
 
     var resp = await sendCommand('DOM.moveTo', params: params);
-    return resp.result['nodeId'] as int;
+    return resp.result!['nodeId'] as int;
   }
 
   Future<int> querySelector(int nodeId, String selector) async {
     var resp = await sendCommand('DOM.querySelector',
         params: {'nodeId': nodeId, 'selector': selector});
-    return resp.result['nodeId'] as int;
+    return resp.result!['nodeId'] as int;
   }
 
   Future<List<int>> querySelectorAll(int nodeId, String selector) async {
     var resp = await sendCommand('DOM.querySelectorAll',
         params: {'nodeId': nodeId, 'selector': selector});
-    return (resp.result['nodeIds'] as List).cast();
+    return (resp.result!['nodeIds'] as List).cast();
   }
 
-  Future removeAttribute(int nodeId, String name) =>
+  Future<void> removeAttribute(int nodeId, String name) =>
       sendCommand('DOM.removeAttribute',
           params: {'nodeId': nodeId, 'name': name});
 
-  Future removeNode(int nodeId) =>
+  Future<void> removeNode(int nodeId) =>
       sendCommand('DOM.removeNode', params: {'nodeId': nodeId});
 
-  Future requestChildNodes(int nodeId) =>
+  Future<void> requestChildNodes(int nodeId) =>
       sendCommand('DOM.requestChildNodes', params: {'nodeId': nodeId});
 
   Future<int> requestNode(String objectId) async {
     var resp =
         await sendCommand('DOM.requestNode', params: {'objectId': objectId});
-    return resp.result['nodeId'] as int;
+    return resp.result!['nodeId'] as int;
   }
 
-  Future<RemoteObject> resolveNode(int nodeId, {String objectGroup}) async {
+  Future<RemoteObject> resolveNode(int nodeId, {String? objectGroup}) async {
     var params = <String, dynamic>{'nodeId': nodeId};
     if (objectGroup != null) {
       params['objectGroup'] = objectGroup;
     }
 
     var resp = await sendCommand('DOM.resolveNode', params: params);
-    return new RemoteObject(resp.result['object'] as Map<String, dynamic>);
+    return new RemoteObject(resp.result!['object'] as Map<String, dynamic>);
   }
 
-  Future setAttributeValue(int nodeId, String name, String value) =>
+  Future<void> setAttributeValue(int nodeId, String name, String value) =>
       sendCommand('DOM.setAttributeValue',
           params: {'nodeId': nodeId, 'name': name, 'value': value});
 
-  Future setAttributesAsText(int nodeId, String text, {String name}) {
+  Future<void> setAttributesAsText(int nodeId, String text, {String? name}) {
     var params = {'nodeId': nodeId, 'text': text};
     if (name != null) {
       params['name'] = name;
@@ -143,14 +143,14 @@ class WipDom extends WipDomain {
   Future<int> setNodeName(int nodeId, String name) async {
     var resp = await sendCommand('DOM.setNodeName',
         params: {'nodeId': nodeId, 'name': name});
-    return resp.result['nodeId'] as int;
+    return resp.result!['nodeId'] as int;
   }
 
-  Future setNodeValue(int nodeId, String value) =>
+  Future<void> setNodeValue(int nodeId, String value) =>
       sendCommand('DOM.setNodeValue',
           params: {'nodeId': nodeId, 'value': value});
 
-  Future setOuterHtml(int nodeId, String outerHtml) =>
+  Future<void> setOuterHtml(int nodeId, String outerHtml) =>
       sendCommand('DOM.setOuterHTML',
           params: {'nodeId': nodeId, 'outerHtml': outerHtml});
 
@@ -190,59 +190,53 @@ class WipDom extends WipDomain {
 class AttributeModifiedEvent extends WipEvent {
   AttributeModifiedEvent(Map<String, dynamic> json) : super(json);
 
-  int get nodeId => params['nodeId'] as int;
+  int get nodeId => params!['nodeId'] as int;
 
-  String get name => params['name'] as String;
+  String get name => params!['name'] as String;
 
-  String get value => params['value'] as String;
+  String get value => params!['value'] as String;
 }
 
 class AttributeRemovedEvent extends WipEvent {
   AttributeRemovedEvent(Map<String, dynamic> json) : super(json);
 
-  int get nodeId => params['nodeId'] as int;
+  int get nodeId => params!['nodeId'] as int;
 
-  String get name => params['name'] as String;
+  String get name => params!['name'] as String;
 }
 
 class CharacterDataModifiedEvent extends WipEvent {
   CharacterDataModifiedEvent(Map<String, dynamic> json) : super(json);
 
-  int get nodeId => params['nodeId'] as int;
+  int get nodeId => params!['nodeId'] as int;
 
-  String get characterData => params['characterData'] as String;
+  String get characterData => params!['characterData'] as String;
 }
 
 class ChildNodeCountUpdatedEvent extends WipEvent {
   ChildNodeCountUpdatedEvent(Map<String, dynamic> json) : super(json);
 
-  int get nodeId => params['nodeId'] as int;
+  int get nodeId => params!['nodeId'] as int;
 
-  int get childNodeCount => params['childNodeCount'] as int;
+  int get childNodeCount => params!['childNodeCount'] as int;
 }
 
 class ChildNodeInsertedEvent extends WipEvent {
   ChildNodeInsertedEvent(Map<String, dynamic> json) : super(json);
 
-  int get parentNodeId => params['parentNodeId'] as int;
+  int get parentNodeId => params!['parentNodeId'] as int;
 
-  int get previousNodeId => params['previousNodeId'] as int;
-  Node _node;
+  int get previousNodeId => params!['previousNodeId'] as int;
 
-  Node get node {
-    if (_node == null) {
-      _node = new Node(params['node'] as Map<String, dynamic>);
-    }
-    return _node;
-  }
+  late final node = Node(params!['node'] as Map<String, dynamic>);
 }
 
 class ChildNodeRemovedEvent extends WipEvent {
   ChildNodeRemovedEvent(Map<String, dynamic> json) : super(json);
 
-  int get parentNodeId => params['parentNodeId'] as int;
+  int get parentNodeId => params!['parentNodeId'] as int;
 
-  int get nodeId => params['nodeId'] as int;
+  int get nodeId => params!['nodeId'] as int;
 }
 
 class DocumentUpdatedEvent extends WipEvent {
@@ -252,10 +246,10 @@ class DocumentUpdatedEvent extends WipEvent {
 class SetChildNodesEvent extends WipEvent {
   SetChildNodesEvent(Map<String, dynamic> json) : super(json);
 
-  int get nodeId => params['parentId'] as int;
+  int get nodeId => params!['parentId'] as int;
 
   Iterable<Node> get nodes sync* {
-    for (Map node in params['nodes']) {
+    for (Map node in params!['nodes']) {
       yield new Node(node as Map<String, dynamic>);
     }
   }
@@ -271,41 +265,31 @@ class Node {
 
   Node(this._map);
 
-  Map<String, String> _attributes;
+  late final Map<String, String>? attributes = _map.containsKey('attributes')
+      ? _attributeListToMap((_map['attributes'] as List).cast())
+      : null;
 
-  Map<String, String> get attributes {
-    if (_attributes == null && _map.containsKey('attributes')) {
-      _attributes = _attributeListToMap((_map['attributes'] as List).cast());
-    }
-    return _attributes;
-  }
+  int? get childNodeCount => _map['childNodeCount'] as int?;
 
-  int get childNodeCount => _map['childNodeCount'] as int;
+  late final List<Node>? children = _map.containsKey('children')
+      ? UnmodifiableListView((_map['children'] as List)
+          .map((c) => new Node(c as Map<String, dynamic>)))
+      : null;
 
-  List<Node> _children;
-
-  List<Node> get children {
-    if (_children == null && _map.containsKey('children')) {
-      _children = new UnmodifiableListView((_map['children'] as List)
-          .map((c) => new Node(c as Map<String, dynamic>)));
-    }
-    return _children;
-  }
-
-  Node get contentDocument {
+  Node? get contentDocument {
     if (_map.containsKey('contentDocument')) {
       return new Node(_map['contentDocument'] as Map<String, dynamic>);
     }
     return null;
   }
 
-  String get documentUrl => _map['documentURL'] as String;
+  String? get documentUrl => _map['documentURL'] as String?;
 
-  String get internalSubset => _map['internalSubset'] as String;
+  String? get internalSubset => _map['internalSubset'] as String?;
 
   String get localName => _map['localName'] as String;
 
-  String get name => _map['name'] as String;
+  String? get name => _map['name'] as String?;
 
   int get nodeId => _map['nodeId'] as int;
 
@@ -315,29 +299,29 @@ class Node {
 
   String get nodeValue => _map['nodeValue'] as String;
 
-  String get publicId => _map['publicId'] as String;
+  String? get publicId => _map['publicId'] as String?;
 
-  String get systemId => _map['systemId'] as String;
+  String? get systemId => _map['systemId'] as String?;
 
-  String get value => _map['value'] as String;
+  String? get value => _map['value'] as String?;
 
-  String get xmlVersion => _map['xmlVersion'] as String;
+  String? get xmlVersion => _map['xmlVersion'] as String?;
 
   String toString() => '$nodeName: $nodeId $attributes';
 }
 
 class Rgba {
-  final int a;
+  final int? a;
   final int b;
   final int r;
   final int g;
 
   Rgba(this.r, this.g, this.b, [this.a]);
 
-  Map toJson() {
+  Map<String, int> toJson() {
     var json = {'r': r, 'g': g, 'b': b};
     if (a != null) {
-      json['a'] = a;
+      json['a'] = a!;
     }
     return json;
   }

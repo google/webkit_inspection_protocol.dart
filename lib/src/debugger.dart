@@ -25,19 +25,19 @@ class WipDebugger extends WipDomain {
   Future<String> getScriptSource(String scriptId) async {
     return (await sendCommand('Debugger.getScriptSource',
             params: {'scriptId': scriptId}))
-        .result['scriptSource'] as String;
+        .result!['scriptSource'] as String;
   }
 
   Future<WipResponse> pause() => sendCommand('Debugger.pause');
 
   Future<WipResponse> resume() => sendCommand('Debugger.resume');
 
-  Future<WipResponse> stepInto({Map<String, dynamic> params}) =>
+  Future<WipResponse> stepInto({Map<String, dynamic>? params}) =>
       sendCommand('Debugger.stepInto', params: params);
 
   Future<WipResponse> stepOut() => sendCommand('Debugger.stepOut');
 
-  Future<WipResponse> stepOver({Map<String, dynamic> params}) =>
+  Future<WipResponse> stepOver({Map<String, dynamic>? params}) =>
       sendCommand('Debugger.stepOver', params: params);
 
   Future<WipResponse> setPauseOnExceptions(PauseState state) {
@@ -53,7 +53,7 @@ class WipDebugger extends WipDomain {
   ///    evaluates to true.
   Future<SetBreakpointResponse> setBreakpoint(
     WipLocation location, {
-    String condition,
+    String? condition,
   }) async {
     Map<String, dynamic> params = {
       'location': location.toJsonMap(),
@@ -65,9 +65,9 @@ class WipDebugger extends WipDomain {
     final WipResponse response =
         await sendCommand('Debugger.setBreakpoint', params: params);
 
-    if (response.result.containsKey('exceptionDetails')) {
+    if (response.result!.containsKey('exceptionDetails')) {
       throw new ExceptionDetails(
-          response.result['exceptionDetails'] as Map<String, dynamic>);
+          response.result!['exceptionDetails'] as Map<String, dynamic>);
     } else {
       return new SetBreakpointResponse(response.json);
     }
@@ -88,7 +88,7 @@ class WipDebugger extends WipDomain {
   Future<RemoteObject> evaluateOnCallFrame(
     String callFrameId,
     String expression, {
-    bool returnByValue,
+    bool? returnByValue,
   }) async {
     Map<String, dynamic> params = {
       'callFrameId': callFrameId,
@@ -101,12 +101,12 @@ class WipDebugger extends WipDomain {
     final WipResponse response =
         await sendCommand('Debugger.evaluateOnCallFrame', params: params);
 
-    if (response.result.containsKey('exceptionDetails')) {
+    if (response.result!.containsKey('exceptionDetails')) {
       throw new ExceptionDetails(
-          response.result['exceptionDetails'] as Map<String, dynamic>);
+          response.result!['exceptionDetails'] as Map<String, dynamic>);
     } else {
       return new RemoteObject(
-          response.result['result'] as Map<String, dynamic>);
+          response.result!['result'] as Map<String, dynamic>);
     }
   }
 
@@ -120,8 +120,8 @@ class WipDebugger extends WipDomain {
   ///   (non-nested) function as start.
   Future<List<WipBreakLocation>> getPossibleBreakpoints(
     WipLocation start, {
-    WipLocation end,
-    bool restrictToFunction,
+    WipLocation? end,
+    bool? restrictToFunction,
   }) async {
     Map<String, dynamic> params = {
       'start': start.toJsonMap(),
@@ -136,11 +136,11 @@ class WipDebugger extends WipDomain {
     final WipResponse response =
         await sendCommand('Debugger.getPossibleBreakpoints', params: params);
 
-    if (response.result.containsKey('exceptionDetails')) {
+    if (response.result!.containsKey('exceptionDetails')) {
       throw new ExceptionDetails(
-          response.result['exceptionDetails'] as Map<String, dynamic>);
+          response.result!['exceptionDetails'] as Map<String, dynamic>);
     } else {
-      List locations = response.result['locations'];
+      List locations = response.result!['locations'];
       return List.from(locations.map((map) => WipBreakLocation(map)));
     }
   }
@@ -190,7 +190,7 @@ enum PauseState { all, none, uncaught }
 class ScriptParsedEvent extends WipEvent {
   ScriptParsedEvent(Map<String, dynamic> json) : super(json);
 
-  WipScript get script => new WipScript(params);
+  WipScript get script => new WipScript(params!);
 
   String toString() => script.toString();
 }
@@ -209,7 +209,7 @@ class DebuggerPausedEvent extends WipEvent {
   DebuggerPausedEvent(Map<String, dynamic> json) : super(json);
 
   /// Call stack the virtual machine stopped on.
-  List<WipCallFrame> getCallFrames() => (params['callFrames'] as List)
+  List<WipCallFrame> getCallFrames() => (params!['callFrames'] as List)
       .map((frame) => new WipCallFrame(frame as Map<String, dynamic>))
       .toList();
 
@@ -217,21 +217,21 @@ class DebuggerPausedEvent extends WipEvent {
   ///
   /// Allowed Values: ambiguous, assert, debugCommand, DOM, EventListener,
   /// exception, instrumentation, OOM, other, promiseRejection, XHR.
-  String get reason => params['reason'] as String;
+  String get reason => params!['reason'] as String;
 
   /// Object containing break-specific auxiliary properties.
-  Object get data => params['data'];
+  Object? get data => params!['data'];
 
   /// Hit breakpoints IDs (optional).
-  List<String> get hitBreakpoints {
-    if (params['hitBreakpoints'] == null) return null;
-    return (params['hitBreakpoints'] as List).cast<String>();
+  List<String>? get hitBreakpoints {
+    if (params!['hitBreakpoints'] == null) return null;
+    return (params!['hitBreakpoints'] as List).cast<String>();
   }
 
   /// Async stack trace, if any.
-  StackTrace get asyncStackTrace => params['asyncStackTrace'] == null
+  StackTrace? get asyncStackTrace => params!['asyncStackTrace'] == null
       ? null
-      : StackTrace(params['asyncStackTrace']);
+      : StackTrace(params!['asyncStackTrace']);
 
   String toString() => 'paused: ${reason}';
 }
@@ -270,7 +270,7 @@ class WipCallFrame {
   /// The value being returned, if the function is at return point.
   ///
   /// (optional)
-  RemoteObject get returnValue {
+  RemoteObject? get returnValue {
     return json.containsKey('returnValue')
         ? new RemoteObject(json['returnValue'] as Map<String, dynamic>)
         : null;
@@ -284,7 +284,7 @@ class WipLocation {
 
   WipLocation(this.json);
 
-  WipLocation.fromValues(String scriptId, int lineNumber, {int columnNumber})
+  WipLocation.fromValues(String scriptId, int lineNumber, {int? columnNumber})
       : json = {} {
     json['scriptId'] = scriptId;
     json['lineNumber'] = lineNumber;
@@ -297,7 +297,7 @@ class WipLocation {
 
   int get lineNumber => json['lineNumber'];
 
-  int get columnNumber => json['columnNumber'];
+  int? get columnNumber => json['columnNumber'];
 
   Map<String, dynamic> toJsonMap() {
     return json;
@@ -323,9 +323,9 @@ class WipScript {
 
   int get endColumn => json['endColumn'] as int;
 
-  bool get isContentScript => json['isContentScript'] as bool;
+  bool? get isContentScript => json['isContentScript'] as bool?;
 
-  String get sourceMapURL => json['sourceMapURL'] as String;
+  String? get sourceMapURL => json['sourceMapURL'] as String?;
 
   String toString() => '[script ${scriptId}: ${url}]';
 }
@@ -339,7 +339,7 @@ class WipScope {
   String get scope => json['type'] as String;
 
   /// Name of the scope, null if unnamed closure or global scope
-  String get name => json['name'] as String;
+  String? get name => json['name'] as String?;
 
   /// Object representing the scope. For global and with scopes it represents
   /// the actual object; for the rest of the scopes, it is artificial transient
@@ -352,7 +352,7 @@ class WipBreakLocation extends WipLocation {
   WipBreakLocation(Map<String, dynamic> json) : super(json);
 
   WipBreakLocation.fromValues(String scriptId, int lineNumber,
-      {int columnNumber, String type})
+      {int? columnNumber, String? type})
       : super.fromValues(scriptId, lineNumber, columnNumber: columnNumber) {
     if (type != null) {
       json['type'] = type;
@@ -360,14 +360,14 @@ class WipBreakLocation extends WipLocation {
   }
 
   /// Allowed Values: `debuggerStatement`, `call`, `return`.
-  String get type => json['type'];
+  String? get type => json['type'] as String?;
 }
 
 /// The response from [WipDebugger.setBreakpoint].
 class SetBreakpointResponse extends WipResponse {
   SetBreakpointResponse(Map<String, dynamic> json) : super(json);
 
-  String get breakpointId => result['breakpointId'];
+  String get breakpointId => result!['breakpointId'];
 
-  WipLocation get actualLocation => WipLocation(result['actualLocation']);
+  WipLocation get actualLocation => WipLocation(result!['actualLocation']);
 }

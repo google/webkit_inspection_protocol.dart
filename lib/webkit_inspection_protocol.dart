@@ -44,8 +44,8 @@ class ChromeConnection {
         (jsonDecode(respBody) as List).map((m) => new ChromeTab(m as Map)));
   }
 
-  Future<ChromeTab> getTab(bool accept(ChromeTab tab),
-      {Duration retryFor}) async {
+  Future<ChromeTab?> getTab(bool accept(ChromeTab tab),
+      {Duration? retryFor}) async {
     var start = new DateTime.now();
     var end = start;
     if (retryFor != null) {
@@ -84,16 +84,16 @@ class ChromeTab {
 
   ChromeTab(this._map);
 
-  String get description => _map['description'] as String;
+  String? get description => _map['description'] as String?;
 
-  String get devtoolsFrontendUrl => _map['devtoolsFrontendUrl'] as String;
+  String? get devtoolsFrontendUrl => _map['devtoolsFrontendUrl'] as String?;
 
-  String get faviconUrl => _map['faviconUrl'] as String;
+  String? get faviconUrl => _map['faviconUrl'] as String?;
 
   /// Ex. `E1999E8A-EE27-0450-9900-5BFF4C69CA83`.
   String get id => _map['id'] as String;
 
-  String get title => _map['title'] as String;
+  String? get title => _map['title'] as String?;
 
   /// Ex. `background_page`, `page`.
   String get type => _map['type'] as String;
@@ -124,33 +124,20 @@ class WipConnection {
 
   int _nextId = 0;
 
-  WipConsole _console; // ignore: deprecated_member_use
   @Deprecated('This domain is deprecated - use Runtime or Log instead')
-  WipConsole get console => _console;
+  late final WipConsole console = WipConsole(this);
 
-  WipDebugger _debugger;
+  late final WipDebugger debugger = WipDebugger(this);
 
-  WipDebugger get debugger => _debugger;
+  late final WipDom dom = WipDom(this);
 
-  WipDom _dom;
+  late final WipPage page = WipPage(this);
 
-  WipDom get dom => _dom;
+  late final WipTarget target = WipTarget(this);
 
-  WipPage _page;
+  late final WipLog log = WipLog(this);
 
-  WipPage get page => _page;
-
-  WipTarget _target;
-
-  WipTarget get target => _target;
-
-  WipLog _log;
-
-  WipLog get log => _log;
-
-  WipRuntime _runtime;
-
-  WipRuntime get runtime => _runtime;
+  late final WipRuntime runtime = WipRuntime(this);
 
   final StreamController<String> _onSend =
       StreamController.broadcast(sync: true);
@@ -169,14 +156,6 @@ class WipConnection {
   }
 
   WipConnection._(this.url, this._ws) {
-    _console = new WipConsole(this); // ignore: deprecated_member_use
-    _debugger = new WipDebugger(this);
-    _dom = new WipDom(this);
-    _page = new WipPage(this);
-    _target = new WipTarget(this);
-    _log = new WipLog(this);
-    _runtime = new WipRuntime(this);
-
     _ws.listen((data) {
       var json = jsonDecode(data as String) as Map<String, dynamic>;
       _onReceive.add(data);
@@ -198,7 +177,7 @@ class WipConnection {
   String toString() => url;
 
   Future<WipResponse> sendCommand(String method,
-      [Map<String, dynamic> params]) {
+      [Map<String, dynamic>? params]) {
     var completer = new Completer<WipResponse>();
     var json = {'id': _nextId++, 'method': method};
     if (params != null) {
@@ -242,11 +221,11 @@ class WipEvent {
   final Map<String, dynamic> json;
 
   final String method;
-  final Map<String, dynamic> params;
+  final Map<String, dynamic>? params;
 
   WipEvent(this.json)
       : method = json['method'] as String,
-        params = json['params'] as Map<String, dynamic>;
+        params = json['params'] as Map<String, dynamic>?;
 
   String toString() => 'WipEvent: $method($params)';
 }
@@ -255,15 +234,15 @@ class WipError implements Exception {
   final Map<String, dynamic> json;
 
   final int id;
-  final dynamic error;
+  final Map<String, dynamic>? error;
 
   WipError(this.json)
       : id = json['id'] as int,
-        error = json['error'];
+        error = json['error'] as Map<String, dynamic>?;
 
-  int get code => error == null ? null : error['code'];
+  int? get code => error == null ? null : error!['code'];
 
-  String get message => error == null ? null : error['message'];
+  String? get message => error == null ? null : error!['message'];
 
   String toString() => 'WipError $code $message';
 }
@@ -272,11 +251,11 @@ class WipResponse {
   final Map<String, dynamic> json;
 
   final int id;
-  final Map<String, dynamic> result;
+  final Map<String, dynamic>? result;
 
   WipResponse(this.json)
       : id = json['id'] as int,
-        result = json['result'] as Map<String, dynamic>;
+        result = json['result'] as Map<String, dynamic>?;
 
   String toString() => 'WipResponse $id: $result';
 }
@@ -290,16 +269,13 @@ abstract class WipDomain {
   final Map<String, Stream> _eventStreams = {};
 
   final WipConnection connection;
-  Stream<WipDomain> _onClosed;
 
-  Stream<WipDomain> get onClosed => _onClosed;
+  late final Stream<WipDomain> onClosed = StreamTransformer.fromHandlers(
+      handleData: (event, EventSink<WipDomain> sink) {
+    sink.add(this);
+  }).bind(connection.onClose);
 
-  WipDomain(WipConnection connection) : this.connection = connection {
-    this._onClosed = new StreamTransformer.fromHandlers(
-        handleData: (event, EventSink<WipDomain> sink) {
-      sink.add(this);
-    }).bind(connection.onClose);
-  }
+  WipDomain(WipConnection connection) : this.connection = connection;
 
   Stream<T> eventStream<T>(String method, WipEventTransformer<T> transformer) {
     return _eventStreams
@@ -318,7 +294,7 @@ abstract class WipDomain {
 
   Future<WipResponse> sendCommand(
     String method, {
-    Map<String, dynamic> params,
+    Map<String, dynamic>? params,
   }) {
     return connection.sendCommand(method, params);
   }

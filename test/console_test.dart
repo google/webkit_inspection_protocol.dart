@@ -13,7 +13,7 @@ import 'test_setup.dart';
 
 void main() {
   group('WipConsole', () {
-    WipConsole console; // ignore: deprecated_member_use
+    WipConsole? console; // ignore: deprecated_member_use
     List<ConsoleMessageEvent> events = [];
     var subs = [];
 
@@ -35,11 +35,11 @@ void main() {
       // ignore: deprecated_member_use
       console = (await wipConnection).console;
       events.clear();
-      subs.add(console.onMessage.listen(events.add));
+      subs.add(console!.onMessage.listen(events.add));
     });
 
     tearDown(() async {
-      await console.disable();
+      await console!.disable();
       console = null;
       await closeConnection();
       subs.forEach((s) => s.cancel());
@@ -47,14 +47,14 @@ void main() {
     });
 
     test('receives new console messages', () async {
-      await console.enable();
+      await console!.enable();
       await navigateToPage('console_test.html');
       await checkMessages(4);
     });
 
     test('receives old console messages', () async {
       await navigateToPage('console_test.html');
-      await console.enable();
+      await console!.enable();
       await checkMessages(4);
     });
 

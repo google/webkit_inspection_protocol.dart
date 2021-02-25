@@ -31,51 +31,42 @@ class WipDomModel implements WipDom {
   final WipDom _dom;
 
   final Map<int, _Node> _nodeCache = {};
-  Future<_Node> _root;
+  Future<_Node>? _root;
 
-  Stream<AttributeModifiedEvent> onAttributeModified;
-  Stream<AttributeRemovedEvent> onAttributeRemoved;
-  Stream<CharacterDataModifiedEvent> onCharacterDataModified;
-  Stream<ChildNodeCountUpdatedEvent> onChildNodeCountUpdated;
-  Stream<ChildNodeInsertedEvent> onChildNodeInserted;
-  Stream<ChildNodeRemovedEvent> onChildNodeRemoved;
-  Stream<DocumentUpdatedEvent> onDocumentUpdated;
-  Stream<SetChildNodesEvent> onSetChildNodes;
+  late final Stream<AttributeModifiedEvent> onAttributeModified =
+      StreamTransformer.fromHandlers(handleData: _onAttributeModified)
+          .bind(_dom.onAttributeModified)
+            ..listen(_logEvent);
+  late final Stream<AttributeRemovedEvent> onAttributeRemoved =
+      StreamTransformer.fromHandlers(handleData: _onAttributeRemoved)
+          .bind(_dom.onAttributeRemoved)
+            ..listen(_logEvent);
+  late final Stream<CharacterDataModifiedEvent> onCharacterDataModified =
+      StreamTransformer.fromHandlers(handleData: _onCharacterDataModified)
+          .bind(_dom.onCharacterDataModified)
+            ..listen(_logEvent);
+  late final Stream<ChildNodeCountUpdatedEvent> onChildNodeCountUpdated =
+      StreamTransformer.fromHandlers(handleData: _onChildNodeCountUpdated)
+          .bind(_dom.onChildNodeCountUpdated)
+            ..listen(_logEvent);
+  late final Stream<ChildNodeInsertedEvent> onChildNodeInserted =
+      StreamTransformer.fromHandlers(handleData: _onChildNodeInserted)
+          .bind(_dom.onChildNodeInserted)
+            ..listen(_logEvent);
+  late final Stream<ChildNodeRemovedEvent> onChildNodeRemoved =
+      StreamTransformer.fromHandlers(handleData: _onChildNodeRemoved)
+          .bind(_dom.onChildNodeRemoved)
+            ..listen(_logEvent);
+  late final Stream<DocumentUpdatedEvent> onDocumentUpdated =
+      StreamTransformer.fromHandlers(handleData: _onDocumentUpdated)
+          .bind(_dom.onDocumentUpdated)
+            ..listen(_logEvent);
+  late final Stream<SetChildNodesEvent> onSetChildNodes =
+      StreamTransformer.fromHandlers(handleData: _onSetChildNodes)
+          .bind(_dom.onSetChildNodes)
+            ..listen(_logEvent);
 
-  WipDomModel(this._dom) {
-    onAttributeModified =
-        new StreamTransformer.fromHandlers(handleData: _onAttributeModified)
-            .bind(_dom.onAttributeModified)
-              ..listen(_logEvent);
-    onAttributeRemoved =
-        new StreamTransformer.fromHandlers(handleData: _onAttributeRemoved)
-            .bind(_dom.onAttributeRemoved)
-              ..listen(_logEvent);
-    onCharacterDataModified =
-        new StreamTransformer.fromHandlers(handleData: _onCharacterDataModified)
-            .bind(_dom.onCharacterDataModified)
-              ..listen(_logEvent);
-    onChildNodeCountUpdated =
-        new StreamTransformer.fromHandlers(handleData: _onChildNodeCountUpdated)
-            .bind(_dom.onChildNodeCountUpdated)
-              ..listen(_logEvent);
-    onChildNodeInserted =
-        new StreamTransformer.fromHandlers(handleData: _onChildNodeInserted)
-            .bind(_dom.onChildNodeInserted)
-              ..listen(_logEvent);
-    onChildNodeRemoved =
-        new StreamTransformer.fromHandlers(handleData: _onChildNodeRemoved)
-            .bind(_dom.onChildNodeRemoved)
-              ..listen(_logEvent);
-    onDocumentUpdated =
-        new StreamTransformer.fromHandlers(handleData: _onDocumentUpdated)
-            .bind(_dom.onDocumentUpdated)
-              ..listen(_logEvent);
-    onSetChildNodes =
-        new StreamTransformer.fromHandlers(handleData: _onSetChildNodes)
-            .bind(_dom.onSetChildNodes)
-              ..listen(_logEvent);
-  }
+  WipDomModel(this._dom);
 
   void _logEvent(WipEvent event) {
     _log.finest('Event $event');
@@ -84,14 +75,14 @@ class WipDomModel implements WipDom {
   void _onAttributeModified(
       AttributeModifiedEvent event, EventSink<AttributeModifiedEvent> sink) {
     var node = _getOrCreateNode(event.nodeId);
-    node._attributes[event.name] = event.value;
+    node._attributes![event.name] = event.value;
     sink.add(event);
   }
 
   void _onAttributeRemoved(
       AttributeRemovedEvent event, EventSink<AttributeRemovedEvent> sink) {
     var node = _getOrCreateNode(event.nodeId);
-    node._attributes.remove(event.name);
+    node._attributes!.remove(event.name);
     sink.add(event);
   }
 
@@ -112,14 +103,11 @@ class WipDomModel implements WipDom {
   void _onChildNodeInserted(
       ChildNodeInsertedEvent event, EventSink<ChildNodeInsertedEvent> sink) {
     var parent = _getOrCreateNode(event.parentNodeId);
-    int index = 0;
-    if (event.previousNodeId != null) {
-      index =
-          parent._children.indexOf(_getOrCreateNode(event.previousNodeId)) + 1;
-    }
+    int index =
+        parent._children!.indexOf(_getOrCreateNode(event.previousNodeId)) + 1;
     var node = _getOrCreateNodeFromNode(event.node);
-    parent._children.insert(index, node);
-    parent._childNodeCount = parent._children.length;
+    parent._children!.insert(index, node);
+    parent._childNodeCount = parent._children!.length;
     sink.add(event);
   }
 
@@ -127,8 +115,8 @@ class WipDomModel implements WipDom {
       ChildNodeRemovedEvent event, EventSink<ChildNodeRemovedEvent> sink) {
     var parent = _getOrCreateNode(event.parentNodeId);
     var node = _nodeCache.remove(event.nodeId);
-    parent._children.remove(node);
-    parent._childNodeCount = parent._children.length;
+    parent._children!.remove(node);
+    parent._childNodeCount = parent._children!.length;
     sink.add(event);
   }
 
@@ -144,7 +132,7 @@ class WipDomModel implements WipDom {
     var parent = _getOrCreateNode(event.nodeId);
     parent._children =
         event.nodes.map(_getOrCreateNodeFromNode).toList(growable: true);
-    parent._childNodeCount = parent._children.length;
+    parent._childNodeCount = parent._children!.length;
     sink.add(event);
   }
 
@@ -164,7 +152,7 @@ class WipDomModel implements WipDom {
     if (_root == null) {
       _root = _dom.getDocument().then((n) => _getOrCreateNodeFromNode(n));
     }
-    return _root;
+    return _root!;
   }
 
   _Node _getOrCreateNode(int nodeId) =>
@@ -174,15 +162,15 @@ class WipDomModel implements WipDom {
     try {
       var node = _getOrCreateNode(src.nodeId);
       if (src.attributes != null) {
-        node._attributes = new Map.from(src.attributes);
+        node._attributes = Map.of(src.attributes!);
       }
       if (src.children != null) {
         node._children =
-            src.children.map(_getOrCreateNodeFromNode).toList(growable: true);
+            src.children!.map(_getOrCreateNodeFromNode).toList(growable: true);
       }
-      node._childNodeCount = src.childNodeCount;
+      node._childNodeCount = src.childNodeCount ?? 0;
       if (src.contentDocument != null) {
-        node._contentDocument = _getOrCreateNodeFromNode(src.contentDocument);
+        node._contentDocument = _getOrCreateNodeFromNode(src.contentDocument!);
       }
       node._documentUrl = src.documentUrl;
       node._internalSubset = src.internalSubset;
@@ -207,85 +195,85 @@ class WipDomModel implements WipDom {
 }
 
 class _Node implements Node {
-  Map<String, String> _attributes;
+  Map<String, String>? _attributes;
 
   @override
-  Map<String, String> get attributes =>
-      _attributes != null ? new UnmodifiableMapView(_attributes) : null;
+  Map<String, String>? get attributes =>
+      _attributes != null ? new UnmodifiableMapView(_attributes!) : null;
 
-  int _childNodeCount;
-
-  @override
-  int get childNodeCount => _childNodeCount;
-
-  List<_Node> _children;
+  int? _childNodeCount;
 
   @override
-  List<Node> get children =>
-      _children != null ? new UnmodifiableListView(_children) : null;
+  int? get childNodeCount => _childNodeCount;
 
-  _Node _contentDocument;
-
-  @override
-  Node get contentDocument => _contentDocument;
-
-  String _documentUrl;
+  List<_Node>? _children;
 
   @override
-  String get documentUrl => _documentUrl;
+  List<Node>? get children =>
+      _children != null ? new UnmodifiableListView(_children!) : null;
 
-  String _internalSubset;
-
-  @override
-  String get internalSubset => _internalSubset;
-
-  String _localName;
+  _Node? _contentDocument;
 
   @override
-  String get localName => _localName;
+  Node? get contentDocument => _contentDocument;
 
-  String _name;
+  String? _documentUrl;
 
   @override
-  String get name => _name;
+  String? get documentUrl => _documentUrl;
+
+  String? _internalSubset;
+
+  @override
+  String? get internalSubset => _internalSubset;
+
+  String? _localName;
+
+  @override
+  String get localName => _localName!;
+
+  String? _name;
+
+  @override
+  String? get name => _name;
 
   @override
   final int nodeId;
 
-  String _nodeName;
+  String? _nodeName;
 
   @override
-  String get nodeName => _nodeName;
+  String get nodeName => _nodeName!;
 
-  int _nodeType;
-
-  @override
-  int get nodeType => _nodeType;
-
-  String _nodeValue;
+  int? _nodeType;
 
   @override
-  String get nodeValue => _nodeValue;
+  int get nodeType => _nodeType!;
 
-  String _publicId;
-
-  @override
-  String get publicId => _publicId;
-
-  String _systemId;
+  String? _nodeValue;
 
   @override
-  String get systemId => _systemId;
+  String get nodeValue => _nodeValue!;
 
-  String _value;
-
-  @override
-  String get value => _value;
-
-  String _xmlVersion;
+  String? _publicId;
 
   @override
-  String get xmlVersion => _xmlVersion;
+  String? get publicId => _publicId;
+
+  String? _systemId;
+
+  @override
+  String? get systemId => _systemId;
+
+  String? _value;
+
+  @override
+  String? get value => _value;
+
+  String? _xmlVersion;
+
+  @override
+  String? get xmlVersion => _xmlVersion;
 
   _Node(this.nodeId);
 
@@ -300,44 +288,42 @@ class _Node implements Node {
       'nodeValue': nodeValue
     };
     if (visited.add(nodeId)) {
-      if (attributes != null && attributes.isNotEmpty) {
-        map['attributes'] = flattenAttributesMap(attributes);
+      if (attributes != null && attributes!.isNotEmpty) {
+        map['attributes'] = flattenAttributesMap(attributes!);
       }
       if (childNodeCount != null) {
-        map['childNodeCount'] = childNodeCount;
+        map['childNodeCount'] = childNodeCount!;
       }
-      if (_children != null && _children.isNotEmpty) {
+      if (_children != null && _children!.isNotEmpty) {
         var newChildren = [];
-        _children.forEach((child) {
-          if (child != null) {
-            newChildren.add(child._toJsonInternal(visited));
-          }
+        _children!.forEach((child) {
+          newChildren.add(child._toJsonInternal(visited));
         });
         map['children'] = newChildren;
       }
       if (_contentDocument != null) {
-        map['contentDocument'] = _contentDocument._toJsonInternal(visited);
+        map['contentDocument'] = _contentDocument!._toJsonInternal(visited);
       }
       if (documentUrl != null) {
-        map['documentUrl'] = documentUrl;
+        map['documentUrl'] = documentUrl!;
       }
       if (internalSubset != null) {
-        map['internalSubset'] = internalSubset;
+        map['internalSubset'] = internalSubset!;
       }
       if (name != null) {
-        map['name'] = name;
+        map['name'] = name!;
       }
       if (publicId != null) {
-        map['publicId'] = publicId;
+        map['publicId'] = publicId!;
       }
       if (systemId != null) {
-        map['systemId'] = systemId;
+        map['systemId'] = systemId!;
       }
       if (value != null) {
-        map['value'] = value;
+        map['value'] = value!;
       }
       if (xmlVersion != null) {
-        map['xmlVersion'] = xmlVersion;
+        map['xmlVersion'] = xmlVersion!;
       }
     }
     return map;
@@ -347,9 +333,7 @@ class _Node implements Node {
 List<String> flattenAttributesMap(Map<String, String> attributes) {
   var result = <String>[];
   attributes.forEach((k, v) {
-    if (k != null) {
-      result..add(k)..add(v);
-    }
+    result..add(k)..add(v);
   });
   return result;
 }

@@ -13,7 +13,7 @@ import 'test_setup.dart';
 
 void main() {
   group('WipRuntime', () {
-    WipRuntime runtime;
+    WipRuntime? runtime;
     List<StreamSubscription> subs = [];
 
     setUp(() async {
@@ -21,7 +21,7 @@ void main() {
     });
 
     tearDown(() async {
-      await runtime.disable();
+      await runtime!.disable();
       runtime = null;
 
       await closeConnection();
@@ -30,37 +30,37 @@ void main() {
     });
 
     test('getIsolateId', () async {
-      await runtime.enable();
+      await runtime!.enable();
       await navigateToPage('runtime_test.html');
 
-      expect(await runtime.getIsolateId(), isNotEmpty);
+      expect(await runtime!.getIsolateId(), isNotEmpty);
     });
 
     test('getHeapUsage', () async {
-      await runtime.enable();
+      await runtime!.enable();
       await navigateToPage('runtime_test.html');
 
-      HeapUsage usage = await runtime.getHeapUsage();
+      HeapUsage usage = await runtime!.getHeapUsage();
 
       expect(usage.usedSize, greaterThan(0));
       expect(usage.totalSize, greaterThan(0));
     });
 
     test('evaluate', () async {
-      await runtime.enable();
+      await runtime!.enable();
       await navigateToPage('runtime_test.html');
 
-      RemoteObject result = await runtime.evaluate('1+1');
+      RemoteObject result = await runtime!.evaluate('1+1');
       expect(result.type, 'number');
       expect(result.value, 2);
     });
 
     test('callFunctionOn', () async {
-      await runtime.enable();
+      await runtime!.enable();
       await navigateToPage('runtime_test.html');
 
-      RemoteObject console = await runtime.evaluate('console');
-      RemoteObject result = await runtime.callFunctionOn(
+      RemoteObject console = await runtime!.evaluate('console');
+      RemoteObject result = await runtime!.callFunctionOn(
         '''
         function(msg) {
           console.log(msg);
@@ -77,12 +77,12 @@ void main() {
     });
 
     test('getProperties', () async {
-      await runtime.enable();
+      await runtime!.enable();
       await navigateToPage('runtime_test.html');
 
-      RemoteObject console = await runtime.evaluate('console');
+      RemoteObject console = await runtime!.evaluate('console');
 
-      List<PropertyDescriptor> properties = await runtime.getProperties(
+      List<PropertyDescriptor> properties = await runtime!.getProperties(
         console,
         ownProperties: true,
       );

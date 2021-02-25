@@ -19,7 +19,7 @@ class WipLog extends WipDomain {
 class LogEntry extends WipEvent {
   LogEntry(Map<String, dynamic> json) : super(json);
 
-  Map<String, dynamic> get _entry => params['entry'] as Map<String, dynamic>;
+  Map<String, dynamic> get _entry => params!['entry'] as Map<String, dynamic>;
 
   /// Log entry source. Allowed values: xml, javascript, network, storage,
   /// appcache, rendering, security, deprecation, worker, violation,
@@ -34,7 +34,7 @@ class LogEntry extends WipEvent {
 
   /// URL of the resource if known.
   @optional
-  String get url => _entry['url'] as String;
+  String? get url => _entry['url'] as String?;
 
   /// Timestamp when this entry was added.
   num get timestamp => _entry['timestamp'] as num;
