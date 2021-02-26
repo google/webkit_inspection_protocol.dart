@@ -35,38 +35,39 @@ class WipDomModel implements WipDom {
 
   late final Stream<AttributeModifiedEvent> onAttributeModified =
       StreamTransformer.fromHandlers(handleData: _onAttributeModified)
-          .bind(_dom.onAttributeModified)
-            ..listen(_logEvent);
+          .bind(_dom.onAttributeModified);
   late final Stream<AttributeRemovedEvent> onAttributeRemoved =
       StreamTransformer.fromHandlers(handleData: _onAttributeRemoved)
-          .bind(_dom.onAttributeRemoved)
-            ..listen(_logEvent);
+          .bind(_dom.onAttributeRemoved);
   late final Stream<CharacterDataModifiedEvent> onCharacterDataModified =
       StreamTransformer.fromHandlers(handleData: _onCharacterDataModified)
-          .bind(_dom.onCharacterDataModified)
-            ..listen(_logEvent);
+          .bind(_dom.onCharacterDataModified);
   late final Stream<ChildNodeCountUpdatedEvent> onChildNodeCountUpdated =
       StreamTransformer.fromHandlers(handleData: _onChildNodeCountUpdated)
-          .bind(_dom.onChildNodeCountUpdated)
-            ..listen(_logEvent);
+          .bind(_dom.onChildNodeCountUpdated);
   late final Stream<ChildNodeInsertedEvent> onChildNodeInserted =
       StreamTransformer.fromHandlers(handleData: _onChildNodeInserted)
-          .bind(_dom.onChildNodeInserted)
-            ..listen(_logEvent);
+          .bind(_dom.onChildNodeInserted);
   late final Stream<ChildNodeRemovedEvent> onChildNodeRemoved =
       StreamTransformer.fromHandlers(handleData: _onChildNodeRemoved)
-          .bind(_dom.onChildNodeRemoved)
-            ..listen(_logEvent);
+          .bind(_dom.onChildNodeRemoved);
   late final Stream<DocumentUpdatedEvent> onDocumentUpdated =
       StreamTransformer.fromHandlers(handleData: _onDocumentUpdated)
-          .bind(_dom.onDocumentUpdated)
-            ..listen(_logEvent);
+          .bind(_dom.onDocumentUpdated);
   late final Stream<SetChildNodesEvent> onSetChildNodes =
       StreamTransformer.fromHandlers(handleData: _onSetChildNodes)
-          .bind(_dom.onSetChildNodes)
-            ..listen(_logEvent);
+          .bind(_dom.onSetChildNodes);
 
-  WipDomModel(this._dom);
+  WipDomModel(this._dom) {
+    onAttributeModified.listen(_logEvent);
+    onAttributeRemoved.listen(_logEvent);
+    onCharacterDataModified.listen(_logEvent);
+    onChildNodeCountUpdated.listen(_logEvent);
+    onChildNodeInserted.listen(_logEvent);
+    onChildNodeRemoved.listen(_logEvent);
+    onDocumentUpdated.listen(_logEvent);
+    onSetChildNodes.listen(_logEvent);
+  }
 
   void _logEvent(WipEvent event) {
     _log.finest('Event $event');
