@@ -28,9 +28,9 @@ class WipRuntime extends WipDomain {
   ///     return once awaited promise is resolved.
   Future<RemoteObject> evaluate(
     String expression, {
-    bool returnByValue,
-    int contextId,
-    bool awaitPromise,
+    bool? returnByValue,
+    int? contextId,
+    bool? awaitPromise,
   }) async {
     Map<String, dynamic> params = {
       'expression': expression,
@@ -48,12 +48,12 @@ class WipRuntime extends WipDomain {
     final WipResponse response =
         await sendCommand('Runtime.evaluate', params: params);
 
-    if (response.result.containsKey('exceptionDetails')) {
+    if (response.result!.containsKey('exceptionDetails')) {
       throw new ExceptionDetails(
-          response.result['exceptionDetails'] as Map<String, dynamic>);
+          response.result!['exceptionDetails'] as Map<String, dynamic>);
     } else {
       return new RemoteObject(
-          response.result['result'] as Map<String, dynamic>);
+          response.result!['result'] as Map<String, dynamic>);
     }
   }
 
@@ -64,10 +64,10 @@ class WipRuntime extends WipDomain {
   /// object (int, String, double, bool).
   Future<RemoteObject> callFunctionOn(
     String functionDeclaration, {
-    String objectId,
-    List<dynamic> arguments,
-    bool returnByValue,
-    int executionContextId,
+    String? objectId,
+    List<dynamic>? arguments,
+    bool? returnByValue,
+    int? executionContextId,
   }) async {
     Map<String, dynamic> params = {
       'functionDeclaration': functionDeclaration,
@@ -95,12 +95,12 @@ class WipRuntime extends WipDomain {
     final WipResponse response =
         await sendCommand('Runtime.callFunctionOn', params: params);
 
-    if (response.result.containsKey('exceptionDetails')) {
+    if (response.result!.containsKey('exceptionDetails')) {
       throw new ExceptionDetails(
-          response.result['exceptionDetails'] as Map<String, dynamic>);
+          response.result!['exceptionDetails'] as Map<String, dynamic>);
     } else {
       return new RemoteObject(
-          response.result['result'] as Map<String, dynamic>);
+          response.result!['result'] as Map<String, dynamic>);
     }
   }
 
@@ -109,13 +109,13 @@ class WipRuntime extends WipDomain {
   @experimental
   Future<HeapUsage> getHeapUsage() async {
     final WipResponse response = await sendCommand('Runtime.getHeapUsage');
-    return HeapUsage(response.result);
+    return HeapUsage(response.result!);
   }
 
   /// Returns the isolate id.
   @experimental
   Future<String> getIsolateId() async {
-    return (await sendCommand('Runtime.getIsolateId')).result['id'] as String;
+    return (await sendCommand('Runtime.getIsolateId')).result!['id'] as String;
   }
 
   /// Returns properties of a given object. Object group of the result is
@@ -127,7 +127,7 @@ class WipRuntime extends WipDomain {
   /// itself, not to its prototype chain.
   Future<List<PropertyDescriptor>> getProperties(
     RemoteObject object, {
-    bool ownProperties,
+    bool? ownProperties,
   }) async {
     Map<String, dynamic> params = {
       'objectId': object.objectId,
@@ -139,11 +139,11 @@ class WipRuntime extends WipDomain {
     final WipResponse response =
         await sendCommand('Runtime.getProperties', params: params);
 
-    if (response.result.containsKey('exceptionDetails')) {
+    if (response.result!.containsKey('exceptionDetails')) {
       throw new ExceptionDetails(
-          response.result['exceptionDetails'] as Map<String, dynamic>);
+          response.result!['exceptionDetails'] as Map<String, dynamic>);
     } else {
-      List locations = response.result['result'];
+      List locations = response.result!['result'];
       return List.from(locations.map((map) => PropertyDescriptor(map)));
     }
   }
@@ -161,12 +161,12 @@ class WipRuntime extends WipDomain {
       eventStream(
           'Runtime.executionContextCreated',
           (WipEvent event) =>
-              new ExecutionContextDescription(event.params['context']));
+              new ExecutionContextDescription(event.params!['context']));
 
   /// Issued when execution context is destroyed.
   Stream<String> get onExecutionContextDestroyed => eventStream(
       'Runtime.executionContextDestroyed',
-      (WipEvent event) => event.params['executionContextId']);
+      (WipEvent event) => event.params!['executionContextId']);
 
   /// Issued when all executionContexts were cleared in browser.
   Stream get onExecutionContextsCleared => eventStream(
@@ -180,13 +180,13 @@ class ConsoleAPIEvent extends WipEvent {
   /// Type of the call. Allowed values: log, debug, info, error, warning, dir,
   /// dirxml, table, trace, clear, startGroup, startGroupCollapsed, endGroup,
   /// assert, profile, profileEnd.
-  String get type => params['type'] as String;
+  String get type => params!['type'] as String;
 
   /// Call timestamp.
-  num get timestamp => params['timestamp'] as num;
+  num get timestamp => params!['timestamp'] as num;
 
   /// Call arguments.
-  List<RemoteObject> get args => (params['args'] as List)
+  List<RemoteObject> get args => (params!['args'] as List)
       .map((m) => new RemoteObject(m as Map<String, dynamic>))
       .toList();
 }
@@ -212,10 +212,10 @@ class ExceptionThrownEvent extends WipEvent {
   ExceptionThrownEvent(Map<String, dynamic> json) : super(json);
 
   /// Timestamp of the exception.
-  int get timestamp => params['timestamp'] as int;
+  int get timestamp => params!['timestamp'] as int;
 
   ExceptionDetails get exceptionDetails =>
-      new ExceptionDetails(params['exceptionDetails'] as Map<String, dynamic>);
+      new ExceptionDetails(params!['exceptionDetails'] as Map<String, dynamic>);
 }
 
 class ExceptionDetails implements Exception {
@@ -243,17 +243,17 @@ class ExceptionDetails implements Exception {
 
   /// Script ID of the exception location.
   @optional
-  String get scriptId => json['scriptId'] as String;
+  String? get scriptId => json['scriptId'] as String?;
 
   /// JavaScript stack trace if available.
   @optional
-  StackTrace get stackTrace => json['stackTrace'] == null
+  StackTrace? get stackTrace => json['stackTrace'] == null
       ? null
       : new StackTrace(json['stackTrace'] as Map<String, dynamic>);
 
   /// Exception object if available.
   @optional
-  RemoteObject get exception => json['exception'] == null
+  RemoteObject? get exception => json['exception'] == null
       ? null
       : new RemoteObject(json['exception'] as Map<String, dynamic>);
 
@@ -278,7 +278,7 @@ class StackTrace {
   /// Asynchronous JavaScript stack trace that preceded this stack, if
   /// available.
   @optional
-  StackTrace get parent {
+  StackTrace? get parent {
     return json['parent'] == null ? null : StackTrace(json['parent']);
   }
 
@@ -341,22 +341,22 @@ class RemoteObject {
   /// Allowed Values: array, null, node, regexp, date, map, set, weakmap,
   /// weakset, iterator, generator, error, proxy, promise, typedarray,
   /// arraybuffer, dataview, i32, i64, f32, f64, v128, anyref.
-  String get subtype => json['subtype'] as String;
+  String? get subtype => json['subtype'] as String?;
 
   /// Object class (constructor) name.
   ///
   /// Specified for object type values only.
-  String get className => json['className'] as String;
+  String? get className => json['className'] as String?;
 
   /// Remote object value in case of primitive values or JSON values (if it was
   /// requested). (optional)
-  Object get value => json['value'];
+  Object? get value => json['value'];
 
   /// String representation of the object. (optional)
-  String get description => json['description'] as String;
+  String? get description => json['description'] as String?;
 
   /// Unique object identifier (for non-primitive values). (optional)
-  String get objectId => json['objectId'] as String;
+  String? get objectId => json['objectId'] as String?;
 
   @override
   String toString() => '$type $value';
@@ -389,24 +389,24 @@ class PropertyDescriptor {
   String get name => json['name'];
 
   /// The value associated with the property.
-  RemoteObject get value =>
+  RemoteObject? get value =>
       json['value'] != null ? RemoteObject(json['value']) : null;
 
   /// True if the value associated with the property may be changed (data
   /// descriptors only).
-  bool get writable => json['writable'];
+  bool? get writable => json['writable'] as bool?;
 
   /// True if the type of this property descriptor may be changed and if the
   /// property may be deleted from the corresponding object.
-  bool get configurable => json['configurable'];
+  bool get configurable => json['configurable'] as bool;
 
   /// True if this property shows up during enumeration of the properties on the
   /// corresponding object.
-  bool get enumerable => json['enumerable'];
+  bool get enumerable => json['enumerable'] as bool;
 
   /// True if the result was thrown during the evaluation.
-  bool get wasThrown => json['wasThrown'];
+  bool? get wasThrown => json['wasThrown'] as bool?;
 
   /// True if the property is owned for the object.
-  bool get isOwn => json['isOwn'];
+  bool? get isOwn => json['isOwn'] as bool?;
 }

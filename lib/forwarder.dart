@@ -21,7 +21,7 @@ class WipForwarder {
   final Stream<String> _in;
   final StreamSink _out;
   final WipConnection _debugger;
-  final WipDom domModel;
+  final WipDom? domModel;
 
   /// If false, no Debugger.paused events will be forwarded back to the client.
   /// This gets automatically set to true if a breakpoint is set by the client.
@@ -33,7 +33,7 @@ class WipForwarder {
       new StreamController.broadcast();
 
   factory WipForwarder(WipConnection debugger, Stream<String> stream,
-      {StreamSink sink, WipDom domModel}) {
+      {StreamSink? sink, WipDom? domModel}) {
     if (sink == null) {
       sink = stream as StreamSink;
     }
@@ -63,12 +63,12 @@ class WipForwarder {
       if (domModel != null) {
         switch (method) {
           case 'DOM.getDocument':
-            response['result'] = {'root': (await domModel.getDocument())};
+            response['result'] = {'root': (await domModel!.getDocument())};
             processed = true;
             break;
           case 'DOM.getAttributes':
             var attributes = flattenAttributesMap(
-                await domModel.getAttributes(params['nodeId'] as int));
+                await domModel!.getAttributes(params['nodeId'] as int));
             response['result'] = {'attributes': attributes};
             processed = true;
             break;

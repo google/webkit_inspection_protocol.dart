@@ -10,7 +10,7 @@ import 'package:shelf_static/shelf_static.dart';
 import 'package:webdriver/io.dart';
 import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart';
 
-Future<WipConnection> _wipConnection;
+Future<WipConnection>? _wipConnection;
 
 /// Returns a (cached) debugger connection to the first regular tab of
 /// the browser with remote debugger running at 'localhost:9222',
@@ -19,17 +19,17 @@ Future<WipConnection> get wipConnection {
     _wipConnection = () async {
       var debugPort = await _startWebDriver(await _startChromeDriver());
       var chrome = new ChromeConnection('localhost', debugPort);
-      var tab = await chrome
-          .getTab((tab) => !tab.isBackgroundPage && !tab.isChromeExtension);
+      var tab = (await chrome
+          .getTab((tab) => !tab.isBackgroundPage && !tab.isChromeExtension))!;
       var connection = await tab.connect();
       connection.onClose.listen((_) => _wipConnection = null);
       return connection;
     }();
   }
-  return _wipConnection;
+  return _wipConnection!;
 }
 
-Process _chromeDriver;
+Process? _chromeDriver;
 
 /// Starts ChromeDriver and returns the listening port.
 Future<int> _startChromeDriver() async {
@@ -44,7 +44,7 @@ Future<int> _startChromeDriver() async {
         ['--port=$chromeDriverPort', '--url-base=wd/hub']);
     // On windows this takes a while to boot up, wait for the first line
     // of stdout as a signal that it is ready.
-    await _chromeDriver.stdout
+    await _chromeDriver!.stdout
         .transform(utf8.decoder)
         .transform(const LineSplitter())
         .first;
@@ -55,7 +55,7 @@ Future<int> _startChromeDriver() async {
   return chromeDriverPort;
 }
 
-WebDriver _webDriver;
+WebDriver? _webDriver;
 
 /// Starts WebDriver and returns the listening debug port.
 Future<int> _startWebDriver(int chromeDriverPort) async {

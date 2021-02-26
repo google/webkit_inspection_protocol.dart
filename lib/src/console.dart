@@ -27,17 +27,17 @@ class WipConsole extends WipDomain {
 class ConsoleMessageEvent extends WipEvent {
   ConsoleMessageEvent(Map<String, dynamic> json) : super(json);
 
-  Map get _message => params['message'] as Map;
+  Map get _message => params!['message'] as Map;
 
   String get text => _message['text'] as String;
 
   String get level => _message['level'] as String;
 
-  String get url => _message['url'] as String;
+  String? get url => _message['url'] as String?;
 
   Iterable<WipConsoleCallFrame> getStackTrace() {
     if (_message.containsKey('stackTrace')) {
-      return (params['stackTrace'] as List).map((frame) =>
+      return (params!['stackTrace'] as List).map((frame) =>
           new WipConsoleCallFrame.fromMap(frame as Map<String, dynamic>));
     } else {
       return [];

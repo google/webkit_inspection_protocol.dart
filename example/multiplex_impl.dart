@@ -21,7 +21,7 @@ import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart'
 class Server {
   static final _log = new Logger('Server');
 
-  Future<HttpServer> _server;
+  Future<HttpServer>? _server;
   final ChromeConnection chrome;
   final int port;
   final bool modelDom;
@@ -29,7 +29,7 @@ class Server {
   final _connections = <String, Future<WipConnection>>{};
   final _modelDoms = <String, WipDomModel>{};
 
-  Server(this.port, this.chrome, {this.modelDom}) {
+  Server(this.port, this.chrome, {this.modelDom = false}) {
     _server = io.serve(_handler, InternetAddress.anyIPv4, port);
   }
 
@@ -81,7 +81,7 @@ class Server {
         ..write('/devtools/page/')
         ..write(tab.id)
         ..write('">');
-      if (tab.title != null && tab.title.isNotEmpty) {
+      if (tab.title != null && tab.title!.isNotEmpty) {
         html.write(tab.title);
       } else {
         html.write(tab.url);
@@ -128,10 +128,10 @@ class Server {
 
     return ws.webSocketHandler((WebSocketChannel webSocket) async {
       var debugger = await _connections.putIfAbsent(path[2], () async {
-        var tab = await chrome.getTab((tab) => tab.id == path[2]);
+        var tab = (await chrome.getTab((tab) => tab.id == path[2]))!;
         return WipConnection.connect(tab.webSocketDebuggerUrl);
       });
-      WipDomModel dom;
+      WipDomModel? dom;
       if (modelDom) {
         dom = await _modelDoms.putIfAbsent(path[2], () {
           return new WipDomModel(debugger.dom);
@@ -149,12 +149,12 @@ class Server {
 
   Future close() async {
     if (_server != null) {
-      await (await _server).close(force: true);
+      await (await _server!).close(force: true);
       _server = null;
     }
   }
 
-  Object _jsonEncode(Object obj) {
+  Object? _jsonEncode(Object? obj) {
     if (obj is ChromeTab) {
       var json = <String, dynamic>{
         'description': obj.description,

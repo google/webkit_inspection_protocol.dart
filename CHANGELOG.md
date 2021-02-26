@@ -1,5 +1,8 @@
 # webkit_inspection_protocol.dart
 
+## 1.0.0
+- Migrate to null safety.
+
 ## 0.7.5
 - Allow the latest `logging` package.
 
