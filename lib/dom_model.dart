@@ -334,7 +334,9 @@ class _Node implements Node {
 List<String> flattenAttributesMap(Map<String, String> attributes) {
   var result = <String>[];
   attributes.forEach((k, v) {
-    result..add(k)..add(v);
+    result
+      ..add(k)
+      ..add(v);
   });
   return result;
 }
