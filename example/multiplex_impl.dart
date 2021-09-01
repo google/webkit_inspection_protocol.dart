@@ -86,7 +86,10 @@ class Server {
       } else {
         html.write(tab.url);
       }
-      html..write('</a></td><td>')..write(tab.description)..write('</td></tr>');
+      html
+        ..write('</a></td><td>')
+        ..write(tab.description)
+        ..write('</td></tr>');
     }
     html.write(r'''</tbody>
 </table>
