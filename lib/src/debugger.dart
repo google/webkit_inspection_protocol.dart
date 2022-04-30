@@ -105,8 +105,7 @@ class WipDebugger extends WipDomain {
       throw ExceptionDetails(
           response.result!['exceptionDetails'] as Map<String, dynamic>);
     } else {
-      return RemoteObject(
-          response.result!['result'] as Map<String, dynamic>);
+      return RemoteObject(response.result!['result'] as Map<String, dynamic>);
     }
   }
 
@@ -155,15 +154,15 @@ class WipDebugger extends WipDomain {
     });
   }
 
-  Stream<DebuggerPausedEvent> get onPaused => eventStream('Debugger.paused',
-      (WipEvent event) => DebuggerPausedEvent(event.json));
+  Stream<DebuggerPausedEvent> get onPaused => eventStream(
+      'Debugger.paused', (WipEvent event) => DebuggerPausedEvent(event.json));
 
   Stream<GlobalObjectClearedEvent> get onGlobalObjectCleared => eventStream(
       'Debugger.globalObjectCleared',
       (WipEvent event) => GlobalObjectClearedEvent(event.json));
 
-  Stream<DebuggerResumedEvent> get onResumed => eventStream('Debugger.resumed',
-      (WipEvent event) => DebuggerResumedEvent(event.json));
+  Stream<DebuggerResumedEvent> get onResumed => eventStream(
+      'Debugger.resumed', (WipEvent event) => DebuggerResumedEvent(event.json));
 
   Stream<ScriptParsedEvent> get onScriptParsed => eventStream(
       'Debugger.scriptParsed',

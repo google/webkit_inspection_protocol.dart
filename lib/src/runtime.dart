@@ -52,8 +52,7 @@ class WipRuntime extends WipDomain {
       throw ExceptionDetails(
           response.result!['exceptionDetails'] as Map<String, dynamic>);
     } else {
-      return RemoteObject(
-          response.result!['result'] as Map<String, dynamic>);
+      return RemoteObject(response.result!['result'] as Map<String, dynamic>);
     }
   }
 
@@ -99,8 +98,7 @@ class WipRuntime extends WipDomain {
       throw ExceptionDetails(
           response.result!['exceptionDetails'] as Map<String, dynamic>);
     } else {
-      return RemoteObject(
-          response.result!['result'] as Map<String, dynamic>);
+      return RemoteObject(response.result!['result'] as Map<String, dynamic>);
     }
   }
 

@@ -12,8 +12,8 @@ class WipLog extends WipDomain {
 
   Future<WipResponse> disable() => sendCommand('Log.disable');
 
-  Stream<LogEntry> get onEntryAdded => eventStream(
-      'Log.entryAdded', (WipEvent event) => LogEntry(event.json));
+  Stream<LogEntry> get onEntryAdded =>
+      eventStream('Log.entryAdded', (WipEvent event) => LogEntry(event.json));
 }
 
 class LogEntry extends WipEvent {

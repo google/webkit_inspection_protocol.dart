@@ -29,8 +29,7 @@ class WipForwarder {
 
   final List<StreamSubscription> _subscriptions = <StreamSubscription>[];
 
-  final StreamController<void> _closedController =
-      StreamController.broadcast();
+  final StreamController<void> _closedController = StreamController.broadcast();
 
   factory WipForwarder(WipConnection debugger, Stream<String> stream,
       {StreamSink? sink, WipDom? domModel}) {

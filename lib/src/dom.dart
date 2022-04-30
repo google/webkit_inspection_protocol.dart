@@ -183,8 +183,7 @@ class WipDom extends WipDomain {
       (WipEvent event) => DocumentUpdatedEvent(event.json));
 
   Stream<SetChildNodesEvent> get onSetChildNodes => eventStream(
-      'DOM.setChildNodes',
-      (WipEvent event) => SetChildNodesEvent(event.json));
+      'DOM.setChildNodes', (WipEvent event) => SetChildNodesEvent(event.json));
 }
 
 class AttributeModifiedEvent extends WipEvent {

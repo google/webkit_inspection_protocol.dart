@@ -55,8 +55,7 @@ class Server {
     if (path.isEmpty) {
       var resp = await _mainPageHtml();
       _log.info('mainPage: $resp');
-      return shelf.Response.ok(resp,
-          headers: {'Content-Type': 'text/html'});
+      return shelf.Response.ok(resp, headers: {'Content-Type': 'text/html'});
     }
     return shelf.Response.notFound(null);
   }

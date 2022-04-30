@@ -16,14 +16,14 @@ Future<WipConnection>? _wipConnection;
 /// the browser with remote debugger running at 'localhost:9222',
 Future<WipConnection> get wipConnection {
   _wipConnection ??= () async {
-      var debugPort = await _startWebDriver(await _startChromeDriver());
-      var chrome = ChromeConnection('localhost', debugPort);
-      var tab = (await chrome
-          .getTab((tab) => !tab.isBackgroundPage && !tab.isChromeExtension))!;
-      var connection = await tab.connect();
-      connection.onClose.listen((_) => _wipConnection = null);
-      return connection;
-    }();
+    var debugPort = await _startWebDriver(await _startChromeDriver());
+    var chrome = ChromeConnection('localhost', debugPort);
+    var tab = (await chrome
+        .getTab((tab) => !tab.isBackgroundPage && !tab.isChromeExtension))!;
+    var connection = await tab.connect();
+    connection.onClose.listen((_) => _wipConnection = null);
+    return connection;
+  }();
   return _wipConnection!;
 }
 
@@ -98,11 +98,11 @@ Future<Uri>? _testServerUri;
 /// Return [wipConnection].
 Future<WipConnection> navigateToPage(String page) async {
   _testServerUri ??= () async {
-      var receivePort = ReceivePort();
-      await Isolate.spawn(_startHttpServer, receivePort.sendPort);
-      var port = await receivePort.first;
-      return Uri.http('localhost:$port', '');
-    }();
+    var receivePort = ReceivePort();
+    await Isolate.spawn(_startHttpServer, receivePort.sendPort);
+    var port = await receivePort.first;
+    return Uri.http('localhost:$port', '');
+  }();
   await (await wipConnection)
       .page
       .navigate((await _testServerUri)!.resolve(page).toString());
