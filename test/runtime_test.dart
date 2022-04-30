@@ -21,11 +21,13 @@ void main() {
     });
 
     tearDown(() async {
-      await runtime!.disable();
+      await runtime?.disable();
       runtime = null;
 
       await closeConnection();
-      subs.forEach((s) => s.cancel());
+      for (var s in subs) {
+        s.cancel();
+      }
       subs.clear();
     });
 

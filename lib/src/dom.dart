@@ -18,7 +18,7 @@ class WipDom extends WipDomain {
   }
 
   Future<Node> getDocument() async =>
-      new Node((await sendCommand('DOM.getDocument')).result!['root']
+      Node((await sendCommand('DOM.getDocument')).result!['root']
           as Map<String, dynamic>);
 
   Future<String> getOuterHtml(int nodeId) async =>
@@ -125,7 +125,7 @@ class WipDom extends WipDomain {
     }
 
     var resp = await sendCommand('DOM.resolveNode', params: params);
-    return new RemoteObject(resp.result!['object'] as Map<String, dynamic>);
+    return RemoteObject(resp.result!['object'] as Map<String, dynamic>);
   }
 
   Future<void> setAttributeValue(int nodeId, String name, String value) =>
@@ -156,35 +156,34 @@ class WipDom extends WipDomain {
 
   Stream<AttributeModifiedEvent> get onAttributeModified => eventStream(
       'DOM.attributeModified',
-      (WipEvent event) => new AttributeModifiedEvent(event.json));
+      (WipEvent event) => AttributeModifiedEvent(event.json));
 
   Stream<AttributeRemovedEvent> get onAttributeRemoved => eventStream(
       'DOM.attributeRemoved',
-      (WipEvent event) => new AttributeRemovedEvent(event.json));
+      (WipEvent event) => AttributeRemovedEvent(event.json));
 
   Stream<CharacterDataModifiedEvent> get onCharacterDataModified => eventStream(
       'DOM.characterDataModified',
-      (WipEvent event) => new CharacterDataModifiedEvent(event.json));
+      (WipEvent event) => CharacterDataModifiedEvent(event.json));
 
   Stream<ChildNodeCountUpdatedEvent> get onChildNodeCountUpdated => eventStream(
       'DOM.childNodeCountUpdated',
-      (WipEvent event) => new ChildNodeCountUpdatedEvent(event.json));
+      (WipEvent event) => ChildNodeCountUpdatedEvent(event.json));
 
   Stream<ChildNodeInsertedEvent> get onChildNodeInserted => eventStream(
       'DOM.childNodeInserted',
-      (WipEvent event) => new ChildNodeInsertedEvent(event.json));
+      (WipEvent event) => ChildNodeInsertedEvent(event.json));
 
   Stream<ChildNodeRemovedEvent> get onChildNodeRemoved => eventStream(
       'DOM.childNodeRemoved',
-      (WipEvent event) => new ChildNodeRemovedEvent(event.json));
+      (WipEvent event) => ChildNodeRemovedEvent(event.json));
 
   Stream<DocumentUpdatedEvent> get onDocumentUpdated => eventStream(
       'DOM.documentUpdated',
-      (WipEvent event) => new DocumentUpdatedEvent(event.json));
+      (WipEvent event) => DocumentUpdatedEvent(event.json));
 
   Stream<SetChildNodesEvent> get onSetChildNodes => eventStream(
-      'DOM.setChildNodes',
-      (WipEvent event) => new SetChildNodesEvent(event.json));
+      'DOM.setChildNodes', (WipEvent event) => SetChildNodesEvent(event.json));
 }
 
 class AttributeModifiedEvent extends WipEvent {
@@ -250,10 +249,11 @@ class SetChildNodesEvent extends WipEvent {
 
   Iterable<Node> get nodes sync* {
     for (Map node in params!['nodes']) {
-      yield new Node(node as Map<String, dynamic>);
+      yield Node(node as Map<String, dynamic>);
     }
   }
 
+  @override
   String toString() => 'SetChildNodes $nodeId: $nodes';
 }
 
@@ -273,12 +273,12 @@ class Node {
 
   late final List<Node>? children = _map.containsKey('children')
       ? UnmodifiableListView((_map['children'] as List)
-          .map((c) => new Node(c as Map<String, dynamic>)))
+          .map((c) => Node(c as Map<String, dynamic>)))
       : null;
 
   Node? get contentDocument {
     if (_map.containsKey('contentDocument')) {
-      return new Node(_map['contentDocument'] as Map<String, dynamic>);
+      return Node(_map['contentDocument'] as Map<String, dynamic>);
     }
     return null;
   }
@@ -307,6 +307,7 @@ class Node {
 
   String? get xmlVersion => _map['xmlVersion'] as String?;
 
+  @override
   String toString() => '$nodeName: $nodeId $attributes';
 }
 
@@ -332,5 +333,5 @@ Map<String, String> _attributeListToMap(List<String> attrList) {
   for (int i = 0; i < attrList.length; i += 2) {
     attributes[attrList[i]] = attrList[i + 1];
   }
-  return new UnmodifiableMapView(attributes);
+  return UnmodifiableMapView(attributes);
 }

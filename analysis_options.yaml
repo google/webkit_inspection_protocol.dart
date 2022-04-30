@@ -1,16 +1,5 @@
+include: package:lints/recommended.yaml
+
 analyzer:
   errors:
     deprecated_member_use_from_same_package: ignore
-
-linter:
-  rules:
-    - always_declare_return_types
-    - avoid_init_to_null
-    - directives_ordering
-    - slash_for_doc_comments
-    - prefer_const_constructors
-    - prefer_const_constructors_in_immutables
-    - prefer_const_declarations
-    - prefer_const_literals_to_create_immutables
-    - prefer_final_fields
-    - type_annotate_public_apis

@@ -15,17 +15,15 @@ Future<WipConnection>? _wipConnection;
 /// Returns a (cached) debugger connection to the first regular tab of
 /// the browser with remote debugger running at 'localhost:9222',
 Future<WipConnection> get wipConnection {
-  if (_wipConnection == null) {
-    _wipConnection = () async {
-      var debugPort = await _startWebDriver(await _startChromeDriver());
-      var chrome = new ChromeConnection('localhost', debugPort);
-      var tab = (await chrome
-          .getTab((tab) => !tab.isBackgroundPage && !tab.isChromeExtension))!;
-      var connection = await tab.connect();
-      connection.onClose.listen((_) => _wipConnection = null);
-      return connection;
-    }();
-  }
+  _wipConnection ??= () async {
+    var debugPort = await _startWebDriver(await _startChromeDriver());
+    var chrome = ChromeConnection('localhost', debugPort);
+    var tab = (await chrome
+        .getTab((tab) => !tab.isBackgroundPage && !tab.isChromeExtension))!;
+    var connection = await tab.connect();
+    connection.onClose.listen((_) => _wipConnection = null);
+    return connection;
+  }();
   return _wipConnection!;
 }
 
@@ -93,24 +91,22 @@ Future<int> findUnusedPort() async {
   return port;
 }
 
-var _testServerUri;
+Future<Uri>? _testServerUri;
 
 /// Ensures that an HTTP server serving files from 'test/data' has been
 /// started and navigates to to [page] using [wipConnection].
 /// Return [wipConnection].
 Future<WipConnection> navigateToPage(String page) async {
-  if (_testServerUri == null) {
-    _testServerUri = () async {
-      var receivePort = new ReceivePort();
-      await Isolate.spawn(_startHttpServer, receivePort.sendPort);
-      var port = await receivePort.first;
-      return new Uri.http('localhost:$port', '');
-    }();
-  }
+  _testServerUri ??= () async {
+    var receivePort = ReceivePort();
+    await Isolate.spawn(_startHttpServer, receivePort.sendPort);
+    var port = await receivePort.first;
+    return Uri.http('localhost:$port', '');
+  }();
   await (await wipConnection)
       .page
-      .navigate((await _testServerUri).resolve(page).toString());
-  await new Future.delayed(const Duration(seconds: 1));
+      .navigate((await _testServerUri)!.resolve(page).toString());
+  await Future.delayed(const Duration(seconds: 1));
   return wipConnection;
 }
 
