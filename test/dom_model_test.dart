@@ -15,7 +15,7 @@ void main() {
     WipDom? dom;
 
     setUp(() async {
-      dom = new WipDomModel((await navigateToPage('dom_model_test.html')).dom);
+      dom = WipDomModel((await navigateToPage('dom_model_test.html')).dom);
     });
 
     tearDown(() async {

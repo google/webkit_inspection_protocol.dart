@@ -14,7 +14,7 @@ import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart'
 import 'multiplex_impl.dart' show Server;
 
 void main(List<String> argv) async {
-  var args = (new ArgParser()
+  var args = (ArgParser()
         ..addFlag('verbose', abbr: 'v', defaultsTo: false, negatable: false)
         ..addFlag('model_dom', defaultsTo: false, negatable: true)
         ..addOption('chrome_host', defaultsTo: 'localhost')
@@ -34,8 +34,8 @@ void main(List<String> argv) async {
     stderr.writeln('${rec.level.name}: ${rec.time}: ${rec.message}');
   });
 
-  var cr = new ChromeConnection(
+  var cr = ChromeConnection(
       args['chrome_host'] as String, int.parse(args['chrome_port'] as String));
-  new Server(int.parse(args['listen_port'] as String), cr,
+  Server(int.parse(args['listen_port'] as String), cr,
       modelDom: args['model_dom'] as bool);
 }

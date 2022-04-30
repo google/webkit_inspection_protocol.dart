@@ -49,10 +49,10 @@ class WipRuntime extends WipDomain {
         await sendCommand('Runtime.evaluate', params: params);
 
     if (response.result!.containsKey('exceptionDetails')) {
-      throw new ExceptionDetails(
+      throw ExceptionDetails(
           response.result!['exceptionDetails'] as Map<String, dynamic>);
     } else {
-      return new RemoteObject(
+      return RemoteObject(
           response.result!['result'] as Map<String, dynamic>);
     }
   }
@@ -96,10 +96,10 @@ class WipRuntime extends WipDomain {
         await sendCommand('Runtime.callFunctionOn', params: params);
 
     if (response.result!.containsKey('exceptionDetails')) {
-      throw new ExceptionDetails(
+      throw ExceptionDetails(
           response.result!['exceptionDetails'] as Map<String, dynamic>);
     } else {
-      return new RemoteObject(
+      return RemoteObject(
           response.result!['result'] as Map<String, dynamic>);
     }
   }
@@ -140,7 +140,7 @@ class WipRuntime extends WipDomain {
         await sendCommand('Runtime.getProperties', params: params);
 
     if (response.result!.containsKey('exceptionDetails')) {
-      throw new ExceptionDetails(
+      throw ExceptionDetails(
           response.result!['exceptionDetails'] as Map<String, dynamic>);
     } else {
       List locations = response.result!['result'];
@@ -150,18 +150,18 @@ class WipRuntime extends WipDomain {
 
   Stream<ConsoleAPIEvent> get onConsoleAPICalled => eventStream(
       'Runtime.consoleAPICalled',
-      (WipEvent event) => new ConsoleAPIEvent(event.json));
+      (WipEvent event) => ConsoleAPIEvent(event.json));
 
   Stream<ExceptionThrownEvent> get onExceptionThrown => eventStream(
       'Runtime.exceptionThrown',
-      (WipEvent event) => new ExceptionThrownEvent(event.json));
+      (WipEvent event) => ExceptionThrownEvent(event.json));
 
   /// Issued when new execution context is created.
   Stream<ExecutionContextDescription> get onExecutionContextCreated =>
       eventStream(
           'Runtime.executionContextCreated',
           (WipEvent event) =>
-              new ExecutionContextDescription(event.params!['context']));
+              ExecutionContextDescription(event.params!['context']));
 
   /// Issued when execution context is destroyed.
   Stream<String> get onExecutionContextDestroyed => eventStream(
@@ -187,7 +187,7 @@ class ConsoleAPIEvent extends WipEvent {
 
   /// Call arguments.
   List<RemoteObject> get args => (params!['args'] as List)
-      .map((m) => new RemoteObject(m as Map<String, dynamic>))
+      .map((m) => RemoteObject(m as Map<String, dynamic>))
       .toList();
 }
 
@@ -215,7 +215,7 @@ class ExceptionThrownEvent extends WipEvent {
   int get timestamp => params!['timestamp'] as int;
 
   ExceptionDetails get exceptionDetails =>
-      new ExceptionDetails(params!['exceptionDetails'] as Map<String, dynamic>);
+      ExceptionDetails(params!['exceptionDetails'] as Map<String, dynamic>);
 }
 
 class ExceptionDetails implements Exception {
@@ -249,14 +249,15 @@ class ExceptionDetails implements Exception {
   @optional
   StackTrace? get stackTrace => json['stackTrace'] == null
       ? null
-      : new StackTrace(json['stackTrace'] as Map<String, dynamic>);
+      : StackTrace(json['stackTrace'] as Map<String, dynamic>);
 
   /// Exception object if available.
   @optional
   RemoteObject? get exception => json['exception'] == null
       ? null
-      : new RemoteObject(json['exception'] as Map<String, dynamic>);
+      : RemoteObject(json['exception'] as Map<String, dynamic>);
 
+  @override
   String toString() => '$text, $url, $scriptId, $lineNumber, $exception';
 }
 
@@ -267,7 +268,7 @@ class StackTrace {
   StackTrace(this.json);
 
   List<CallFrame> get callFrames => (json['callFrames'] as List)
-      .map((m) => new CallFrame(m as Map<String, dynamic>))
+      .map((m) => CallFrame(m as Map<String, dynamic>))
       .toList();
 
   /// String label of this stack trace. For async traces this may be a name of
@@ -295,6 +296,7 @@ class StackTrace {
     }).toList();
   }
 
+  @override
   String toString() => callFrames.map((f) => '  $f').join('\n');
 }
 
@@ -321,6 +323,7 @@ class CallFrame {
   /// JavaScript script column number (0-based).
   int get columnNumber => json['columnNumber'] as int;
 
+  @override
   String toString() => '$functionName() ($url $lineNumber:$columnNumber)';
 }
 

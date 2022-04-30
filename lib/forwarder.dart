@@ -16,7 +16,7 @@ import 'webkit_inspection_protocol.dart'
 /// Forwards a [Stream] to a [WipConnection] and events
 /// from a [WipConnection] to a [StreamSink].
 class WipForwarder {
-  static final _log = new Logger('ChromeForwarder');
+  static final _log = Logger('ChromeForwarder');
 
   final Stream<String> _in;
   final StreamSink _out;
@@ -29,15 +29,13 @@ class WipForwarder {
 
   final List<StreamSubscription> _subscriptions = <StreamSubscription>[];
 
-  final StreamController<Null> _closedController =
-      new StreamController.broadcast();
+  final StreamController<void> _closedController =
+      StreamController.broadcast();
 
   factory WipForwarder(WipConnection debugger, Stream<String> stream,
       {StreamSink? sink, WipDom? domModel}) {
-    if (sink == null) {
-      sink = stream as StreamSink;
-    }
-    return new WipForwarder._(debugger, stream, sink, domModel);
+    sink ??= stream as StreamSink;
+    return WipForwarder._(debugger, stream, sink, domModel);
   }
 
   WipForwarder._(this._debugger, this._in, this._out, this.domModel) {
@@ -125,21 +123,27 @@ class WipForwarder {
   void pause() {
     assert(_subscriptions.isNotEmpty);
     _log.info('Pausing forwarding');
-    _subscriptions.forEach((s) => s.pause());
+    for (var s in _subscriptions) {
+      s.pause();
+    }
     _subscriptions.clear();
   }
 
   void resume() {
     assert(_subscriptions.isNotEmpty);
     _log.info('Resuming forwarding');
-    _subscriptions.forEach((s) => s.resume());
+    for (var s in _subscriptions) {
+      s.resume();
+    }
     _subscriptions.clear();
   }
 
   Future stop() {
     assert(_subscriptions.isNotEmpty);
     _log.info('Stopping forwarding');
-    _subscriptions.forEach((s) => s.cancel());
+    for (var s in _subscriptions) {
+      s.cancel();
+    }
     _subscriptions.clear();
     _closedController.add(null);
     return Future.wait([_closedController.close(), _out.close()]);

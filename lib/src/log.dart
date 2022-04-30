@@ -13,7 +13,7 @@ class WipLog extends WipDomain {
   Future<WipResponse> disable() => sendCommand('Log.disable');
 
   Stream<LogEntry> get onEntryAdded => eventStream(
-      'Log.entryAdded', (WipEvent event) => new LogEntry(event.json));
+      'Log.entryAdded', (WipEvent event) => LogEntry(event.json));
 }
 
 class LogEntry extends WipEvent {
@@ -39,5 +39,6 @@ class LogEntry extends WipEvent {
   /// Timestamp when this entry was added.
   num get timestamp => _entry['timestamp'] as num;
 
+  @override
   String toString() => text;
 }

@@ -19,7 +19,7 @@ void main() {
 
     Future checkMessages(int expectedCount) async {
       // make sure all messages have been delivered
-      await new Future.delayed(const Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 1));
       expect(events, hasLength(expectedCount));
       for (int i = 0; i < expectedCount; i++) {
         if (i == 0) {
@@ -39,10 +39,12 @@ void main() {
     });
 
     tearDown(() async {
-      await console!.disable();
+      await console?.disable();
       console = null;
       await closeConnection();
-      subs.forEach((s) => s.cancel());
+      for (var s in subs) {
+        s.cancel();
+      }
       subs.clear();
     });
 

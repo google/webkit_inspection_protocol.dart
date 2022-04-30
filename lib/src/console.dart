@@ -17,11 +17,11 @@ class WipConsole extends WipDomain {
 
   Stream<ConsoleMessageEvent> get onMessage => eventStream(
       'Console.messageAdded',
-      (WipEvent event) => new ConsoleMessageEvent(event.json));
+      (WipEvent event) => ConsoleMessageEvent(event.json));
 
   Stream<ConsoleClearedEvent> get onCleared => eventStream(
       'Console.messagesCleared',
-      (WipEvent event) => new ConsoleClearedEvent(event.json));
+      (WipEvent event) => ConsoleClearedEvent(event.json));
 }
 
 class ConsoleMessageEvent extends WipEvent {
@@ -38,12 +38,13 @@ class ConsoleMessageEvent extends WipEvent {
   Iterable<WipConsoleCallFrame> getStackTrace() {
     if (_message.containsKey('stackTrace')) {
       return (params!['stackTrace'] as List).map((frame) =>
-          new WipConsoleCallFrame.fromMap(frame as Map<String, dynamic>));
+          WipConsoleCallFrame.fromMap(frame as Map<String, dynamic>));
     } else {
       return [];
     }
   }
 
+  @override
   String toString() => text;
 }
 

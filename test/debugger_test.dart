@@ -21,11 +21,13 @@ void main() {
     });
 
     tearDown(() async {
-      await debugger!.disable();
+      await debugger?.disable();
       debugger = null;
 
       await closeConnection();
-      subs.forEach((s) => s.cancel());
+      for (var s in subs) {
+        s.cancel();
+      }
       subs.clear();
     });
 

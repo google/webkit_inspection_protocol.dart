@@ -26,34 +26,42 @@ import 'webkit_inspection_protocol.dart'
 /// Implementation of WipDom that maintains and updates a model of the DOM
 /// based on incoming events.
 class WipDomModel implements WipDom {
-  static final _log = new Logger('WipDomModel');
+  static final _log = Logger('WipDomModel');
 
   final WipDom _dom;
 
   final Map<int, _Node> _nodeCache = {};
   Future<_Node>? _root;
 
+  @override
   late final Stream<AttributeModifiedEvent> onAttributeModified =
       StreamTransformer.fromHandlers(handleData: _onAttributeModified)
           .bind(_dom.onAttributeModified);
+  @override
   late final Stream<AttributeRemovedEvent> onAttributeRemoved =
       StreamTransformer.fromHandlers(handleData: _onAttributeRemoved)
           .bind(_dom.onAttributeRemoved);
+  @override
   late final Stream<CharacterDataModifiedEvent> onCharacterDataModified =
       StreamTransformer.fromHandlers(handleData: _onCharacterDataModified)
           .bind(_dom.onCharacterDataModified);
+  @override
   late final Stream<ChildNodeCountUpdatedEvent> onChildNodeCountUpdated =
       StreamTransformer.fromHandlers(handleData: _onChildNodeCountUpdated)
           .bind(_dom.onChildNodeCountUpdated);
+  @override
   late final Stream<ChildNodeInsertedEvent> onChildNodeInserted =
       StreamTransformer.fromHandlers(handleData: _onChildNodeInserted)
           .bind(_dom.onChildNodeInserted);
+  @override
   late final Stream<ChildNodeRemovedEvent> onChildNodeRemoved =
       StreamTransformer.fromHandlers(handleData: _onChildNodeRemoved)
           .bind(_dom.onChildNodeRemoved);
+  @override
   late final Stream<DocumentUpdatedEvent> onDocumentUpdated =
       StreamTransformer.fromHandlers(handleData: _onDocumentUpdated)
           .bind(_dom.onDocumentUpdated);
+  @override
   late final Stream<SetChildNodesEvent> onSetChildNodes =
       StreamTransformer.fromHandlers(handleData: _onSetChildNodes)
           .bind(_dom.onSetChildNodes);
@@ -141,7 +149,7 @@ class WipDomModel implements WipDom {
   Future<Map<String, String>> getAttributes(int nodeId) async {
     Map<String, String> attributes = await _dom.getAttributes(nodeId);
     var node = _getOrCreateNode(nodeId);
-    node._attributes = new Map.from(attributes);
+    node._attributes = Map.from(attributes);
     return attributes;
   }
 
@@ -150,14 +158,12 @@ class WipDomModel implements WipDom {
   /// multiple times on the same page.
   @override
   Future<Node> getDocument() {
-    if (_root == null) {
-      _root = _dom.getDocument().then((n) => _getOrCreateNodeFromNode(n));
-    }
+    _root ??= _dom.getDocument().then((n) => _getOrCreateNodeFromNode(n));
     return _root!;
   }
 
   _Node _getOrCreateNode(int nodeId) =>
-      _nodeCache.putIfAbsent(nodeId, () => new _Node(nodeId));
+      _nodeCache.putIfAbsent(nodeId, () => _Node(nodeId));
 
   _Node _getOrCreateNodeFromNode(Node src) {
     try {
@@ -191,6 +197,7 @@ class WipDomModel implements WipDom {
     }
   }
 
+  @override
   dynamic noSuchMethod(Invocation invocation) =>
       reflect(_dom).delegate(invocation);
 }
@@ -200,7 +207,7 @@ class _Node implements Node {
 
   @override
   Map<String, String>? get attributes =>
-      _attributes != null ? new UnmodifiableMapView(_attributes!) : null;
+      _attributes != null ? UnmodifiableMapView(_attributes!) : null;
 
   int? _childNodeCount;
 
@@ -211,7 +218,7 @@ class _Node implements Node {
 
   @override
   List<Node>? get children =>
-      _children != null ? new UnmodifiableListView(_children!) : null;
+      _children != null ? UnmodifiableListView(_children!) : null;
 
   _Node? _contentDocument;
 
@@ -278,7 +285,7 @@ class _Node implements Node {
 
   _Node(this.nodeId);
 
-  Map toJson() => _toJsonInternal(new Set());
+  Map toJson() => _toJsonInternal({});
 
   Map _toJsonInternal(Set visited) {
     var map = {
@@ -297,9 +304,9 @@ class _Node implements Node {
       }
       if (_children != null && _children!.isNotEmpty) {
         var newChildren = [];
-        _children!.forEach((child) {
+        for (var child in _children!) {
           newChildren.add(child._toJsonInternal(visited));
-        });
+        }
         map['children'] = newChildren;
       }
       if (_contentDocument != null) {

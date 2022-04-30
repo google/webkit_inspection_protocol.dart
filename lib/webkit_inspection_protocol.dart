@@ -29,24 +29,24 @@ export 'src/target.dart';
 /// This assumes the browser has been started with the `--remote-debugging-port`
 /// flag. The data is read from the `http://{host}:{port}/json` url.
 class ChromeConnection {
-  final HttpClient _client = new HttpClient();
+  final HttpClient _client = HttpClient();
 
   final Uri url;
 
   ChromeConnection(String host, [int port = 9222])
-      : url = Uri.parse('http://${host}:${port}/');
+      : url = Uri.parse('http://$host:$port/');
 
   // TODO(DrMarcII): consider changing this to return Stream<ChromeTab>.
   Future<List<ChromeTab>> getTabs() async {
     var response = await getUrl('/json');
     var respBody = await utf8.decodeStream(response.cast<List<int>>());
-    return new List<ChromeTab>.from(
-        (jsonDecode(respBody) as List).map((m) => new ChromeTab(m as Map)));
+    return List<ChromeTab>.from(
+        (jsonDecode(respBody) as List).map((m) => ChromeTab(m as Map)));
   }
 
-  Future<ChromeTab?> getTab(bool accept(ChromeTab tab),
+  Future<ChromeTab?> getTab(bool Function(ChromeTab tab) accept,
       {Duration? retryFor}) async {
-    var start = new DateTime.now();
+    var start = DateTime.now();
     var end = start;
     if (retryFor != null) {
       end = start.add(retryFor);
@@ -59,15 +59,15 @@ class ChromeConnection {
             return tab;
           }
         }
-        if (end.isBefore(new DateTime.now())) {
+        if (end.isBefore(DateTime.now())) {
           return null;
         }
       } catch (e) {
-        if (end.isBefore(new DateTime.now())) {
+        if (end.isBefore(DateTime.now())) {
           rethrow;
         }
       }
-      await new Future.delayed(const Duration(milliseconds: 25));
+      await Future.delayed(const Duration(milliseconds: 25));
     }
   }
 
@@ -112,6 +112,7 @@ class ChromeTab {
   Future<WipConnection> connect() =>
       WipConnection.connect(webSocketDebuggerUrl);
 
+  @override
   String toString() => url;
 }
 
@@ -146,12 +147,12 @@ class WipConnection {
 
   final Map _completers = <int, Completer<WipResponse>>{};
 
-  final _closeController = new StreamController<WipConnection>.broadcast();
-  final _notificationController = new StreamController<WipEvent>.broadcast();
+  final _closeController = StreamController<WipConnection>.broadcast();
+  final _notificationController = StreamController<WipEvent>.broadcast();
 
   static Future<WipConnection> connect(String url) {
     return WebSocket.connect(url).then((socket) {
-      return new WipConnection._(url, socket);
+      return WipConnection._(url, socket);
     });
   }
 
@@ -174,11 +175,12 @@ class WipConnection {
 
   Future close() => _ws.close();
 
+  @override
   String toString() => url;
 
   Future<WipResponse> sendCommand(String method,
       [Map<String, dynamic>? params]) {
-    var completer = new Completer<WipResponse>();
+    var completer = Completer<WipResponse>();
     var json = {'id': _nextId++, 'method': method};
     if (params != null) {
       json['params'] = params;
@@ -191,16 +193,16 @@ class WipConnection {
   }
 
   void _handleNotification(Map<String, dynamic> json) {
-    _notificationController.add(new WipEvent(json));
+    _notificationController.add(WipEvent(json));
   }
 
   void _handleResponse(Map<String, dynamic> event) {
     var completer = _completers.remove(event['id']);
 
     if (event.containsKey('error')) {
-      completer.completeError(new WipError(event));
+      completer.completeError(WipError(event));
     } else {
-      completer.complete(new WipResponse(event));
+      completer.complete(WipResponse(event));
     }
   }
 
@@ -227,6 +229,7 @@ class WipEvent {
       : method = json['method'] as String,
         params = json['params'] as Map<String, dynamic>?;
 
+  @override
   String toString() => 'WipEvent: $method($params)';
 }
 
@@ -244,6 +247,7 @@ class WipError implements Exception {
 
   String? get message => error == null ? null : error!['message'];
 
+  @override
   String toString() => 'WipError $code $message';
 }
 
@@ -257,6 +261,7 @@ class WipResponse {
       : id = json['id'] as int,
         result = json['result'] as Map<String, dynamic>?;
 
+  @override
   String toString() => 'WipResponse $id: $result';
 }
 
@@ -275,13 +280,13 @@ abstract class WipDomain {
     sink.add(this);
   }).bind(connection.onClose);
 
-  WipDomain(WipConnection connection) : this.connection = connection;
+  WipDomain(this.connection);
 
   Stream<T> eventStream<T>(String method, WipEventTransformer<T> transformer) {
     return _eventStreams
         .putIfAbsent(
           method,
-          () => new StreamTransformer.fromHandlers(
+          () => StreamTransformer.fromHandlers(
             handleData: (WipEvent event, EventSink<T> sink) {
               if (event.method == method) {
                 sink.add(transformer(event));
@@ -300,7 +305,7 @@ abstract class WipDomain {
   }
 }
 
-const _Experimental experimental = const _Experimental();
+const _Experimental experimental = _Experimental();
 
 class _Experimental {
   const _Experimental();

@@ -66,10 +66,10 @@ class WipDebugger extends WipDomain {
         await sendCommand('Debugger.setBreakpoint', params: params);
 
     if (response.result!.containsKey('exceptionDetails')) {
-      throw new ExceptionDetails(
+      throw ExceptionDetails(
           response.result!['exceptionDetails'] as Map<String, dynamic>);
     } else {
-      return new SetBreakpointResponse(response.json);
+      return SetBreakpointResponse(response.json);
     }
   }
 
@@ -102,10 +102,10 @@ class WipDebugger extends WipDomain {
         await sendCommand('Debugger.evaluateOnCallFrame', params: params);
 
     if (response.result!.containsKey('exceptionDetails')) {
-      throw new ExceptionDetails(
+      throw ExceptionDetails(
           response.result!['exceptionDetails'] as Map<String, dynamic>);
     } else {
-      return new RemoteObject(
+      return RemoteObject(
           response.result!['result'] as Map<String, dynamic>);
     }
   }
@@ -137,7 +137,7 @@ class WipDebugger extends WipDomain {
         await sendCommand('Debugger.getPossibleBreakpoints', params: params);
 
     if (response.result!.containsKey('exceptionDetails')) {
-      throw new ExceptionDetails(
+      throw ExceptionDetails(
           response.result!['exceptionDetails'] as Map<String, dynamic>);
     } else {
       List locations = response.result!['locations'];
@@ -156,20 +156,20 @@ class WipDebugger extends WipDomain {
   }
 
   Stream<DebuggerPausedEvent> get onPaused => eventStream('Debugger.paused',
-      (WipEvent event) => new DebuggerPausedEvent(event.json));
+      (WipEvent event) => DebuggerPausedEvent(event.json));
 
   Stream<GlobalObjectClearedEvent> get onGlobalObjectCleared => eventStream(
       'Debugger.globalObjectCleared',
-      (WipEvent event) => new GlobalObjectClearedEvent(event.json));
+      (WipEvent event) => GlobalObjectClearedEvent(event.json));
 
   Stream<DebuggerResumedEvent> get onResumed => eventStream('Debugger.resumed',
-      (WipEvent event) => new DebuggerResumedEvent(event.json));
+      (WipEvent event) => DebuggerResumedEvent(event.json));
 
   Stream<ScriptParsedEvent> get onScriptParsed => eventStream(
       'Debugger.scriptParsed',
-      (WipEvent event) => new ScriptParsedEvent(event.json));
+      (WipEvent event) => ScriptParsedEvent(event.json));
 
-  Map<String, WipScript> get scripts => new UnmodifiableMapView(_scripts);
+  Map<String, WipScript> get scripts => UnmodifiableMapView(_scripts);
 }
 
 String _pauseStateToString(PauseState state) {
@@ -181,7 +181,7 @@ String _pauseStateToString(PauseState state) {
     case PauseState.uncaught:
       return 'uncaught';
     default:
-      throw new ArgumentError('unknown state: $state');
+      throw ArgumentError('unknown state: $state');
   }
 }
 
@@ -190,8 +190,9 @@ enum PauseState { all, none, uncaught }
 class ScriptParsedEvent extends WipEvent {
   ScriptParsedEvent(Map<String, dynamic> json) : super(json);
 
-  WipScript get script => new WipScript(params!);
+  WipScript get script => WipScript(params!);
 
+  @override
   String toString() => script.toString();
 }
 
@@ -210,7 +211,7 @@ class DebuggerPausedEvent extends WipEvent {
 
   /// Call stack the virtual machine stopped on.
   List<WipCallFrame> getCallFrames() => (params!['callFrames'] as List)
-      .map((frame) => new WipCallFrame(frame as Map<String, dynamic>))
+      .map((frame) => WipCallFrame(frame as Map<String, dynamic>))
       .toList();
 
   /// Pause reason.
@@ -233,7 +234,8 @@ class DebuggerPausedEvent extends WipEvent {
       ? null
       : StackTrace(params!['asyncStackTrace']);
 
-  String toString() => 'paused: ${reason}';
+  @override
+  String toString() => 'paused: $reason';
 }
 
 /// A debugger call frame.
@@ -254,29 +256,30 @@ class WipCallFrame {
 
   /// Location in the source code.
   WipLocation get location =>
-      new WipLocation(json['location'] as Map<String, dynamic>);
+      WipLocation(json['location'] as Map<String, dynamic>);
 
   /// JavaScript script name or url.
   String get url => json['url'] as String;
 
   /// Scope chain for this call frame.
   Iterable<WipScope> getScopeChain() => (json['scopeChain'] as List)
-      .map((scope) => new WipScope(scope as Map<String, dynamic>));
+      .map((scope) => WipScope(scope as Map<String, dynamic>));
 
   /// `this` object for this call frame.
   RemoteObject get thisObject =>
-      new RemoteObject(json['this'] as Map<String, dynamic>);
+      RemoteObject(json['this'] as Map<String, dynamic>);
 
   /// The value being returned, if the function is at return point.
   ///
   /// (optional)
   RemoteObject? get returnValue {
     return json.containsKey('returnValue')
-        ? new RemoteObject(json['returnValue'] as Map<String, dynamic>)
+        ? RemoteObject(json['returnValue'] as Map<String, dynamic>)
         : null;
   }
 
-  String toString() => '[${functionName}]';
+  @override
+  String toString() => '[$functionName]';
 }
 
 class WipLocation {
@@ -303,7 +306,8 @@ class WipLocation {
     return json;
   }
 
-  String toString() => '[${scriptId}:${lineNumber}:${columnNumber}]';
+  @override
+  String toString() => '[$scriptId:$lineNumber:$columnNumber]';
 }
 
 class WipScript {
@@ -327,7 +331,8 @@ class WipScript {
 
   String? get sourceMapURL => json['sourceMapURL'] as String?;
 
-  String toString() => '[script ${scriptId}: ${url}]';
+  @override
+  String toString() => '[script $scriptId: $url]';
 }
 
 class WipScope {
@@ -345,7 +350,7 @@ class WipScope {
   /// the actual object; for the rest of the scopes, it is artificial transient
   /// object enumerating scope variables as its properties.
   RemoteObject get object =>
-      new RemoteObject(json['object'] as Map<String, dynamic>);
+      RemoteObject(json['object'] as Map<String, dynamic>);
 }
 
 class WipBreakLocation extends WipLocation {

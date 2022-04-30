@@ -19,7 +19,7 @@ import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart'
     show ChromeConnection, ChromeTab, WipConnection;
 
 class Server {
-  static final _log = new Logger('Server');
+  static final _log = Logger('Server');
 
   Future<HttpServer>? _server;
   final ChromeConnection chrome;
@@ -35,7 +35,7 @@ class Server {
 
   shelf.Handler get _handler => const shelf.Pipeline()
       .addMiddleware(shelf.logRequests(logger: _shelfLogger))
-      .addHandler(new shelf.Cascade()
+      .addHandler(shelf.Cascade()
           .add(_webSocket)
           .add(_mainPage)
           .add(_json)
@@ -55,14 +55,14 @@ class Server {
     if (path.isEmpty) {
       var resp = await _mainPageHtml();
       _log.info('mainPage: $resp');
-      return new shelf.Response.ok(resp,
+      return shelf.Response.ok(resp,
           headers: {'Content-Type': 'text/html'});
     }
-    return new shelf.Response.notFound(null);
+    return shelf.Response.notFound(null);
   }
 
   Future<String> _mainPageHtml() async {
-    var html = new StringBuffer(r'''<!DOCTYPE html>
+    var html = StringBuffer(r'''<!DOCTYPE html>
 <html>
 <head>
 <title>Chrome Windows</title>
@@ -103,10 +103,10 @@ class Server {
     if (path.length == 1 && path[0] == 'json') {
       var resp = jsonEncode(await chrome.getTabs(), toEncodable: _jsonEncode);
       _log.info('json: $resp');
-      return new shelf.Response.ok(resp,
+      return shelf.Response.ok(resp,
           headers: {'Content-Type': 'application/json'});
     }
-    return new shelf.Response.notFound(null);
+    return shelf.Response.notFound(null);
   }
 
   Future<shelf.Response> _forward(shelf.Request request) async {
@@ -114,18 +114,18 @@ class Server {
     var dtResp = await chrome.getUrl(request.url.path);
 
     if (dtResp.statusCode == 200) {
-      return new shelf.Response.ok(dtResp,
+      return shelf.Response.ok(dtResp,
           headers: {'Content-Type': dtResp.headers.contentType.toString()});
     }
     _log.warning(
         'Forwarded ${request.url} returned statusCode: ${dtResp.statusCode}');
-    return new shelf.Response.notFound(null);
+    return shelf.Response.notFound(null);
   }
 
   Future<shelf.Response> _webSocket(shelf.Request request) async {
     var path = request.url.pathSegments;
     if (path.length != 3 || path[0] != 'devtools' || path[1] != 'page') {
-      return new shelf.Response.notFound(null);
+      return shelf.Response.notFound(null);
     }
     _log.info('connecting to websocket: ${request.url}');
 
@@ -137,10 +137,10 @@ class Server {
       WipDomModel? dom;
       if (modelDom) {
         dom = _modelDoms.putIfAbsent(path[2], () {
-          return new WipDomModel(debugger.dom);
+          return WipDomModel(debugger.dom);
         });
       }
-      var forwarder = new WipForwarder(debugger, webSocket.stream.cast(),
+      var forwarder = WipForwarder(debugger, webSocket.stream.cast(),
           sink: webSocket.sink, domModel: dom);
       debugger.onClose.listen((_) {
         _connections.remove(path[2]);
