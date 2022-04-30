@@ -1,5 +1,9 @@
 # webkit_inspection_protocol.dart
 
+## 1.0.1-dev
+- Use `package:lints` for analysis.
+- Populate the pubspec `repository` field.
+
 ## 1.0.0
 - Migrate to null safety.
 
