@@ -27,33 +27,24 @@ class WipDom extends WipDomain {
 
   Future<void> hideHighlight() => sendCommand('DOM.hideHighlight');
 
-  Future<void> highlightNode(int nodeId,
-      {Rgba? borderColor,
-      Rgba? contentColor,
-      Rgba? marginColor,
-      Rgba? paddingColor,
-      bool? showInfo}) {
-    var params = <String, dynamic>{'nodeId': nodeId, 'highlightConfig': {}};
-
-    if (borderColor != null) {
-      params['highlightConfig']['borderColor'] = borderColor;
-    }
-
-    if (contentColor != null) {
-      params['highlightConfig']['contentColor'] = contentColor;
-    }
-
-    if (marginColor != null) {
-      params['highlightConfig']['marginColor'] = marginColor;
-    }
-
-    if (paddingColor != null) {
-      params['highlightConfig']['paddingColor'] = paddingColor;
-    }
-
-    if (showInfo != null) {
-      params['highlightConfig']['showInfo'] = showInfo;
-    }
+  Future<void> highlightNode(
+    int nodeId, {
+    Rgba? borderColor,
+    Rgba? contentColor,
+    Rgba? marginColor,
+    Rgba? paddingColor,
+    bool? showInfo,
+  }) {
+    var params = <String, dynamic>{
+      'nodeId': nodeId,
+      'highlightConfig': <String, dynamic>{
+        if (borderColor != null) 'borderColor': borderColor,
+        if (contentColor != null) 'contentColor': contentColor,
+        if (marginColor != null) 'marginColor': marginColor,
+        if (paddingColor != null) 'paddingColor': paddingColor,
+        if (showInfo != null) 'showInfo': showInfo,
+      },
+    };
 
     return sendCommand('DOM.highlightNode', params: params);
   }

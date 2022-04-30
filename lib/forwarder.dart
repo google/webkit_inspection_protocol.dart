@@ -45,7 +45,7 @@ class WipForwarder {
   }
 
   Future _onClientDataHandler(String data) async {
-    var json = jsonDecode(data);
+    var json = jsonDecode(data) as Map<String, dynamic>;
     var response = {'id': json['id']};
     _log.info('Forwarding to debugger: $data');
     try {

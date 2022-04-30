@@ -15,7 +15,7 @@ void main() {
   group('WipConsole', () {
     WipConsole? console; // ignore: deprecated_member_use
     List<ConsoleMessageEvent> events = [];
-    var subs = [];
+    var subs = <StreamSubscription>[];
 
     Future checkMessages(int expectedCount) async {
       // make sure all messages have been delivered

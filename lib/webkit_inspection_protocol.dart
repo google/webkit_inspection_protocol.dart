@@ -145,7 +145,7 @@ class WipConnection {
   final StreamController<String> _onReceive =
       StreamController.broadcast(sync: true);
 
-  final Map _completers = <int, Completer<WipResponse>>{};
+  final Map<int, Completer<WipResponse>> _completers = {};
 
   final _closeController = StreamController<WipConnection>.broadcast();
   final _notificationController = StreamController<WipEvent>.broadcast();
@@ -185,7 +185,7 @@ class WipConnection {
     if (params != null) {
       json['params'] = params;
     }
-    _completers[json['id']] = completer;
+    _completers[json['id'] as int] = completer;
     String message = jsonEncode(json);
     _ws.add(message);
     _onSend.add(message);
@@ -197,7 +197,7 @@ class WipConnection {
   }
 
   void _handleResponse(Map<String, dynamic> event) {
-    var completer = _completers.remove(event['id']);
+    var completer = _completers.remove(event['id'])!;
 
     if (event.containsKey('error')) {
       completer.completeError(WipError(event));
