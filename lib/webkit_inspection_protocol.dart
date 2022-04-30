@@ -260,7 +260,7 @@ class WipResponse {
   String toString() => 'WipResponse $id: $result';
 }
 
-typedef T WipEventTransformer<T>(WipEvent event);
+typedef WipEventTransformer<T> = T Function(WipEvent event);
 
 /// @optional
 const String optional = 'optional';

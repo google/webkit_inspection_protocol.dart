@@ -93,7 +93,7 @@ Future<int> findUnusedPort() async {
   return port;
 }
 
-var _testServerUri;
+Future<Uri>? _testServerUri;
 
 /// Ensures that an HTTP server serving files from 'test/data' has been
 /// started and navigates to to [page] using [wipConnection].
@@ -109,7 +109,7 @@ Future<WipConnection> navigateToPage(String page) async {
   }
   await (await wipConnection)
       .page
-      .navigate((await _testServerUri).resolve(page).toString());
+      .navigate((await _testServerUri)!.resolve(page).toString());
   await new Future.delayed(const Duration(seconds: 1));
   return wipConnection;
 }

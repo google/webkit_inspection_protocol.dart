@@ -136,7 +136,7 @@ class Server {
       });
       WipDomModel? dom;
       if (modelDom) {
-        dom = await _modelDoms.putIfAbsent(path[2], () {
+        dom = _modelDoms.putIfAbsent(path[2], () {
           return new WipDomModel(debugger.dom);
         });
       }
