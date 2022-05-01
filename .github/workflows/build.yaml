@@ -17,7 +17,7 @@ jobs:
       - run: |
           export DISPLAY=:99
           chromedriver --url-base=/wd/hub &
-#          sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
+         sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
 
       - name: Install dependencies
         run:  dart pub get
