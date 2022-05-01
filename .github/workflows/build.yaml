@@ -1,25 +1,35 @@
 name: Dart
 
 on:
-  schedule:
-    # “At 00:00 (UTC) on Sunday.”
-    - cron: '0 0 * * 0'
-  pull_request:
   push:
-    branches:
-      - master
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    container:
-      image:  google/dart:dev
-
     steps:
-      - uses: actions/checkout@v2
-      - run: dart pub get
-      - run: dart format --output=none --set-exit-if-changed .
-      - run: dart analyze
-      # TODO: We need to set up chrome / chrome driver on github actions.
-      #- run: dart test
+    - uses: actions/checkout@v2
+    - uses: dart-lang/setup-dart@v1
+    - uses: nanasess/setup-chromedriver@v1.0.5
+
+    - name: Install dependencies
+      run:  dart pub get
+
+    - name: Validate formatting
+      run:  dart format --output=none --set-exit-if-changed .
+
+    - name: Analyze source code
+      run:  dart analyze
+
+    # Disabled; tracked via #75.
+    # - name: Run tests
+    #   run: |
+    #     export DISPLAY=:99
+    #     chromedriver --port=4444 --url-base=/wd/hub &
+    #     sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
+    #     dart test
+    #   env:
+    #     CHROMEDRIVER_ARGS: '--no-sandbox --headless'
