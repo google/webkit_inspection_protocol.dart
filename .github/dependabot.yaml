@@ -1,0 +1,9 @@
+# Dependabot configuration file - enable regular dependencies checks.
+version: 2
+enable-beta-ecosystems: true
+
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
