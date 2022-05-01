@@ -11,24 +11,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: dart-lang/setup-dart@v1
-      - uses: nanasess/setup-chromedriver@v1.0.5
+    - uses: actions/checkout@v2
+    - uses: dart-lang/setup-dart@v1
+    - uses: nanasess/setup-chromedriver@v1.0.5
 
-      - name: Install dependencies
-        run:  dart pub get
+    - name: Install dependencies
+      run:  dart pub get
 
-      - name: Validate formatting
-        run:  dart format --output=none --set-exit-if-changed .
+    - name: Validate formatting
+      run:  dart format --output=none --set-exit-if-changed .
 
-      - name: Analyze source code
-        run:  dart analyze
+    - name: Analyze source code
+      run:  dart analyze
 
-      - name: Run tests
-        run: |
-          export DISPLAY=:99
-          chromedriver --port=4444 --url-base=/wd/hub &
-          sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
-          dart test
-        env:
-          CHROMEDRIVER_ARGS: '--no-sandbox --headless'
+    # Disabled; tracked via #75.
+    # - name: Run tests
+    #   run: |
+    #     export DISPLAY=:99
+    #     chromedriver --port=4444 --url-base=/wd/hub &
+    #     sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
+    #     dart test
+    #   env:
+    #     CHROMEDRIVER_ARGS: '--no-sandbox --headless'
