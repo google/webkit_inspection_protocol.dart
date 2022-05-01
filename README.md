@@ -1,6 +1,6 @@
 # webkit_inspection_protocol.dart
 
-[![Build Status](https://travis-ci.org/google/webkit_inspection_protocol.dart.svg)](https://travis-ci.org/google/webkit_inspection_protocol.dart)
+[![Dart](https://github.com/google/webkit_inspection_protocol.dart/actions/workflows/build.yaml/badge.svg)](https://github.com/google/webkit_inspection_protocol.dart/actions/workflows/build.yaml)
 [![pub package](https://img.shields.io/pub/v/webkit_inspection_protocol.svg)](https://pub.dartlang.org/packages/webkit_inspection_protocol)
 
 ## What is it?
