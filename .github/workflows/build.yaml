@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - uses: dart-lang/setup-dart@v1
+    - uses: actions/checkout@v3.0.0 
+    - uses: dart-lang/setup-dart@v1.0
     - uses: nanasess/setup-chromedriver@v1.0.7
 
     - name: Install dependencies
