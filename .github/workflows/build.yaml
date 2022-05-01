@@ -1,25 +1,27 @@
 name: Dart
 
 on:
-  schedule:
-    # “At 00:00 (UTC) on Sunday.”
-    - cron: '0 0 * * 0'
-  pull_request:
   push:
-    branches:
-      - master
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    container:
-      image:  google/dart:dev
-
     steps:
       - uses: actions/checkout@v2
-      - run: dart pub get
-      - run: dart format --output=none --set-exit-if-changed .
-      - run: dart analyze
-      # TODO: We need to set up chrome / chrome driver on github actions.
-      #- run: dart test
+      - uses: dart-lang/setup-dart@v1
+
+      - name: Install dependencies
+        run:  dart pub get
+
+      - name: Validate formatting
+        run:  dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze source code
+        run:  dart analyze
+
+      - name: Run tests
+        run:  dart test
