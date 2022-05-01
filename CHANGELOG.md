@@ -3,6 +3,7 @@
 ## 1.0.1-dev
 - Use `package:lints` for analysis.
 - Populate the pubspec `repository` field.
+- Enable the `avoid_dynamic_calls` lint.
 
 ## 1.0.0
 - Migrate to null safety.
