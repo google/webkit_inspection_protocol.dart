@@ -1,6 +1,6 @@
 # webkit_inspection_protocol.dart
 
-## 1.0.1-dev
+## 1.0.1
 - Use `package:lints` for analysis.
 - Populate the pubspec `repository` field.
 - Enable the `avoid_dynamic_calls` lint.
