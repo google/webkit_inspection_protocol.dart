@@ -1,7 +1,6 @@
-# webkit_inspection_protocol.dart
-
 [![Dart](https://github.com/google/webkit_inspection_protocol.dart/actions/workflows/build.yaml/badge.svg)](https://github.com/google/webkit_inspection_protocol.dart/actions/workflows/build.yaml)
 [![pub package](https://img.shields.io/pub/v/webkit_inspection_protocol.svg)](https://pub.dartlang.org/packages/webkit_inspection_protocol)
+[![package publisher](https://img.shields.io/pub/publisher/webkit_inspection_protocol.svg)](https://pub.dev/packages/webkit_inspection_protocol/publisher)
 
 ## What is it?
 
