@@ -2,8 +2,6 @@
 [![pub package](https://img.shields.io/pub/v/webkit_inspection_protocol.svg)](https://pub.dartlang.org/packages/webkit_inspection_protocol)
 [![package publisher](https://img.shields.io/pub/publisher/webkit_inspection_protocol.svg)](https://pub.dev/packages/webkit_inspection_protocol/publisher)
 
-## What is it?
-
 The `webkit_inspection_protocol` package is a client for the Chrome DevTools Protocol
 (previously called the Webkit Inspection Protocol). It's used to talk to Chrome DevTools
 based debuggers.
