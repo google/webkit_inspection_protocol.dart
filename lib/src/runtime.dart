@@ -289,8 +289,8 @@ class StackTrace {
     });
 
     return frames.map((CallFrame frame) {
-      return '${frame.functionName}()'.padRight(width + 2) +
-          ' ${frame.url} ${frame.lineNumber}:${frame.columnNumber}';
+      var name = '${frame.functionName}()'.padRight(width + 2);
+      return '$name ${frame.url} ${frame.lineNumber}:${frame.columnNumber}';
     }).toList();
   }
 
