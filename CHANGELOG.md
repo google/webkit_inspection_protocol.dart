@@ -1,4 +1,10 @@
-# webkit_inspection_protocol.dart
+## 1.1.0-dev
+
+- Have `ChromeConnection.getTabs` return better exceptions where there's a
+  failure setting up the Chrome connection (#85).
+- Introduce a new, optional `retryFor` parameter to `ChromeConnection.getTabs`.
+  This will re-try failed connections for a period of time; it can be useful to
+  mitigate some intermittent connection issues very early in Chrome's startup.
 
 ## 1.0.1
 - Use `package:lints` for analysis.
