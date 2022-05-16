@@ -37,8 +37,8 @@ Future<int> _startChromeDriver() async {
   await Future.delayed(const Duration(milliseconds: 25));
 
   try {
-    var _exeExt = Platform.isWindows ? '.exe' : '';
-    _chromeDriver = await Process.start('chromedriver$_exeExt',
+    var exeExt = Platform.isWindows ? '.exe' : '';
+    _chromeDriver = await Process.start('chromedriver$exeExt',
         ['--port=$chromeDriverPort', '--url-base=wd/hub']);
     // On windows this takes a while to boot up, wait for the first line
     // of stdout as a signal that it is ready.

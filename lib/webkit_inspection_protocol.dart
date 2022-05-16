@@ -371,6 +371,7 @@ abstract class WipDomain {
   }
 }
 
+// ignore: library_private_types_in_public_api
 const _Experimental experimental = _Experimental();
 
 class _Experimental {

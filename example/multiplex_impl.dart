@@ -128,6 +128,8 @@ class Server {
     }
     _log.info('connecting to websocket: ${request.url}');
 
+    // TODO: The first arg of webSocketHandler is untyped; consider refactoring
+    // (in package:web_socket_channel) to use a typedef.
     return ws.webSocketHandler((WebSocketChannel webSocket) async {
       var debugger = await _connections.putIfAbsent(path[2], () async {
         var tab = (await chrome.getTab((tab) => tab.id == path[2]))!;
