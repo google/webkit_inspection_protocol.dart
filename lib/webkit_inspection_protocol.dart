@@ -6,7 +6,7 @@ library wip;
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io' show HttpClient, HttpClientResponse, WebSocket;
+import 'dart:io' show HttpClient, HttpClientResponse, IOException, WebSocket;
 
 import 'src/console.dart';
 import 'src/debugger.dart';
@@ -36,16 +36,49 @@ class ChromeConnection {
   ChromeConnection(String host, [int port = 9222])
       : url = Uri.parse('http://$host:$port/');
 
-  // TODO(DrMarcII): consider changing this to return Stream<ChromeTab>.
-  Future<List<ChromeTab>> getTabs() async {
+  /// Return all the available tabs.
+  ///
+  /// This method can potentially throw a [ConnectionException] on some protocol
+  /// issues.
+  ///
+  /// An optional [retryFor] duration can be used to automatically re-try
+  /// connections for some period of time. Anecdotally, Chrome can return errors
+  /// when trying to list the available tabs very early in its startup sequence.
+  Future<List<ChromeTab>> getTabs({
+    Duration? retryFor,
+  }) async {
+    final start = DateTime.now();
+    DateTime? end = retryFor == null ? null : start.add(retryFor);
+
     var response = await getUrl('/json');
-    var respBody = await utf8.decodeStream(response.cast<List<int>>());
-    return List<ChromeTab>.from(
-        (jsonDecode(respBody) as List).map((m) => ChromeTab(m as Map)));
+    var responseBody = await utf8.decodeStream(response.cast<List<int>>());
+
+    late List decoded;
+    while (true) {
+      try {
+        decoded = jsonDecode(responseBody);
+        return List<ChromeTab>.from(decoded.map((m) => ChromeTab(m as Map)));
+      } on FormatException catch (formatException) {
+        if (end != null && end.isBefore(DateTime.now())) {
+          // Delay for retryFor / 4 milliseconds.
+          await Future.delayed(
+            Duration(milliseconds: retryFor!.inMilliseconds ~/ 4),
+          );
+        } else {
+          throw ConnectionException(
+            formatException: formatException,
+            responseStatus: '${response.statusCode} ${response.reasonPhrase}',
+            responseBody: responseBody,
+          );
+        }
+      }
+    }
   }
 
-  Future<ChromeTab?> getTab(bool Function(ChromeTab tab) accept,
-      {Duration? retryFor}) async {
+  Future<ChromeTab?> getTab(
+    bool Function(ChromeTab tab) accept, {
+    Duration? retryFor,
+  }) async {
     var start = DateTime.now();
     var end = start;
     if (retryFor != null) {
@@ -77,6 +110,39 @@ class ChromeConnection {
   }
 
   void close() => _client.close(force: true);
+}
+
+/// An exception that can be thrown early in the connection sequence for a
+/// [ChromeConnection].
+///
+/// This exception includes the underlying exception, as well as the http
+/// response from the browser that we failed on. The [toString] implementation
+/// includes a summary of the response.
+class ConnectionException implements IOException {
+  final FormatException formatException;
+  final String responseStatus;
+  final String responseBody;
+
+  ConnectionException({
+    required this.formatException,
+    required this.responseStatus,
+    required this.responseBody,
+  });
+
+  @override
+  String toString() {
+    final buf = StringBuffer('${formatException.message}\n');
+    buf.writeln('$responseStatus; body:');
+    var lines = responseBody.split('\n');
+    if (lines.length > 10) {
+      lines = [
+        ...lines.take(10),
+        '...',
+      ];
+    }
+    buf.writeAll(lines, '\n');
+    return buf.toString();
+  }
 }
 
 class ChromeTab {
