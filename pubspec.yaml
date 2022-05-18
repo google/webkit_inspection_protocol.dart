@@ -1,5 +1,5 @@
 name: webkit_inspection_protocol
-version: 1.1.0-dev
+version: 1.1.0
 description: >
   A client for the Chrome DevTools Protocol (previously called the Webkit
   Inspection Protocol).

@@ -1,4 +1,4 @@
-## 1.1.0-dev
+## 1.1.0
 
 - Have `ChromeConnection.getTabs` return better exceptions where there's a
   failure setting up the Chrome connection (#85).
