@@ -1,3 +1,8 @@
+## 1.2.0
+
+- Introduce an optional `onError` parameter when setting up an [WipConnection].
+  This can be used to report errors from the underlying [WebSocket].
+
 ## 1.1.0
 
 - Have `ChromeConnection.getTabs` return better exceptions where there's a
