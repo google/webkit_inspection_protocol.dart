@@ -13,7 +13,7 @@ import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart';
 Future<WipConnection>? _wipConnection;
 
 /// Returns a (cached) debugger connection to the first regular tab of
-/// the browser with remote debugger running at 'localhost:9222',
+/// the browser with remote debugger running at 'localhost:9222'.
 Future<WipConnection> get wipConnection {
   _wipConnection ??= () async {
     var debugPort = await _startWebDriver(await _startChromeDriver());
@@ -21,6 +21,21 @@ Future<WipConnection> get wipConnection {
     var tab = (await chrome
         .getTab((tab) => !tab.isBackgroundPage && !tab.isChromeExtension))!;
     var connection = await tab.connect();
+    connection.onClose.listen((_) => _wipConnection = null);
+    return connection;
+  }();
+  return _wipConnection!;
+}
+
+/// Returns a (cached) debugger connection to the first regular tab of
+/// the browser with remote debugger running at 'localhost:9222'.
+Future<WipConnection> createWipConnection({Function? onError}) {
+  _wipConnection ??= () async {
+    var debugPort = await _startWebDriver(await _startChromeDriver());
+    var chrome = ChromeConnection('localhost', debugPort);
+    var tab = (await chrome
+        .getTab((tab) => !tab.isBackgroundPage && !tab.isChromeExtension))!;
+    var connection = await tab.connect(onError: onError);
     connection.onClose.listen((_) => _wipConnection = null);
     return connection;
   }();
@@ -61,16 +76,22 @@ Future<int> _startWebDriver(int chromeDriverPort) async {
   var capabilities = Capabilities.chrome
     ..addAll({
       Capabilities.chromeOptions: {
-        'args': ['remote-debugging-port=$debugPort', '--headless']
+        'args': ['remote-debugging-port=$debugPort', '--headless'],
       }
     });
 
-  await createDriver(
-      spec: WebDriverSpec.JsonWire,
-      desired: capabilities,
-      uri: Uri.parse('http://127.0.0.1:$chromeDriverPort/wd/hub/'));
+  _webDriver = await createDriver(
+    spec: WebDriverSpec.JsonWire,
+    desired: capabilities,
+    uri: Uri.parse('http://127.0.0.1:$chromeDriverPort/wd/hub/'),
+  );
 
   return debugPort;
+}
+
+void killChromeDriver() {
+  _chromeDriver?.kill();
+  _chromeDriver = null;
 }
 
 /// Returns a port that is probably, but not definitely, not in use.
@@ -118,10 +139,12 @@ Future _startHttpServer(SendPort sendPort) async {
 
 Future closeConnection() async {
   if (_wipConnection != null) {
-    await _webDriver?.quit(closeSession: true);
+    await _webDriver?.quit(closeSession: true).catchError((e) => null);
     _webDriver = null;
+
     _chromeDriver?.kill();
     _chromeDriver = null;
+
     _wipConnection = null;
   }
 }
