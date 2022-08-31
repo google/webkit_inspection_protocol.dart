@@ -175,8 +175,14 @@ class ChromeTab {
 
   bool get isBackgroundPage => type == 'background_page';
 
-  Future<WipConnection> connect() =>
-      WipConnection.connect(webSocketDebuggerUrl);
+  /// Connect to the debug connection for this tab and return a [WipConnection].
+  ///
+  /// On errors from this stream, the [onError] handler is called with the error
+  /// object and possibly a stack trace. The [onError] callback must be of type
+  /// `void Function(Object error)` or `void Function(Object error, StackTrace)`.
+  Future<WipConnection> connect({Function? onError}) {
+    return WipConnection.connect(webSocketDebuggerUrl, onError: onError);
+  }
 
   @override
   String toString() => url;
@@ -216,23 +222,34 @@ class WipConnection {
   final _closeController = StreamController<WipConnection>.broadcast();
   final _notificationController = StreamController<WipEvent>.broadcast();
 
-  static Future<WipConnection> connect(String url) {
+  /// Connect to the given url and return a [WipConnection].
+  ///
+  /// On errors from this stream, the [onError] handler is called with the error
+  /// object and possibly a stack trace. The [onError] callback must be of type
+  /// `void Function(Object error)` or `void Function(Object error, StackTrace)`.
+  static Future<WipConnection> connect(String url, {Function? onError}) {
     return WebSocket.connect(url).then((socket) {
-      return WipConnection._(url, socket);
+      return WipConnection._(url, socket, onError: onError);
     });
   }
 
-  WipConnection._(this.url, this._ws) {
-    _ws.listen((data) {
-      var json = jsonDecode(data as String) as Map<String, dynamic>;
+  WipConnection._(this.url, this._ws, {Function? onError}) {
+    void onData(dynamic /*String|List<int>*/ data) {
       _onReceive.add(data);
 
+      var json = jsonDecode(data as String) as Map<String, dynamic>;
       if (json.containsKey('id')) {
         _handleResponse(json);
       } else {
         _handleNotification(json);
       }
-    }, onDone: _handleClose);
+    }
+
+    _ws.listen(
+      onData,
+      onError: onError,
+      onDone: _handleClose,
+    );
   }
 
   Stream<WipConnection> get onClose => _closeController.stream;
@@ -244,8 +261,10 @@ class WipConnection {
   @override
   String toString() => url;
 
-  Future<WipResponse> sendCommand(String method,
-      [Map<String, dynamic>? params]) {
+  Future<WipResponse> sendCommand(
+    String method, [
+    Map<String, dynamic>? params,
+  ]) {
     var completer = Completer<WipResponse>();
     var json = {'id': _nextId++, 'method': method};
     if (params != null) {
