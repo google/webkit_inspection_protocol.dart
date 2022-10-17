@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: dart-lang/setup-dart@v1.3
-    - uses: nanasess/setup-chromedriver@v1.0.8
+    - uses: nanasess/setup-chromedriver@v1.1.0
 
     - name: Install dependencies
       run:  dart pub get
