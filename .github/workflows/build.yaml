@@ -13,9 +13,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - uses: dart-lang/setup-dart@v1.3
-    - uses: nanasess/setup-chromedriver@v1.0.8
+    - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+    - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+    - uses: nanasess/setup-chromedriver@7cbd35794f8ab317f778c3172fb86c1e9b2853f7
 
     - name: Install dependencies
       run:  dart pub get
