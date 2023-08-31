@@ -1,3 +1,6 @@
+// Copyright 2015 Google. All rights reserved. Use of this source code is
+// governed by a BSD-style license that can be found in the LICENSE file.
+
 library wip.test.setup;
 
 import 'dart:async';
@@ -7,6 +10,7 @@ import 'dart:isolate';
 
 import 'package:shelf/shelf_io.dart' as io;
 import 'package:shelf_static/shelf_static.dart';
+// ignore: deprecated_member_use
 import 'package:webdriver/io.dart';
 import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart';
 
