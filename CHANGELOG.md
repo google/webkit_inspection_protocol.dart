@@ -1,3 +1,9 @@
+## 1.2.1
+
+- Make the return type of `runtime`'s `ExceptionDetails.url` field nullable.
+- Make the return type of `runtime`'s `StackTrace.description` field nullable.
+- Increase required SDK to 3.0.0.
+
 ## 1.2.0
 
 - Introduce an optional `onError` parameter when setting up a [WipConnection].
