@@ -237,7 +237,7 @@ class ExceptionDetails implements Exception {
   /// URL of the exception location, to be used when the script was not
   /// reported.
   @optional
-  String get url => json['url'] as String;
+  String? get url => json['url'] as String?;
 
   /// Script ID of the exception location.
   @optional
@@ -272,14 +272,13 @@ class StackTrace {
   /// String label of this stack trace. For async traces this may be a name of
   /// the function that initiated the async call.
   @optional
-  String get description => json['description'] as String;
+  String? get description => json['description'] as String?;
 
   /// Asynchronous JavaScript stack trace that preceded this stack, if
   /// available.
   @optional
-  StackTrace? get parent {
-    return json['parent'] == null ? null : StackTrace(json['parent']);
-  }
+  StackTrace? get parent =>
+      json['parent'] == null ? null : StackTrace(json['parent']);
 
   List<String> printFrames() {
     List<CallFrame> frames = callFrames;

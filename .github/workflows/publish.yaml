@@ -5,7 +5,7 @@ name: Publish
 on:
   # Trigger on pull requests that target the default branch.
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
     types: [opened, synchronize, reopened, labeled, unlabeled]
   # Also, trigger when tags are pushed to the repo.
   push:
