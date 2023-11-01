@@ -16,7 +16,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
-    - uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
+    - uses: dart-lang/setup-dart@b64355ae6ca0b5d484f0106a033dd1388965d06d
     - uses: nanasess/setup-chromedriver@e66222fd7ec9c46b83cc837781ce6930b5d95f90
 
     - name: Install dependencies
