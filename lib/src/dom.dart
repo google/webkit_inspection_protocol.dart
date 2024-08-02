@@ -9,10 +9,10 @@ import '../webkit_inspection_protocol.dart';
 /// Implementation of the
 /// https://developer.chrome.com/devtools/docs/protocol/1.1/dom
 class WipDom extends WipDomain {
-  WipDom(WipConnection connection) : super(connection);
+  WipDom(super.connection);
 
   Future<Map<String, String>> getAttributes(int nodeId) async {
-    WipResponse resp =
+    var resp =
         await sendCommand('DOM.getAttributes', params: {'nodeId': nodeId});
     return _attributeListToMap((resp.result!['attributes'] as List).cast());
   }
@@ -178,7 +178,7 @@ class WipDom extends WipDomain {
 }
 
 class AttributeModifiedEvent extends WipEvent {
-  AttributeModifiedEvent(Map<String, dynamic> json) : super(json);
+  AttributeModifiedEvent(super.json);
 
   int get nodeId => params!['nodeId'] as int;
 
@@ -188,7 +188,7 @@ class AttributeModifiedEvent extends WipEvent {
 }
 
 class AttributeRemovedEvent extends WipEvent {
-  AttributeRemovedEvent(Map<String, dynamic> json) : super(json);
+  AttributeRemovedEvent(super.json);
 
   int get nodeId => params!['nodeId'] as int;
 
@@ -196,7 +196,7 @@ class AttributeRemovedEvent extends WipEvent {
 }
 
 class CharacterDataModifiedEvent extends WipEvent {
-  CharacterDataModifiedEvent(Map<String, dynamic> json) : super(json);
+  CharacterDataModifiedEvent(super.json);
 
   int get nodeId => params!['nodeId'] as int;
 
@@ -204,7 +204,7 @@ class CharacterDataModifiedEvent extends WipEvent {
 }
 
 class ChildNodeCountUpdatedEvent extends WipEvent {
-  ChildNodeCountUpdatedEvent(Map<String, dynamic> json) : super(json);
+  ChildNodeCountUpdatedEvent(super.json);
 
   int get nodeId => params!['nodeId'] as int;
 
@@ -212,7 +212,7 @@ class ChildNodeCountUpdatedEvent extends WipEvent {
 }
 
 class ChildNodeInsertedEvent extends WipEvent {
-  ChildNodeInsertedEvent(Map<String, dynamic> json) : super(json);
+  ChildNodeInsertedEvent(super.json);
 
   int get parentNodeId => params!['parentNodeId'] as int;
 
@@ -222,7 +222,7 @@ class ChildNodeInsertedEvent extends WipEvent {
 }
 
 class ChildNodeRemovedEvent extends WipEvent {
-  ChildNodeRemovedEvent(Map<String, dynamic> json) : super(json);
+  ChildNodeRemovedEvent(super.json);
 
   int get parentNodeId => params!['parentNodeId'] as int;
 
@@ -230,16 +230,16 @@ class ChildNodeRemovedEvent extends WipEvent {
 }
 
 class DocumentUpdatedEvent extends WipEvent {
-  DocumentUpdatedEvent(Map<String, dynamic> json) : super(json);
+  DocumentUpdatedEvent(super.json);
 }
 
 class SetChildNodesEvent extends WipEvent {
-  SetChildNodesEvent(Map<String, dynamic> json) : super(json);
+  SetChildNodesEvent(super.json);
 
   int get nodeId => params!['parentId'] as int;
 
   Iterable<Node> get nodes sync* {
-    for (Map node in params!['nodes']) {
+    for (var node in (params!['nodes'] as List)) {
       yield Node(node as Map<String, dynamic>);
     }
   }
@@ -321,7 +321,7 @@ class Rgba {
 
 Map<String, String> _attributeListToMap(List<String> attrList) {
   var attributes = <String, String>{};
-  for (int i = 0; i < attrList.length; i += 2) {
+  for (var i = 0; i < attrList.length; i += 2) {
     attributes[attrList[i]] = attrList[i + 1];
   }
   return UnmodifiableMapView(attributes);

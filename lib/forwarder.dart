@@ -1,8 +1,6 @@
 // Copyright 2015 Google. All rights reserved. Use of this source code is
 // governed by a BSD-style license that can be found in the LICENSE file.
 
-library crmux.forwarder;
-
 import 'dart:async'
     show Future, Stream, StreamController, StreamSink, StreamSubscription;
 import 'dart:convert' show jsonDecode, jsonEncode;
@@ -11,7 +9,7 @@ import 'package:logging/logging.dart' show Logger;
 
 import 'dom_model.dart' show flattenAttributesMap;
 import 'webkit_inspection_protocol.dart'
-    show WipConnection, WipDom, WipError, WipEvent, WipResponse;
+    show WipConnection, WipDom, WipError, WipEvent;
 
 /// Forwards a [Stream] to a [WipConnection] and events
 /// from a [WipConnection] to a [StreamSink].
@@ -51,7 +49,7 @@ class WipForwarder {
     try {
       var method = json['method'] as String;
       var params = json['params'] as Map<String, dynamic>;
-      bool processed = false;
+      var processed = false;
 
       if (method.contains('reakpoint')) {
         forwardPausedEvents = true;
@@ -72,7 +70,7 @@ class WipForwarder {
         }
       }
       if (!processed) {
-        WipResponse resp = await _debugger.sendCommand(method, params);
+        var resp = await _debugger.sendCommand(method, params);
         if (resp.result != null) {
           response['result'] = resp.result;
         }

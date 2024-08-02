@@ -2,7 +2,7 @@
 // governed by a BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-library wip.console_test;
+library;
 
 import 'package:test/test.dart';
 import 'package:webkit_inspection_protocol/dom_model.dart';
@@ -30,7 +30,7 @@ void main() {
     });
 
     test('requestChildNodes updates children', () async {
-      Node htmlNode = (await dom!.getDocument()).children![1];
+      var htmlNode = (await dom!.getDocument()).children![1];
       for (var child in htmlNode.children!) {
         expect(child.children, isNull);
         await dom!.requestChildNodes(child.nodeId);
@@ -42,7 +42,7 @@ void main() {
     });
 
     test('removing a node updates children', () async {
-      Node bodyNode = (await dom!.getDocument()).children![1].children![1];
+      var bodyNode = (await dom!.getDocument()).children![1].children![1];
       await dom!.requestChildNodes(bodyNode.nodeId);
       var childCount = bodyNode.childNodeCount!;
       await dom!.removeNode(bodyNode.children!.first.nodeId);
@@ -52,10 +52,10 @@ void main() {
     });
 
     test('Moving a node updates children', () async {
-      Node bodyNode = (await dom!.getDocument()).children![1].children![1];
+      var bodyNode = (await dom!.getDocument()).children![1].children![1];
       await dom!.requestChildNodes(bodyNode.nodeId);
-      Node div1 = bodyNode.children![0];
-      Node div2 = bodyNode.children![1];
+      var div1 = bodyNode.children![0];
+      var div2 = bodyNode.children![1];
 
       expect(div1.childNodeCount, 1);
       expect(div2.childNodeCount, 0);
@@ -71,16 +71,16 @@ void main() {
     }, skip: 'google/webkit_inspection_protocol.dart/issues/52');
 
     test('Setting node value updates value', () async {
-      Node bodyNode = (await dom!.getDocument()).children![1].children![1];
+      var bodyNode = (await dom!.getDocument()).children![1].children![1];
       await dom!.requestChildNodes(bodyNode.nodeId);
 
-      Node div1 = bodyNode.children![0];
+      var div1 = bodyNode.children![0];
       await dom!.requestChildNodes(div1.nodeId);
 
-      Node h1 = div1.children![0];
+      var h1 = div1.children![0];
       await dom!.requestChildNodes(h1.nodeId);
 
-      Node text = h1.children![0];
+      var text = h1.children![0];
 
       expect(text.nodeValue, 'test');
 
@@ -90,21 +90,21 @@ void main() {
     });
 
     test('Adding attribute updates attributes', () async {
-      Node bodyNode = (await dom!.getDocument()).children![1].children![1];
+      var bodyNode = (await dom!.getDocument()).children![1].children![1];
       expect(bodyNode.attributes!.containsKey('my-attr'), isFalse);
       await dom!.setAttributeValue(bodyNode.nodeId, 'my-attr', 'my-value');
       expect(bodyNode.attributes!['my-attr'], 'my-value');
     });
 
     test('Changing attribute updates attributes', () async {
-      Node bodyNode = (await dom!.getDocument()).children![1].children![1];
+      var bodyNode = (await dom!.getDocument()).children![1].children![1];
       expect(bodyNode.attributes!['test-attr'], 'test-attr-value');
       await dom!.setAttributeValue(bodyNode.nodeId, 'test-attr', 'my-value');
       expect(bodyNode.attributes!['test-attr'], 'my-value');
     });
 
     test('Removing attribute updates attributes', () async {
-      Node bodyNode = (await dom!.getDocument()).children![1].children![1];
+      var bodyNode = (await dom!.getDocument()).children![1].children![1];
       expect(bodyNode.attributes!['test-attr'], 'test-attr-value');
       await dom!.removeAttribute(bodyNode.nodeId, 'test-attr');
       expect(bodyNode.attributes!.containsKey('test-attr'), isFalse);
@@ -118,7 +118,7 @@ void main() {
     });
 
     test('getting attributes works', () async {
-      Node bodyNode = (await dom!.getDocument()).children![1].children![1];
+      var bodyNode = (await dom!.getDocument()).children![1].children![1];
       var attributes = bodyNode.attributes;
       var getAttributes = await dom!.getAttributes(bodyNode.nodeId);
 
