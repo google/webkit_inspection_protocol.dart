@@ -2,7 +2,7 @@
 // governed by a BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-library wip.runtime_test;
+library;
 
 import 'dart:async';
 
@@ -14,7 +14,7 @@ import 'test_setup.dart';
 void main() {
   group('WipRuntime', () {
     WipRuntime? runtime;
-    List<StreamSubscription> subs = [];
+    var subs = <StreamSubscription>[];
 
     setUp(() async {
       runtime = (await wipConnection).runtime;
@@ -26,7 +26,7 @@ void main() {
 
       await closeConnection();
       for (var s in subs) {
-        s.cancel();
+        await s.cancel();
       }
       subs.clear();
     });
@@ -42,7 +42,7 @@ void main() {
       await runtime!.enable();
       await navigateToPage('runtime_test.html');
 
-      HeapUsage usage = await runtime!.getHeapUsage();
+      var usage = await runtime!.getHeapUsage();
 
       expect(usage.usedSize, greaterThan(0));
       expect(usage.totalSize, greaterThan(0));
@@ -52,7 +52,7 @@ void main() {
       await runtime!.enable();
       await navigateToPage('runtime_test.html');
 
-      RemoteObject result = await runtime!.evaluate('1+1');
+      var result = await runtime!.evaluate('1+1');
       expect(result.type, 'number');
       expect(result.value, 2);
     });
@@ -61,8 +61,8 @@ void main() {
       await runtime!.enable();
       await navigateToPage('runtime_test.html');
 
-      RemoteObject console = await runtime!.evaluate('console');
-      RemoteObject result = await runtime!.callFunctionOn(
+      var console = await runtime!.evaluate('console');
+      var result = await runtime!.callFunctionOn(
         '''
         function(msg) {
           console.log(msg);
@@ -82,16 +82,16 @@ void main() {
       await runtime!.enable();
       await navigateToPage('runtime_test.html');
 
-      RemoteObject console = await runtime!.evaluate('console');
+      var console = await runtime!.evaluate('console');
 
-      List<PropertyDescriptor> properties = await runtime!.getProperties(
+      var properties = await runtime!.getProperties(
         console,
         ownProperties: true,
       );
 
       expect(properties, isNotEmpty);
 
-      PropertyDescriptor property = properties.first;
+      var property = properties.first;
       expect(property.name, isNotEmpty);
     });
   });

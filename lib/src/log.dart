@@ -6,7 +6,7 @@ import 'dart:async';
 import '../webkit_inspection_protocol.dart';
 
 class WipLog extends WipDomain {
-  WipLog(WipConnection connection) : super(connection);
+  WipLog(super.connection);
 
   Future<WipResponse> enable() => sendCommand('Log.enable');
 
@@ -17,7 +17,7 @@ class WipLog extends WipDomain {
 }
 
 class LogEntry extends WipEvent {
-  LogEntry(Map<String, dynamic> json) : super(json);
+  LogEntry(super.json);
 
   Map<String, dynamic> get _entry => params!['entry'] as Map<String, dynamic>;
 

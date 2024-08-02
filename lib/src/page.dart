@@ -6,7 +6,7 @@ import 'dart:async';
 import '../webkit_inspection_protocol.dart';
 
 class WipPage extends WipDomain {
-  WipPage(WipConnection connection) : super(connection);
+  WipPage(super.connection);
 
   Future<WipResponse> enable() => sendCommand('Page.enable');
 
