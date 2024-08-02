@@ -2,7 +2,7 @@
 // governed by a BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-library wip.debugger_test;
+library;
 
 import 'dart:async';
 
@@ -14,7 +14,7 @@ import 'test_setup.dart';
 void main() {
   group('WipDebugger', () {
     WipDebugger? debugger;
-    List<StreamSubscription> subs = [];
+    var subs = <StreamSubscription>[];
 
     setUp(() async {
       debugger = (await wipConnection).debugger;
@@ -26,7 +26,7 @@ void main() {
 
       await closeConnection();
       for (var s in subs) {
-        s.cancel();
+        await s.cancel();
       }
       subs.clear();
     });

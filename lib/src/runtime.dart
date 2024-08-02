@@ -7,7 +7,7 @@ import 'dart:math';
 import '../webkit_inspection_protocol.dart';
 
 class WipRuntime extends WipDomain {
-  WipRuntime(WipConnection connection) : super(connection);
+  WipRuntime(super.connection);
 
   /// Enables reporting of execution contexts creation by means of
   /// executionContextCreated event. When the reporting gets enabled the event
@@ -32,7 +32,7 @@ class WipRuntime extends WipDomain {
     int? contextId,
     bool? awaitPromise,
   }) async {
-    Map<String, dynamic> params = {
+    var params = <String, dynamic>{
       'expression': expression,
     };
     if (returnByValue != null) {
@@ -45,8 +45,7 @@ class WipRuntime extends WipDomain {
       params['awaitPromise'] = awaitPromise;
     }
 
-    final WipResponse response =
-        await sendCommand('Runtime.evaluate', params: params);
+    final response = await sendCommand('Runtime.evaluate', params: params);
 
     if (response.result!.containsKey('exceptionDetails')) {
       throw ExceptionDetails(
@@ -68,7 +67,7 @@ class WipRuntime extends WipDomain {
     bool? returnByValue,
     int? executionContextId,
   }) async {
-    Map<String, dynamic> params = {
+    var params = <String, dynamic>{
       'functionDeclaration': functionDeclaration,
     };
     if (objectId != null) {
@@ -91,7 +90,7 @@ class WipRuntime extends WipDomain {
       }).toList();
     }
 
-    final WipResponse response =
+    final response =
         await sendCommand('Runtime.callFunctionOn', params: params);
 
     if (response.result!.containsKey('exceptionDetails')) {
@@ -106,7 +105,7 @@ class WipRuntime extends WipDomain {
   /// corresponding isolate not scoped to a particular Runtime.
   @experimental
   Future<HeapUsage> getHeapUsage() async {
-    final WipResponse response = await sendCommand('Runtime.getHeapUsage');
+    final response = await sendCommand('Runtime.getHeapUsage');
     return HeapUsage(response.result!);
   }
 
@@ -127,22 +126,22 @@ class WipRuntime extends WipDomain {
     RemoteObject object, {
     bool? ownProperties,
   }) async {
-    Map<String, dynamic> params = {
+    var params = <String, dynamic>{
       'objectId': object.objectId,
     };
     if (ownProperties != null) {
       params['ownProperties'] = ownProperties;
     }
 
-    final WipResponse response =
-        await sendCommand('Runtime.getProperties', params: params);
+    final response = await sendCommand('Runtime.getProperties', params: params);
 
     if (response.result!.containsKey('exceptionDetails')) {
       throw ExceptionDetails(
           response.result!['exceptionDetails'] as Map<String, dynamic>);
     } else {
-      List locations = response.result!['result'];
-      return List.from(locations.map((map) => PropertyDescriptor(map)));
+      var locations = response.result!['result'] as List;
+      return List.from(locations
+          .map((map) => PropertyDescriptor(map as Map<String, dynamic>)));
     }
   }
 
@@ -158,13 +157,13 @@ class WipRuntime extends WipDomain {
   Stream<ExecutionContextDescription> get onExecutionContextCreated =>
       eventStream(
           'Runtime.executionContextCreated',
-          (WipEvent event) =>
-              ExecutionContextDescription(event.params!['context']));
+          (WipEvent event) => ExecutionContextDescription(
+              event.params!['context'] as Map<String, dynamic>));
 
   /// Issued when execution context is destroyed.
   Stream<String> get onExecutionContextDestroyed => eventStream(
       'Runtime.executionContextDestroyed',
-      (WipEvent event) => event.params!['executionContextId']);
+      (WipEvent event) => event.params!['executionContextId'] as String);
 
   /// Issued when all executionContexts were cleared in browser.
   Stream get onExecutionContextsCleared => eventStream(
@@ -173,7 +172,7 @@ class WipRuntime extends WipDomain {
 
 // TODO: stackTrace, StackTrace, Stack trace captured when the call was made.
 class ConsoleAPIEvent extends WipEvent {
-  ConsoleAPIEvent(Map<String, dynamic> json) : super(json);
+  ConsoleAPIEvent(super.json);
 
   /// Type of the call. Allowed values: log, debug, info, error, warning, dir,
   /// dirxml, table, trace, clear, startGroup, startGroupCollapsed, endGroup,
@@ -200,14 +199,14 @@ class ExecutionContextDescription {
   int get id => json['id'] as int;
 
   /// Execution context origin.
-  String get origin => json['origin'];
+  String get origin => json['origin'] as String;
 
   /// Human readable name describing given context.
-  String get name => json['name'];
+  String get name => json['name'] as String;
 }
 
 class ExceptionThrownEvent extends WipEvent {
-  ExceptionThrownEvent(Map<String, dynamic> json) : super(json);
+  ExceptionThrownEvent(super.json);
 
   /// Timestamp of the exception.
   int get timestamp => params!['timestamp'] as int;
@@ -277,13 +276,14 @@ class StackTrace {
   /// Asynchronous JavaScript stack trace that preceded this stack, if
   /// available.
   @optional
-  StackTrace? get parent =>
-      json['parent'] == null ? null : StackTrace(json['parent']);
+  StackTrace? get parent => json['parent'] == null
+      ? null
+      : StackTrace(json['parent'] as Map<String, dynamic>);
 
   List<String> printFrames() {
-    List<CallFrame> frames = callFrames;
+    var frames = callFrames;
 
-    int width = frames.fold(0, (int val, CallFrame frame) {
+    var width = frames.fold(0, (int val, CallFrame frame) {
       return max(val, frame.functionName.length);
     });
 
@@ -370,10 +370,10 @@ class HeapUsage {
   HeapUsage(this.json);
 
   /// Used heap size in bytes.
-  int get usedSize => json['usedSize'];
+  int get usedSize => json['usedSize'] as int;
 
   /// Allocated heap size in bytes.
-  int get totalSize => json['totalSize'];
+  int get totalSize => json['totalSize'] as int;
 
   @override
   String toString() => '$usedSize of $totalSize';
@@ -386,11 +386,12 @@ class PropertyDescriptor {
   PropertyDescriptor(this.json);
 
   /// Property name or symbol description.
-  String get name => json['name'];
+  String get name => json['name'] as String;
 
   /// The value associated with the property.
-  RemoteObject? get value =>
-      json['value'] != null ? RemoteObject(json['value']) : null;
+  RemoteObject? get value => json['value'] != null
+      ? RemoteObject(json['value'] as Map<String, dynamic>)
+      : null;
 
   /// True if the value associated with the property may be changed (data
   /// descriptors only).

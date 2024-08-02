@@ -2,7 +2,7 @@
 // governed by a BSD-style license that can be found in the LICENSE file.
 
 /// A library to connect to a Webkit Inspection Protocol server (like Chrome).
-library wip;
+library;
 
 import 'dart:async';
 import 'dart:convert';
@@ -48,7 +48,7 @@ class ChromeConnection {
     Duration? retryFor,
   }) async {
     final start = DateTime.now();
-    DateTime? end = retryFor == null ? null : start.add(retryFor);
+    var end = retryFor == null ? null : start.add(retryFor);
 
     var response = await getUrl('/json');
     var responseBody = await utf8.decodeStream(response.cast<List<int>>());
@@ -56,12 +56,12 @@ class ChromeConnection {
     late List decoded;
     while (true) {
       try {
-        decoded = jsonDecode(responseBody);
+        decoded = jsonDecode(responseBody) as List;
         return List<ChromeTab>.from(decoded.map((m) => ChromeTab(m as Map)));
       } on FormatException catch (formatException) {
         if (end != null && end.isBefore(DateTime.now())) {
           // Delay for retryFor / 4 milliseconds.
-          await Future.delayed(
+          await Future<void>.delayed(
             Duration(milliseconds: retryFor!.inMilliseconds ~/ 4),
           );
         } else {
@@ -100,7 +100,7 @@ class ChromeConnection {
           rethrow;
         }
       }
-      await Future.delayed(const Duration(milliseconds: 25));
+      await Future<void>.delayed(const Duration(milliseconds: 25));
     }
   }
 
@@ -179,7 +179,7 @@ class ChromeTab {
   ///
   /// On errors from this stream, the [onError] handler is called with the error
   /// object and possibly a stack trace. The [onError] callback must be of type
-  /// `void Function(Object error)` or `void Function(Object error, StackTrace)`.
+  /// `void Function(Object error)` or `void Function(Object error, StackTrace)`
   Future<WipConnection> connect({Function? onError}) {
     return WipConnection.connect(webSocketDebuggerUrl, onError: onError);
   }
@@ -226,7 +226,7 @@ class WipConnection {
   ///
   /// On errors from this stream, the [onError] handler is called with the error
   /// object and possibly a stack trace. The [onError] callback must be of type
-  /// `void Function(Object error)` or `void Function(Object error, StackTrace)`.
+  /// `void Function(Object error)` or `void Function(Object error, StackTrace)`
   static Future<WipConnection> connect(String url, {Function? onError}) {
     return WebSocket.connect(url).then((socket) {
       return WipConnection._(url, socket, onError: onError);
@@ -235,9 +235,9 @@ class WipConnection {
 
   WipConnection._(this.url, this._ws, {Function? onError}) {
     void onData(dynamic /*String|List<int>*/ data) {
-      _onReceive.add(data);
+      _onReceive.add(data as String);
 
-      var json = jsonDecode(data as String) as Map<String, dynamic>;
+      var json = jsonDecode(data) as Map<String, dynamic>;
       if (json.containsKey('id')) {
         _handleResponse(json);
       } else {
@@ -271,7 +271,7 @@ class WipConnection {
       json['params'] = params;
     }
     _completers[json['id'] as int] = completer;
-    String message = jsonEncode(json);
+    var message = jsonEncode(json);
     _ws.add(message);
     _onSend.add(message);
     return completer.future;
@@ -328,9 +328,9 @@ class WipError implements Exception {
       : id = json['id'] as int,
         error = json['error'] as Map<String, dynamic>?;
 
-  int? get code => error == null ? null : error!['code'];
+  int? get code => error?['code'] as int?;
 
-  String? get message => error == null ? null : error!['message'];
+  String? get message => error?['message'] as String?;
 
   @override
   String toString() => 'WipError $code $message';
