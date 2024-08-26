@@ -7,7 +7,7 @@ import '../webkit_inspection_protocol.dart';
 
 @Deprecated('This domain is deprecated - use Runtime or Log instead')
 class WipConsole extends WipDomain {
-  WipConsole(WipConnection connection) : super(connection);
+  WipConsole(super.connection);
 
   Future<WipResponse> enable() => sendCommand('Console.enable');
 
@@ -25,7 +25,7 @@ class WipConsole extends WipDomain {
 }
 
 class ConsoleMessageEvent extends WipEvent {
-  ConsoleMessageEvent(Map<String, dynamic> json) : super(json);
+  ConsoleMessageEvent(super.json);
 
   Map get _message => params!['message'] as Map;
 
@@ -49,7 +49,7 @@ class ConsoleMessageEvent extends WipEvent {
 }
 
 class ConsoleClearedEvent extends WipEvent {
-  ConsoleClearedEvent(Map<String, dynamic> json) : super(json);
+  ConsoleClearedEvent(super.json);
 }
 
 class WipConsoleCallFrame {

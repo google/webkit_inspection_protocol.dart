@@ -1,8 +1,6 @@
 // Copyright 2015 Google. All rights reserved. Use of this source code is
 // governed by a BSD-style license that can be found in the LICENSE file.
 
-library wip.test.setup;
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -53,7 +51,7 @@ Future<int> _startChromeDriver() async {
   var chromeDriverPort = await findUnusedPort();
 
   // Delay a small amount to allow us to close the above port.
-  await Future.delayed(const Duration(milliseconds: 25));
+  await Future<void>.delayed(const Duration(milliseconds: 25));
 
   try {
     var exeExt = Platform.isWindows ? '.exe' : '';
@@ -131,7 +129,7 @@ Future<WipConnection> navigateToPage(String page) async {
   await (await wipConnection)
       .page
       .navigate((await _testServerUri)!.resolve(page).toString());
-  await Future.delayed(const Duration(seconds: 1));
+  await Future<void>.delayed(const Duration(seconds: 1));
   return wipConnection;
 }
 

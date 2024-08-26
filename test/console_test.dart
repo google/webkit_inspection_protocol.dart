@@ -2,7 +2,7 @@
 // governed by a BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-library wip.console_test;
+library;
 
 import 'dart:async';
 
@@ -14,14 +14,14 @@ import 'test_setup.dart';
 void main() {
   group('WipConsole', () {
     WipConsole? console; // ignore: deprecated_member_use
-    List<ConsoleMessageEvent> events = [];
+    var events = <ConsoleMessageEvent>[];
     var subs = <StreamSubscription>[];
 
     Future checkMessages(int expectedCount) async {
       // make sure all messages have been delivered
-      await Future.delayed(const Duration(seconds: 1));
+      await Future<void>.delayed(const Duration(seconds: 1));
       expect(events, hasLength(expectedCount));
-      for (int i = 0; i < expectedCount; i++) {
+      for (var i = 0; i < expectedCount; i++) {
         if (i == 0) {
           // Clearing adds this message.
           expect(events[i].text, 'console.clear');
@@ -43,7 +43,7 @@ void main() {
       console = null;
       await closeConnection();
       for (var s in subs) {
-        s.cancel();
+        await s.cancel();
       }
       subs.clear();
     });

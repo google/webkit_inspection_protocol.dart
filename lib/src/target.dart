@@ -6,7 +6,7 @@ import 'dart:async';
 import '../webkit_inspection_protocol.dart';
 
 class WipTarget extends WipDomain {
-  WipTarget(WipConnection connection) : super(connection);
+  WipTarget(super.connection);
 
   /// Creates a new page.
   ///
@@ -14,7 +14,7 @@ class WipTarget extends WipDomain {
   ///
   /// Returns the targetId of the page opened.
   Future<String> createTarget(String url) async {
-    WipResponse response =
+    var response =
         await sendCommand('Target.createTarget', params: {'url': url});
     return response.result!['targetId'] as String;
   }
@@ -27,7 +27,7 @@ class WipTarget extends WipDomain {
   ///
   /// Returns `true` on success.
   Future<bool> closeTarget(String targetId) async {
-    WipResponse response =
+    var response =
         await sendCommand('Target.closeTarget', params: {'targetId': targetId});
     return response.result!['success'] as bool;
   }
@@ -45,7 +45,7 @@ class WipTarget extends WipDomain {
     String targetId, {
     String? bindingName,
   }) {
-    final Map<String, dynamic> params = {'targetId': targetId};
+    final params = <String, dynamic>{'targetId': targetId};
     if (bindingName != null) {
       params['bindingName'] = bindingName;
     }

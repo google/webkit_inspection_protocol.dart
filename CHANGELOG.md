@@ -1,3 +1,7 @@
+## 1.2.2-wip
+
+- Require SDK `sdk: ^3.4.0`.
+
 ## 1.2.1
 
 - Make the return type of `runtime`'s `ExceptionDetails.url` field nullable.

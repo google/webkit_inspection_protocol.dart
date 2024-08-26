@@ -1,8 +1,6 @@
 // Copyright 2015 Google. All rights reserved. Use of this source code is
 // governed by a BSD-style license that can be found in the LICENSE file.
 
-library wip.dom_model;
-
 import 'dart:async' show EventSink, Future, Stream, StreamTransformer;
 import 'dart:collection' show UnmodifiableListView, UnmodifiableMapView;
 import 'dart:mirrors' show reflect;
@@ -112,7 +110,7 @@ class WipDomModel implements WipDom {
   void _onChildNodeInserted(
       ChildNodeInsertedEvent event, EventSink<ChildNodeInsertedEvent> sink) {
     var parent = _getOrCreateNode(event.parentNodeId);
-    int index =
+    var index =
         parent._children!.indexOf(_getOrCreateNode(event.previousNodeId)) + 1;
     var node = _getOrCreateNodeFromNode(event.node);
     parent._children!.insert(index, node);
@@ -147,7 +145,7 @@ class WipDomModel implements WipDom {
 
   @override
   Future<Map<String, String>> getAttributes(int nodeId) async {
-    Map<String, String> attributes = await _dom.getAttributes(nodeId);
+    var attributes = await _dom.getAttributes(nodeId);
     var node = _getOrCreateNode(nodeId);
     node._attributes = Map.from(attributes);
     return attributes;
@@ -158,7 +156,7 @@ class WipDomModel implements WipDom {
   /// multiple times on the same page.
   @override
   Future<Node> getDocument() {
-    _root ??= _dom.getDocument().then((n) => _getOrCreateNodeFromNode(n));
+    _root ??= _dom.getDocument().then(_getOrCreateNodeFromNode);
     return _root!;
   }
 
@@ -303,7 +301,7 @@ class _Node implements Node {
         map['childNodeCount'] = childNodeCount!;
       }
       if (_children != null && _children!.isNotEmpty) {
-        var newChildren = [];
+        var newChildren = <Map<dynamic, dynamic>>[];
         for (var child in _children!) {
           newChildren.add(child._toJsonInternal(visited));
         }
