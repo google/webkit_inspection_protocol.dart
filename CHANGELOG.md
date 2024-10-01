@@ -1,6 +1,6 @@
 ## 1.2.2-wip
 
-- Require SDK `sdk: ^3.4.0`.
+- Require Dart 3.4.
 
 ## 1.2.1
 
