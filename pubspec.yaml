@@ -18,5 +18,6 @@ dev_dependencies:
   shelf_static: ^1.0.0
   shelf_web_socket: ^2.0.0
   test: ^1.16.6
-  web_socket_channel: ^3.0.0 # used in example/
+  # used in example/
+  web_socket_channel: ^3.0.0
   webdriver: ^3.0.0
