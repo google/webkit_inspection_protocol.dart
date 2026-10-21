@@ -1,7 +1,8 @@
 ## 1.2.2-wip
 
 - Require Dart 3.4.
-- Replace `dart:mirrors` usage in `WipDomModel` with explicit forwarded methods.
+- Remove `dart:mirrors` usage from `dom_model.dart`.
+- Deprecate `dom_model.dart` and `forwarder.dart`.
 
 ## 1.2.1
 

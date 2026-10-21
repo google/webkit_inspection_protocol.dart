@@ -1,6 +1,9 @@
 // Copyright 2015 Google. All rights reserved. Use of this source code is
 // governed by a BSD-style license that can be found in the LICENSE file.
 
+@Deprecated('Will be removed in a future release.')
+library;
+
 import 'dart:async' show EventSink, Future, Stream, StreamTransformer;
 import 'dart:collection' show UnmodifiableListView, UnmodifiableMapView;
 
@@ -28,6 +31,7 @@ import 'webkit_inspection_protocol.dart'
 
 /// Implementation of WipDom that maintains and updates a model of the DOM
 /// based on incoming events.
+@Deprecated('Will be removed in a future release.')
 class WipDomModel implements WipDom {
   static final _log = Logger('WipDomModel');
 
@@ -461,6 +465,7 @@ class _Node implements Node {
   }
 }
 
+@Deprecated('Will be removed in a future release.')
 List<String> flattenAttributesMap(Map<String, String> attributes) {
   var result = <String>[];
   attributes.forEach((k, v) {
