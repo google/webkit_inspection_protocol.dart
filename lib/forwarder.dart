@@ -1,6 +1,9 @@
 // Copyright 2015 Google. All rights reserved. Use of this source code is
 // governed by a BSD-style license that can be found in the LICENSE file.
 
+@Deprecated('Will be removed in a future release.')
+library;
+
 import 'dart:async'
     show Future, Stream, StreamController, StreamSink, StreamSubscription;
 import 'dart:convert' show jsonDecode, jsonEncode;
@@ -13,6 +16,7 @@ import 'webkit_inspection_protocol.dart'
 
 /// Forwards a [Stream] to a [WipConnection] and events
 /// from a [WipConnection] to a [StreamSink].
+@Deprecated('Will be removed in a future release.')
 class WipForwarder {
   static final _log = Logger('ChromeForwarder');
 

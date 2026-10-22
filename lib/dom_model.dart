@@ -1,9 +1,11 @@
 // Copyright 2015 Google. All rights reserved. Use of this source code is
 // governed by a BSD-style license that can be found in the LICENSE file.
 
+@Deprecated('Will be removed in a future release.')
+library;
+
 import 'dart:async' show EventSink, Future, Stream, StreamTransformer;
 import 'dart:collection' show UnmodifiableListView, UnmodifiableMapView;
-import 'dart:mirrors' show reflect;
 
 import 'package:logging/logging.dart' show Logger;
 
@@ -17,12 +19,19 @@ import 'webkit_inspection_protocol.dart'
         ChildNodeRemovedEvent,
         DocumentUpdatedEvent,
         Node,
+        RemoteObject,
+        Rgba,
         SetChildNodesEvent,
+        WipConnection,
         WipDom,
-        WipEvent;
+        WipDomain,
+        WipEvent,
+        WipEventTransformer,
+        WipResponse;
 
 /// Implementation of WipDom that maintains and updates a model of the DOM
 /// based on incoming events.
+@Deprecated('Will be removed in a future release.')
 class WipDomModel implements WipDom {
   static final _log = Logger('WipDomModel');
 
@@ -80,35 +89,45 @@ class WipDomModel implements WipDom {
   }
 
   void _onAttributeModified(
-      AttributeModifiedEvent event, EventSink<AttributeModifiedEvent> sink) {
+    AttributeModifiedEvent event,
+    EventSink<AttributeModifiedEvent> sink,
+  ) {
     var node = _getOrCreateNode(event.nodeId);
     node._attributes![event.name] = event.value;
     sink.add(event);
   }
 
   void _onAttributeRemoved(
-      AttributeRemovedEvent event, EventSink<AttributeRemovedEvent> sink) {
+    AttributeRemovedEvent event,
+    EventSink<AttributeRemovedEvent> sink,
+  ) {
     var node = _getOrCreateNode(event.nodeId);
     node._attributes!.remove(event.name);
     sink.add(event);
   }
 
-  void _onCharacterDataModified(CharacterDataModifiedEvent event,
-      EventSink<CharacterDataModifiedEvent> sink) {
+  void _onCharacterDataModified(
+    CharacterDataModifiedEvent event,
+    EventSink<CharacterDataModifiedEvent> sink,
+  ) {
     var node = _getOrCreateNode(event.nodeId);
     node._nodeValue = event.characterData;
     sink.add(event);
   }
 
-  void _onChildNodeCountUpdated(ChildNodeCountUpdatedEvent event,
-      EventSink<ChildNodeCountUpdatedEvent> sink) {
+  void _onChildNodeCountUpdated(
+    ChildNodeCountUpdatedEvent event,
+    EventSink<ChildNodeCountUpdatedEvent> sink,
+  ) {
     var node = _getOrCreateNode(event.nodeId);
     node._childNodeCount = event.childNodeCount;
     sink.add(event);
   }
 
   void _onChildNodeInserted(
-      ChildNodeInsertedEvent event, EventSink<ChildNodeInsertedEvent> sink) {
+    ChildNodeInsertedEvent event,
+    EventSink<ChildNodeInsertedEvent> sink,
+  ) {
     var parent = _getOrCreateNode(event.parentNodeId);
     var index =
         parent._children!.indexOf(_getOrCreateNode(event.previousNodeId)) + 1;
@@ -119,7 +138,9 @@ class WipDomModel implements WipDom {
   }
 
   void _onChildNodeRemoved(
-      ChildNodeRemovedEvent event, EventSink<ChildNodeRemovedEvent> sink) {
+    ChildNodeRemovedEvent event,
+    EventSink<ChildNodeRemovedEvent> sink,
+  ) {
     var parent = _getOrCreateNode(event.parentNodeId);
     var node = _nodeCache.remove(event.nodeId);
     parent._children!.remove(node);
@@ -128,14 +149,18 @@ class WipDomModel implements WipDom {
   }
 
   void _onDocumentUpdated(
-      DocumentUpdatedEvent event, EventSink<DocumentUpdatedEvent> sink) {
+    DocumentUpdatedEvent event,
+    EventSink<DocumentUpdatedEvent> sink,
+  ) {
     _nodeCache.clear();
     _root = null;
     sink.add(event);
   }
 
   void _onSetChildNodes(
-      SetChildNodesEvent event, EventSink<SetChildNodesEvent> sink) {
+    SetChildNodesEvent event,
+    EventSink<SetChildNodesEvent> sink,
+  ) {
     var parent = _getOrCreateNode(event.nodeId);
     parent._children =
         event.nodes.map(_getOrCreateNodeFromNode).toList(growable: true);
@@ -196,8 +221,112 @@ class WipDomModel implements WipDom {
   }
 
   @override
-  dynamic noSuchMethod(Invocation invocation) =>
-      reflect(_dom).delegate(invocation);
+  WipConnection get connection => _dom.connection;
+
+  @override
+  Stream<WipDomain> get onClosed => _dom.onClosed;
+
+  @override
+  Stream<T> eventStream<T>(String method, WipEventTransformer<T> transformer) =>
+      _dom.eventStream<T>(method, transformer);
+
+  @override
+  Future<WipResponse> sendCommand(
+    String method, {
+    Map<String, dynamic>? params,
+  }) =>
+      _dom.sendCommand(method, params: params);
+
+  @override
+  Future<String> getOuterHtml(int nodeId) => _dom.getOuterHtml(nodeId);
+
+  @override
+  Future<void> hideHighlight() => _dom.hideHighlight();
+
+  @override
+  Future<void> highlightNode(
+    int nodeId, {
+    Rgba? borderColor,
+    Rgba? contentColor,
+    Rgba? marginColor,
+    Rgba? paddingColor,
+    bool? showInfo,
+  }) =>
+      _dom.highlightNode(
+        nodeId,
+        borderColor: borderColor,
+        contentColor: contentColor,
+        marginColor: marginColor,
+        paddingColor: paddingColor,
+        showInfo: showInfo,
+      );
+
+  @override
+  Future<void> highlightRect(
+    int x,
+    int y,
+    int width,
+    int height, {
+    Rgba? color,
+    Rgba? outlineColor,
+  }) =>
+      _dom.highlightRect(
+        x,
+        y,
+        width,
+        height,
+        color: color,
+        outlineColor: outlineColor,
+      );
+
+  @override
+  Future<int> moveTo(int nodeId, int targetNodeId, {int? insertBeforeNodeId}) =>
+      _dom.moveTo(nodeId, targetNodeId, insertBeforeNodeId: insertBeforeNodeId);
+
+  @override
+  Future<int> querySelector(int nodeId, String selector) =>
+      _dom.querySelector(nodeId, selector);
+
+  @override
+  Future<List<int>> querySelectorAll(int nodeId, String selector) =>
+      _dom.querySelectorAll(nodeId, selector);
+
+  @override
+  Future<void> removeAttribute(int nodeId, String name) =>
+      _dom.removeAttribute(nodeId, name);
+
+  @override
+  Future<void> removeNode(int nodeId) => _dom.removeNode(nodeId);
+
+  @override
+  Future<void> requestChildNodes(int nodeId) => _dom.requestChildNodes(nodeId);
+
+  @override
+  Future<int> requestNode(String objectId) => _dom.requestNode(objectId);
+
+  @override
+  Future<RemoteObject> resolveNode(int nodeId, {String? objectGroup}) =>
+      _dom.resolveNode(nodeId, objectGroup: objectGroup);
+
+  @override
+  Future<void> setAttributeValue(int nodeId, String name, String value) =>
+      _dom.setAttributeValue(nodeId, name, value);
+
+  @override
+  Future<void> setAttributesAsText(int nodeId, String text, {String? name}) =>
+      _dom.setAttributesAsText(nodeId, text, name: name);
+
+  @override
+  Future<int> setNodeName(int nodeId, String name) =>
+      _dom.setNodeName(nodeId, name);
+
+  @override
+  Future<void> setNodeValue(int nodeId, String value) =>
+      _dom.setNodeValue(nodeId, value);
+
+  @override
+  Future<void> setOuterHtml(int nodeId, String outerHtml) =>
+      _dom.setOuterHtml(nodeId, outerHtml);
 }
 
 class _Node implements Node {
@@ -291,7 +420,7 @@ class _Node implements Node {
       'nodeId': nodeId,
       'nodeName': nodeName,
       'nodeType': nodeType,
-      'nodeValue': nodeValue
+      'nodeValue': nodeValue,
     };
     if (visited.add(nodeId)) {
       if (attributes != null && attributes!.isNotEmpty) {
@@ -336,6 +465,7 @@ class _Node implements Node {
   }
 }
 
+@Deprecated('Will be removed in a future release.')
 List<String> flattenAttributesMap(Map<String, String> attributes) {
   var result = <String>[];
   attributes.forEach((k, v) {

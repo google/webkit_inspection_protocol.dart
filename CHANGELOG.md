@@ -1,6 +1,8 @@
 ## 1.2.2-wip
 
 - Require Dart 3.4.
+- Remove `dart:mirrors` usage from `dom_model.dart`.
+- Deprecate `dom_model.dart` and `forwarder.dart`.
 
 ## 1.2.1
 
