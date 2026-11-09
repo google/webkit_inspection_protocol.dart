@@ -3,6 +3,8 @@
 - Require Dart 3.4.
 - Remove `dart:mirrors` usage from `dom_model.dart`.
 - Deprecate `dom_model.dart` and `forwarder.dart`.
+- Complete pending `WipConnection.sendCommand` futures with a `StateError` when
+  the connection closes before a response arrives, instead of never completing.
 
 ## 1.2.1
 
