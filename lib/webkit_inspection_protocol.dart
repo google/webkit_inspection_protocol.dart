@@ -292,6 +292,15 @@ class WipConnection {
   }
 
   void _handleClose() {
+    for (var completer in _completers.values) {
+      // Callers that never listen for the response must not get an unhandled
+      // error.
+      completer.future.ignore();
+      completer.completeError(
+        StateError('The connection closed before a response was received.'),
+      );
+    }
+    _completers.clear();
     _closeController.add(this);
     _closeController.close();
     _notificationController.close();
